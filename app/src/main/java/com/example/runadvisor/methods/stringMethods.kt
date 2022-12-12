@@ -16,3 +16,15 @@ fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment?{
 fun getImagePath():String{
     return "images/"
 }
+
+fun getUserCollection():String{
+    return "UserData"
+}
+
+fun getUserItemCollection():String{
+    return "RunItems"
+}
+
+fun getPublicCollection():String{
+    return "PublicData"
+}

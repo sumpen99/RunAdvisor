@@ -31,7 +31,6 @@ class DataFragment: Fragment(R.layout.fragment_data), IFragment {
     private lateinit var parentActivity: Activity
     private lateinit var recyclerView:RecyclerView
     private lateinit var customAdapter:CustomAdapter
-    private var serverData = ArrayList<PublicRunItem>()
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
 

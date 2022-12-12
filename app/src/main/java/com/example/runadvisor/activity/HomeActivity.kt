@@ -18,6 +18,7 @@ class HomeActivity:AppCompatActivity() {
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
 
+
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)

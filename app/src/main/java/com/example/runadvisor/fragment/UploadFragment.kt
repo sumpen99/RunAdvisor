@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
@@ -71,7 +72,10 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         binding.loadImageBtn.setOnClickListener{selectImageFromGallery(PICK_IMAGE)}
         view.setOnTouchListener { v, event ->
             when(event.actionMasked){
-                MotionEvent.ACTION_DOWN -> {binding.cityText.hideKeyboard();binding.streetText.hideKeyboard()}
+                MotionEvent.ACTION_DOWN -> {
+                    binding.cityText.hideKeyboard()
+                    binding.streetText.hideKeyboard()
+                    binding.runKmText.hideKeyboard()}
                 //MotionEvent.ACTION_POINTER_DOWN -> {}
                 //MotionEvent.ACTION_MOVE -> {}
                 //MotionEvent.ACTION_UP -> {}
@@ -101,13 +105,15 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
             val user = Firebase.auth.currentUser
             val city = binding.cityText.text.toString()
             val street = binding.streetText.text.toString()
+            val runKm = binding.runKmText.text.toString()
+            val shareWithPublic = (binding.checkboxShare as CheckBox).isChecked
             val urlId = UUID.randomUUID().toString()
             val downloadUrl = urlId + ".${filePath!!.split(".")[1]}"
-            val item = UserRunItem(city,street,true, UUID.randomUUID().toString(),downloadUrl)
+            val item = UserRunItem(city,street,runKm,shareWithPublic, UUID.randomUUID().toString(),downloadUrl)
             Firebase.firestore
-                .collection("UserData")
+                .collection(getUserCollection())
                 .document(user!!.uid)
-                .collection("RunItems").
+                .collection(getUserItemCollection()).
                 add(item).addOnCompleteListener { task ->
                     if(task.isSuccessful && item.shareWithPublic){uploadPublicRunItem(item)}
                     else{
@@ -117,16 +123,15 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     }
 
     private fun uploadPublicRunItem(userItem: UserRunItem){
-        val publicItem = PublicRunItem(userItem.city,userItem.street,userItem.downloadUrl)
+        val publicItem = PublicRunItem(userItem.city,userItem.street,userItem.runKm,userItem.downloadUrl)
         Firebase.firestore
-            .collection("PublicData")
+            .collection(getPublicCollection())
             .document(userItem.runItemID)
             .set(publicItem).addOnCompleteListener { task ->
                 if(task.isSuccessful) {uploadImageToFirebase(publicItem)}
                 else{
                     Toast.makeText(parentActivity, task.exception.toString(), Toast.LENGTH_SHORT).show()}
             }
-
     }
 
     private fun uploadImageToFirebase(item: PublicRunItem) {
@@ -145,6 +150,7 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         return (Firebase.auth.currentUser!=null &&
                 binding.cityText.text.toString().isNotEmpty() &&
                 binding.streetText.text.toString().isNotEmpty() &&
+                binding.runKmText.text.toString().isNotEmpty() &&
                 filePath != null &&
                 fileUri != null)
     }

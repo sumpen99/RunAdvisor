@@ -17,7 +17,7 @@
         />
     <item
         android:id="@+id/navUpload"
-        android:title="Data"
+        android:title="Upload"
         android:icon="@drawable/ic_upload_foreground"
         />
 </menu>
