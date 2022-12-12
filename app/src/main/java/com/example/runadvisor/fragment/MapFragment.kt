@@ -1,5 +1,6 @@
 package com.example.runadvisor.fragment
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -8,10 +9,8 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import android.widget.PopupMenu
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -23,6 +22,8 @@ import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printMotionEvent
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.getTitleBarHeight
+import com.example.runadvisor.methods.hideKeyboard
+import com.example.runadvisor.methods.selectImageFromGallery
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -31,7 +32,7 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 import org.osmdroid.views.overlay.OverlayItem
 import org.osmdroid.views.overlay.Polyline
 
-class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
+class MapFragment(private var showMenu:Boolean=false) : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
     private lateinit var mapView: MapView
     private lateinit var locationManager: LocationManager
     private lateinit var activityContext: Context
@@ -50,9 +51,10 @@ class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, Location
         setLocationManager()
         setMapView()
         setLocation()
-        drawLineOnMap()
+        //drawLineOnMap()
         getLocation()
-        //setEventListener(view)
+        activateMenu()
+        setEventListener(view)
         //setButtons()
         //setFragmentID()
         return view
@@ -63,8 +65,32 @@ class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, Location
     override fun processWork(parameter: Any?){}
 
     override fun callbackDispatchTouchEvent(event: MotionEvent) {
-        printMotionEvent(event)
+        //printMotionEvent(event)
         //addMarker(getLatLon(event.rawX,event.rawY-parentActivity.getTitleBarHeight()))
+    }
+
+    fun activateMenu(){
+        if(showMenu){
+            binding.popupBtn.visibility = View.VISIBLE
+        }
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setEventListener(view:View){
+        binding.popupBtn.setOnClickListener{
+            val popUpMenu = PopupMenu(parentActivity,binding.popupBtn)
+            popUpMenu.menuInflater.inflate(R.menu.popup_menu,popUpMenu.menu)
+            popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
+                when(it.itemId){
+                    R.id.popupPath->printToTerminal("popupPath")
+                    R.id.popupSearch->printToTerminal("popupSearch")
+                    R.id.popupGps->printToTerminal("popupGps")
+                }
+                true
+            }
+            popUpMenu.show()
+        }
+
     }
 
     private fun setActivityContext(){
@@ -82,10 +108,13 @@ class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, Location
 
     private fun getLocation() {
         if(checkGpsStatus()){
-            if ((ContextCompat.checkSelfPermission(activityContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)) {
+            if(ContextCompat.checkSelfPermission(activityContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
                 ActivityCompat.requestPermissions(parentActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_CODE)
             }
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+            else{
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
+                //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
+            }
         }
     }
 
@@ -96,12 +125,13 @@ class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, Location
     private fun checkGpsStatus():Boolean{
         //val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-        /*if(gpsStatus){
+        /*if(locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
             printToTerminal("Gps Is Enabled")
         }
         else{
             printToTerminal("Gps Is Disabled")
-        }*/
+        }
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)*/
     }
 
     private fun setMapView(){

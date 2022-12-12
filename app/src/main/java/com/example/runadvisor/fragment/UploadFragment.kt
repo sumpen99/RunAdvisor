@@ -10,6 +10,7 @@ import android.widget.CheckBox
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
+import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
@@ -49,7 +50,9 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         return FragmentInstance.FRAGMENT_UPLOAD
     }
 
-    override fun processWork(parameter: Any?){}
+    override fun processWork(parameter: Any?){
+
+    }
 
     override fun callbackDispatchTouchEvent(event: MotionEvent){}
 
@@ -70,6 +73,7 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     private fun setEventListener(view: View){
         binding.uploadItemBtn.setOnClickListener{ uploadUserRunItem()}
         binding.loadImageBtn.setOnClickListener{selectImageFromGallery(PICK_IMAGE)}
+        binding.drawPathBtn.setOnClickListener{drawPathOnMap()}
         view.setOnTouchListener { v, event ->
             when(event.actionMasked){
                 MotionEvent.ACTION_DOWN -> {
@@ -98,6 +102,10 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
             fileUri = data.data!!
             parentActivity.loadImageFromPhone(fileUri.toString(),binding.imageView)
         }
+    }
+
+    private fun drawPathOnMap(){
+        (parentActivity as HomeActivity).switchFragment(FragmentInstance.FRAGMENT_MAP)
     }
 
     private fun uploadUserRunItem(){

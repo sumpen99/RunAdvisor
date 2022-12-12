@@ -7,13 +7,16 @@ import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
 import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
+import com.example.runadvisor.fragment.MapFragment
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.fragmentInstanceToFragment
 import com.example.runadvisor.methods.getTitleBarHeight
+import com.example.runadvisor.struct.MapData
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class HomeActivity:AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
+    private lateinit var mapData:MapData
     private var currentFragment: Fragment? = null
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
@@ -60,6 +63,24 @@ class HomeActivity:AppCompatActivity() {
         if(currentFragmentIsInstanceOf(fragmentInstance)){return}
         supportFragmentManager.beginTransaction().apply {
             currentFragment = fragmentInstanceToFragment(fragmentInstance)
+            replace(R.id.homeLayout,currentFragment!!).commit()
+        }
+    }
+
+    fun switchFragment(fragmentInstance: FragmentInstance){
+        supportFragmentManager.beginTransaction().apply {
+            var frag:Fragment? = null
+            if(fragmentInstance == FragmentInstance.FRAGMENT_MAP){
+                frag = MapFragment(true)
+                //frag.activateMenu()
+                //frag.activateOnExit()
+            }
+            if(frag!=null){replace(R.id.homeLayout,frag).commit()}
+        }
+    }
+
+    fun resetFragment(){
+        supportFragmentManager.beginTransaction().apply {
             replace(R.id.homeLayout,currentFragment!!).commit()
         }
     }
