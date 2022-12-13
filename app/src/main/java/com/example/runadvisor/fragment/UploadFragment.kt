@@ -129,11 +129,12 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
                 .collection(getUserItemCollection()).
                 add(item).addOnCompleteListener { task ->
                     if(task.isSuccessful && item.shareWithPublic){uploadPublicRunItem(item)}
-                    else{
-                        Toast.makeText(parentActivity,"Upload Failed ${task.exception}", Toast.LENGTH_SHORT).show()}
-                }
+                    else{parentActivity.showMessage("Upload Failed ${task.exception}", Toast.LENGTH_SHORT)}}
         }
+        else{parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)}
     }
+
+
 
     private fun uploadPublicRunItem(userItem: UserRunItem){
         val publicItem = PublicRunItem(userItem.city,userItem.street,userItem.runKm,userItem.downloadUrl)
@@ -142,9 +143,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
             .document(userItem.runItemID)
             .set(publicItem).addOnCompleteListener { task ->
                 if(task.isSuccessful) {uploadImageToFirebase(publicItem)}
-                else{
-                    Toast.makeText(parentActivity, task.exception.toString(), Toast.LENGTH_SHORT).show()}
-            }
+                else{parentActivity.showMessage(task.exception.toString(), Toast.LENGTH_SHORT)}}
     }
 
     private fun uploadImageToFirebase(item: PublicRunItem) {
@@ -155,7 +154,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
             .addOnCompleteListener { task ->
                 var msg = "Item Uploaded"
                 if(!task.isSuccessful){msg = task.exception.toString()}
-                Toast.makeText(parentActivity,msg, Toast.LENGTH_SHORT).show()
+                parentActivity.showMessage(msg,Toast.LENGTH_SHORT)
             }
     }
 

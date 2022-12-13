@@ -10,6 +10,7 @@ import android.provider.Settings
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Registry
@@ -75,6 +76,10 @@ fun Fragment.selectImageFromGallery(requestCode:Int) {
     //),
     //GALLERY_REQUEST_CODE
     //)
+}
+
+fun Activity.showMessage(msg:String,duration:Int){
+    Toast.makeText(this,msg,duration).show()
 }
 
 fun Activity.getFilePathFromIntent(data: Intent):String?{

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.methods.hideKeyboard
 import com.example.runadvisor.methods.moveToActivity
+import com.example.runadvisor.methods.showMessage
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -57,12 +58,8 @@ class LoginActivity : AppCompatActivity() {
         if( illegalUserInput()){return}
         auth.signInWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful) {
-                    moveToActivity(Intent(this,HomeActivity::class.java))
-                } else {
-                    Toast.makeText(baseContext, "Authentication failed ${task.exception}",
-                        Toast.LENGTH_SHORT).show()
-                }
+                if(task.isSuccessful){moveToActivity(Intent(this,HomeActivity::class.java))}
+                else{showMessage("Authentication failed ${task.exception}",Toast.LENGTH_SHORT)}
             }
     }
 
@@ -70,12 +67,8 @@ class LoginActivity : AppCompatActivity() {
         if( illegalUserInput()){return}
         auth.createUserWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener { task ->
-                if(task.isSuccessful) {
-                    moveToActivity(Intent(this,HomeActivity::class.java))
-                } else {
-                    Toast.makeText(baseContext, "${task.exception}",
-                        Toast.LENGTH_SHORT).show()
-                }
+                if(task.isSuccessful){moveToActivity(Intent(this,HomeActivity::class.java))}
+                else{showMessage("${task.exception}",Toast.LENGTH_SHORT)}
             }
     }
 
