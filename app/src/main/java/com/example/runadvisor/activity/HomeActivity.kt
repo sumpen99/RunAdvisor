@@ -9,15 +9,17 @@ import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.fragment.MapFragment
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.fragmentInstanceToFragment
 import com.example.runadvisor.methods.getTitleBarHeight
+import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.MapData
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class HomeActivity:AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
     private lateinit var mapData:MapData
-    private var currentFragment: Fragment? = null
+    private var fragmentTracker = FragmentTracker()
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
 
@@ -42,7 +44,7 @@ class HomeActivity:AppCompatActivity() {
     private fun setEventListener(){
         bottomNavMenu.setOnItemSelectedListener {it: MenuItem ->
             when(it.itemId){
-                R.id.navHome->removeCurrentFragment()
+                R.id.navHome->clearFragments()
                 R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP)
                 R.id.navData->navigateFragment(FragmentInstance.FRAGMENT_DATA)
                 R.id.navUpload->navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
@@ -52,44 +54,27 @@ class HomeActivity:AppCompatActivity() {
         }
     }
 
-    private fun currentFragmentIsInstanceOf(fragmentInstance:FragmentInstance):Boolean{
-        if(currentFragment!=null){
-            return fragmentInstance == (currentFragment as IFragment).getFragmentID()
+    fun navigateFragment(fragmentInstance: FragmentInstance){
+        if(fragmentTracker.currentFragmentIsInstanceOf(fragmentInstance))return
+        var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
+        if(frag == null){
+            printToTerminal("frag is null")
+            frag = fragmentInstanceToFragment(fragmentInstance)
         }
-        return false
-    }
 
-    private fun navigateFragment(fragmentInstance: FragmentInstance){
-        if(currentFragmentIsInstanceOf(fragmentInstance)){return}
+        fragmentTracker.remove()
+        fragmentTracker.push(frag)
+
         supportFragmentManager.beginTransaction().apply {
-            currentFragment = fragmentInstanceToFragment(fragmentInstance)
-            replace(R.id.homeLayout,currentFragment!!).commit()
+            replace(R.id.homeLayout,frag).commit()
         }
     }
 
-    fun switchFragment(fragmentInstance: FragmentInstance){
-        supportFragmentManager.beginTransaction().apply {
-            var frag:Fragment? = null
-            if(fragmentInstance == FragmentInstance.FRAGMENT_MAP){
-                frag = MapFragment(true)
-                //frag.activateMenu()
-                //frag.activateOnExit()
-            }
-            if(frag!=null){replace(R.id.homeLayout,frag).commit()}
+    private fun clearFragments(){
+        if(fragmentTracker.isNotEmpty()){
+            supportFragmentManager.beginTransaction().remove(fragmentTracker.root!!).commit()
         }
-    }
-
-    fun resetFragment(){
-        supportFragmentManager.beginTransaction().apply {
-            replace(R.id.homeLayout,currentFragment!!).commit()
-        }
-    }
-
-    private fun removeCurrentFragment(){
-        if(currentFragment!=null){
-            supportFragmentManager.beginTransaction().remove(currentFragment!!).commit()
-            currentFragment = null
-        }
+        fragmentTracker.root = null
     }
 
     private fun outsideNavMenu(event: MotionEvent):Boolean{ return event.y <bottomNavMenu.y+getTitleBarHeight()}
@@ -99,11 +84,11 @@ class HomeActivity:AppCompatActivity() {
     * */
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         super.dispatchTouchEvent(event)
-        if(currentFragment == null){return false}
+        if(fragmentTracker.isEmpty()){return false}
         if(outsideNavMenu(event)){
             when(event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    (currentFragment as IFragment).callbackDispatchTouchEvent(event)
+                    (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(event)
                 }
                 /*MotionEvent.ACTION_MOVE -> {}
                 MotionEvent.ACTION_UP -> {}

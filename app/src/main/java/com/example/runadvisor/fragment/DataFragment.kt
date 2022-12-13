@@ -26,7 +26,7 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
 
-class DataFragment: Fragment(R.layout.fragment_data), IFragment {
+class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance): Fragment(R.layout.fragment_data), IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private lateinit var recyclerView:RecyclerView
@@ -49,7 +49,11 @@ class DataFragment: Fragment(R.layout.fragment_data), IFragment {
     }
 
     override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_DATA
+        return fragmentId
+    }
+
+    override fun isRemovable():Boolean{
+        return removable
     }
 
     override fun processWork(parameter: Any?){}

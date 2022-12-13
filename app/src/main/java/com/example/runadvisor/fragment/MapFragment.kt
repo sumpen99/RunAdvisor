@@ -24,6 +24,7 @@ import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.getTitleBarHeight
 import com.example.runadvisor.methods.hideKeyboard
 import com.example.runadvisor.methods.selectImageFromGallery
+import com.example.runadvisor.struct.MapData
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -32,11 +33,12 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 import org.osmdroid.views.overlay.OverlayItem
 import org.osmdroid.views.overlay.Polyline
 
-class MapFragment(private var showMenu:Boolean=false) : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
+class MapFragment(private var showMenu:Boolean,val removable:Boolean,val fragmentId:FragmentInstance) : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
     private lateinit var mapView: MapView
     private lateinit var locationManager: LocationManager
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
+    private  var mapData:MapData? = null
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private val LOCATION_PERMISSION_CODE = 2
     private var _binding: FragmentMapBinding? = null
@@ -60,7 +62,13 @@ class MapFragment(private var showMenu:Boolean=false) : Fragment(R.layout.fragme
         return view
     }
 
-    override fun getFragmentID(): FragmentInstance {return FragmentInstance.FRAGMENT_MAP}
+    override fun isRemovable():Boolean{
+        return removable
+    }
+
+    override fun getFragmentID(): FragmentInstance {
+        return fragmentId
+    }
 
     override fun processWork(parameter: Any?){}
 
@@ -223,13 +231,25 @@ class MapFragment(private var showMenu:Boolean=false) : Fragment(R.layout.fragme
     }
 
     private fun setLocation(){
+        val mapController = mapView.controller
+        if(mapData!=null){
+            mapController.setZoom(mapData!!.zoom)
+            mapController.setCenter(mapData!!.geoPoint)
+            return
+        }
+
         val lat = 59.377172
         val lon = 13.489016
-        val mapController = mapView.controller
         mapController.setZoom(20)
         val startPoint = GeoPoint(lat,lon)
         mapController.setCenter(startPoint)
 
+    }
+
+    private fun setMapData(){
+        mapData = MapData()
+        mapData!!.geoPoint = mapView.mapCenter as GeoPoint
+        mapData!!.zoom = mapView.zoomLevel
     }
 
     override fun onResume() {
@@ -243,6 +263,7 @@ class MapFragment(private var showMenu:Boolean=false) : Fragment(R.layout.fragme
     }
 
     override fun onDestroyView() {
+        setMapData()
         super.onDestroyView()
         _binding = null
     }

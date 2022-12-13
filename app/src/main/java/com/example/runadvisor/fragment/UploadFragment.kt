@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.TextUtils.replace
 import android.view.*
 import android.widget.CheckBox
 import android.widget.Toast
@@ -25,7 +26,7 @@ import com.google.firebase.storage.ktx.storage
 import java.util.*
 import com.example.runadvisor.io.printToTerminal
 
-class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
+class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private var _binding: FragmentUploadBinding? = null
@@ -46,8 +47,12 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         return view
     }
 
+    override fun isRemovable():Boolean{
+        return removable
+    }
+
     override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_UPLOAD
+        return fragmentId
     }
 
     override fun processWork(parameter: Any?){
@@ -105,7 +110,7 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     }
 
     private fun drawPathOnMap(){
-        (parentActivity as HomeActivity).switchFragment(FragmentInstance.FRAGMENT_MAP)
+        (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_MAP_CHILD)
     }
 
     private fun uploadUserRunItem(){
