@@ -58,7 +58,6 @@ class HomeActivity:AppCompatActivity() {
         if(fragmentTracker.currentFragmentIsInstanceOf(fragmentInstance))return
         var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
         if(frag == null){
-            printToTerminal("frag is null")
             frag = fragmentInstanceToFragment(fragmentInstance)
         }
 

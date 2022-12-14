@@ -3,6 +3,7 @@ import android.content.Intent
 import android.util.Log
 import android.view.MotionEvent
 import com.example.runadvisor.struct.PublicRunItem
+import org.osmdroid.util.BoundingBox
 
 fun printMotionEvent(event:MotionEvent){
     printToTerminal("X: ${event.x} Y: ${event.y}")
@@ -20,6 +21,10 @@ fun printActivityResult(requestCode: Int, resultCode: Int, data: Intent?){
         printToTerminal("RequestCode: $requestCode ResultCode: $resultCode Data: ${data.toString()}")
     }
 
+}
+
+fun printBoundingBox(bbox:BoundingBox){
+    printToTerminal("LatNort: ${bbox.latNorth} LonWest: ${bbox.lonWest} LatSouth: ${bbox.latSouth} LonEast: ${bbox.lonEast}")
 }
 
 fun printPublicRunItem(item:PublicRunItem){

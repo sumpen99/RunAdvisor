@@ -30,6 +30,5 @@
         android:layout_margin="10dp"
         android:background="@drawable/button"
         android:text="Menu"
-        android:textColor="@color/white"
-        android:visibility="gone"/>
+        android:textColor="@color/white"/>
 </RelativeLayout>
