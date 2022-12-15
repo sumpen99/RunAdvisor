@@ -52,11 +52,8 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         setLocationManager()
         setMapView()
         setLocation()
-        //drawLineOnMap()
         getLocation()
         setEventListener(view)
-        //setButtons()
-        //setFragmentID()
         return view
     }
 
@@ -125,22 +122,18 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private fun getLocation() {
-        if(checkGpsStatus()){
-            if(ContextCompat.checkSelfPermission(activityContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-                ActivityCompat.requestPermissions(parentActivity, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_CODE)
-            }
-            else{
+        if(checkGpsProviderStatus()){
+            if(ContextCompat.checkSelfPermission(activityContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
-                //locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0L, 0f, this)
             }
         }
     }
 
     override fun onLocationChanged(location: Location) {
-        printToTerminal("OnLocationChanged line 140 MapFragment Latitude: " + location.latitude + " , Longitude: " + location.longitude)
+        //printToTerminal("OnLocationChanged line 140 MapFragment Latitude: " + location.latitude + " , Longitude: " + location.longitude)
     }
 
-    private fun checkGpsStatus():Boolean{
+    private fun checkGpsProviderStatus():Boolean{
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
     }
 
@@ -159,32 +152,12 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         return this.singleTapConfirmedHelper(p)
     }
 
-    /*override fun dispatchTouchEvent(event: MotionEvent): Boolean {
-        super.dispatchTouchEvent(event)
-        when(event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {
-                //addMarker(getLatLon(event.rawX,event.rawY-removeTitleBarHeight()))
-                //printToTerminal("${getLatLon(event.x,event.y)}")
-            }
-            MotionEvent.ACTION_MOVE -> {}
-            MotionEvent.ACTION_UP -> {}
-            /*
-            MotionEvent.ACTION_POINTER_DOWN -> {}
-            MotionEvent.ACTION_POINTER_UP -> {}
-            MotionEvent.ACTION_CANCEL -> {}
-            MotionEvent.ACTION_CANCEL -> {}
-            */
-        }
-        return true
-    }*/
-
     private fun addPointLasso(){
         if(mapPath == null){
             mapPath = MapPath(activityContext,mapView)
             mapPath!!.drawSelf()
         }
     }
-
 
     private fun getLatLon(x:Float,y:Float): GeoPoint {
         val proj = mapView.projection
@@ -229,32 +202,5 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         super.onDestroyView()
         _binding = null
     }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val permissionsToRequest = ArrayList<String>()
-        var i = 0
-        while (i < grantResults.size) {
-            permissionsToRequest.add(permissions[i])
-            i++
-        }
-        if (permissionsToRequest.size > 0) {
-            ActivityCompat.requestPermissions(
-                parentActivity,
-                permissionsToRequest.toTypedArray(),
-                REQUEST_PERMISSIONS_REQUEST_CODE)
-        }
-    }
-
-    /*override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (requestCode == LOCATION_PERMISSION_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show()
-            }
-            else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }*/
 
 }

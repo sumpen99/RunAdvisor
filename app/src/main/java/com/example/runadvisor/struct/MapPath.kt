@@ -1,24 +1,41 @@
 package com.example.runadvisor.struct
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import androidx.appcompat.content.res.AppCompatResources
+import com.example.runadvisor.R
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.widget.CustomMarker
+import com.example.runadvisor.widget.CustomOverlay
 import org.mapsforge.map.rendertheme.renderinstruction.Line
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.ItemizedIconOverlay
-import org.osmdroid.views.overlay.OverlayItem
-import org.osmdroid.views.overlay.Polyline
+import org.osmdroid.views.overlay.*
+import org.osmdroid.views.overlay.ItemizedIconOverlay.OnItemGestureListener
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
+
+//https://gist.github.com/jaydee2991/1306961/88c8d5ffadceb0a8df0eff0a889206069b236989
+//https://stackoverflow.com/questions/23108709/show-marker-details-with-image-onclick-marker-openstreetmap
 
 class MapPath(val activityContext: Context,val mapView:MapView) {
     var points = ArrayList<GeoPoint>()
     var rgb = Color.rgb(0,191,255)
     lateinit var line:Polyline
+    val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<CustomMarker>{
+        override fun onItemSingleTapUp(index:Int, item:CustomMarker):Boolean {
+            //item.hasTouch()
+            return true
+        }
+        override fun onItemLongPress(index:Int, item:CustomMarker):Boolean {
+            item.hasTouch()
+            return true
+        }
+    }
+
     init{
         buildLasso()
         buildPolyline()
@@ -63,16 +80,14 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         mapView.overlays.add(mapView.overlays.size,line)
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     private fun drawLassoPoints(){
         var i = 0
-        val markers = ArrayList<OverlayItem>()
+        val overlay = CustomOverlay(activityContext,ArrayList<CustomMarker>(),gestureListener)
         while(i<points.size-1){
-            val marker = CustomMarker("","",points[i])
-            marker.setMarker(AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default))
-            markers.add(marker)
+            overlay.addCustomItem("","",points[i])
             i++
         }
-        val items = ItemizedIconOverlay(activityContext,markers,null)
-        mapView.overlays.add(items)
+        mapView.overlays.add(overlay)
     }
 }

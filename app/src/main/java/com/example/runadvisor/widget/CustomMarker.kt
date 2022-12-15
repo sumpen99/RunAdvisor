@@ -1,19 +1,36 @@
 package com.example.runadvisor.widget
-import android.annotation.SuppressLint
-import android.view.MotionEvent
-import android.view.View
-import com.example.runadvisor.io.printToTerminal
+import android.graphics.drawable.Drawable
+import androidx.core.graphics.scaleMatrix
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.OverlayItem
 
-class CustomMarker(title:String,snippet:String,geoPoint:GeoPoint):
-    OverlayItem(title,snippet,geoPoint), View.OnTouchListener{
+class CustomMarker(
+    title:String,
+    snippet:String,
+    var geoPoint:GeoPoint,
+    val callbackSelectedMarker:(CustomMarker)->Unit,
+    val drawableDefault: Drawable?,
+    val drawableSelected:Drawable?):
+    OverlayItem(title,snippet,geoPoint){
 
-    @SuppressLint("ClickableViewAccessibility")
-    override fun onTouch(p0: View?, p1: MotionEvent?): Boolean {
-        printToTerminal("hepp")
-        return true
+    var lastGeoPoint:GeoPoint = geoPoint
+
+    fun hasTouch(){
+        lastGeoPoint = geoPoint
+        callbackSelectedMarker(this)
+        setMarker(drawableSelected)
     }
 
+    fun lostTouch(){
+        setMarker(drawableDefault)
+    }
+
+    fun move(p:GeoPoint){
+        val mlat = p.latitude - lastGeoPoint.latitude
+        val mlon = p.longitude - lastGeoPoint.longitude
+        geoPoint.latitude+=mlat
+        geoPoint.longitude+=mlon
+        lastGeoPoint = p
+    }
 
 }

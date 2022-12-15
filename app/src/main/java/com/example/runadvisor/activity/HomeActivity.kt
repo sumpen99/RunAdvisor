@@ -1,13 +1,17 @@
 package com.example.runadvisor.activity
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
 import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.fragment.MapFragment
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.fragmentInstanceToFragment
@@ -16,12 +20,15 @@ import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.MapData
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
+
 class HomeActivity:AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
     private lateinit var mapData:MapData
     private var fragmentTracker = FragmentTracker()
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
+    private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
+    private val LOCATION_PERMISSION_CODE = 2
 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +37,46 @@ class HomeActivity:AppCompatActivity() {
         setDataBinding()
         setUpNavMenu()
         setEventListener()
+        askForStoragePermissions()
+        askForLocationPermission()
+
+    }
+
+    private fun askForLocationPermission(){
+        if(ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        )
+        {
+            ActivityCompat.requestPermissions(
+                this,arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_CODE
+            )
+        }
+
+    }
+
+    private fun askForStoragePermissions(){
+        if(ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+            && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        )
+        {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                REQUEST_PERMISSIONS_REQUEST_CODE
+            )
+        }
     }
 
     private fun setDataBinding(){
@@ -89,6 +136,9 @@ class HomeActivity:AppCompatActivity() {
                 MotionEvent.ACTION_DOWN -> {
                     (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(event)
                 }
+                /*MotionEvent.ACTION_MOVE -> {
+                    (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(event)
+                }*/
                 /*MotionEvent.ACTION_MOVE -> {}
                 MotionEvent.ACTION_UP -> {}
                 MotionEvent.ACTION_POINTER_DOWN -> {}
@@ -100,4 +150,20 @@ class HomeActivity:AppCompatActivity() {
         }
         return true
     }
+
+    /*override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val permissionsToRequest = ArrayList<String>()
+        var i = 0
+        while (i < grantResults.size) {
+            permissionsToRequest.add(permissions[i])
+            i++
+        }
+        if (permissionsToRequest.size > 0) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissionsToRequest.toTypedArray(),
+                REQUEST_PERMISSIONS_REQUEST_CODE)
+        }
+    }*/
 }
