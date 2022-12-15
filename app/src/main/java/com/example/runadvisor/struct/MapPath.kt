@@ -6,6 +6,7 @@ import android.graphics.Color
 import androidx.appcompat.content.res.AppCompatResources
 import com.example.runadvisor.R
 import com.example.runadvisor.io.printToTerminal
+import com.example.runadvisor.methods.calculateTrackLength
 import com.example.runadvisor.widget.CustomMarker
 import com.example.runadvisor.widget.CustomOverlay
 import org.mapsforge.map.rendertheme.renderinstruction.Line
@@ -23,6 +24,7 @@ import kotlin.math.sin
 
 class MapPath(val activityContext: Context,val mapView:MapView) {
     var points = ArrayList<GeoPoint>()
+    var trackLength:Double = 0.0
     var rgb = Color.rgb(0,191,255)
     lateinit var line:Polyline
     val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<CustomMarker>{
@@ -40,6 +42,14 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         buildLasso()
         buildPolyline()
         setLineColor()
+    }
+
+    private fun resetTrackLength(){
+        trackLength = 0.0
+    }
+
+    private fun printTrackLength(){
+        printToTerminal("$trackLength")
     }
 
     private fun buildLasso(){
@@ -70,22 +80,37 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         line.color = rgb
     }
 
-    fun drawSelf(){
-        drawLasso()
-        drawLassoPoints()
-        mapView.invalidate()
+    fun updateLinePoints(index:Int,geoPoint:GeoPoint){
+        //line.points[index] = geoPoint
+        points[index] = geoPoint
+        line.setPoints(points)
     }
 
-    private fun drawLasso(){
+    fun addLassoOverlay(){
+        addLassoLines()
+        addLassoPoints()
+        drawLasso()
+    }
+
+    fun invalidate(){
+        mapView.postInvalidate()
+    }
+
+    fun drawLasso(){
+        trackLength = calculateTrackLength(points)
+        printTrackLength()
+        mapView.postInvalidate()
+    }
+
+    private fun addLassoLines(){
         mapView.overlays.add(mapView.overlays.size,line)
     }
 
-    @SuppressLint("UseCompatLoadingForDrawables")
-    private fun drawLassoPoints(){
+    private fun addLassoPoints(){
         var i = 0
-        val overlay = CustomOverlay(activityContext,ArrayList<CustomMarker>(),gestureListener)
+        val overlay = CustomOverlay(activityContext,ArrayList<CustomMarker>(),gestureListener,this)
         while(i<points.size-1){
-            overlay.addCustomItem("","",points[i])
+            overlay.addCustomItem("","",points[i],i)
             i++
         }
         mapView.overlays.add(overlay)

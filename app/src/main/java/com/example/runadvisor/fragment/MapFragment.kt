@@ -155,7 +155,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private fun addPointLasso(){
         if(mapPath == null){
             mapPath = MapPath(activityContext,mapView)
-            mapPath!!.drawSelf()
+            mapPath!!.addLassoOverlay()
         }
     }
 

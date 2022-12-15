@@ -7,6 +7,7 @@ import org.osmdroid.views.overlay.OverlayItem
 class CustomMarker(
     title:String,
     snippet:String,
+    val index:Int,
     var geoPoint:GeoPoint,
     val callbackSelectedMarker:(CustomMarker)->Unit,
     val drawableDefault: Drawable?,
