@@ -1,5 +1,4 @@
 package com.example.runadvisor.methods
-import com.example.runadvisor.io.printToTerminal
 import org.osmdroid.util.GeoPoint
 import java.lang.Math.pow
 import kotlin.math.*
@@ -33,4 +32,23 @@ fun latLonToMeter(p1:GeoPoint,p2:GeoPoint):Double{
     val e = pow(abs(z1-z2),2.0)
     //return r*c
     return sqrt(d+e)
+}
+
+
+
+fun getGeoMiddle(p1:GeoPoint,p2:GeoPoint):GeoPoint{
+    val dlon = Math.toRadians(p2.longitude-p1.longitude)
+
+    val lat1 = Math.toRadians(p1.latitude)
+    val lat2 = Math.toRadians(p2.latitude)
+    val lon1 = Math.toRadians(p1.longitude)
+
+    val bx = Math.cos(lat2) * Math.cos(dlon)
+    val by = Math.cos(lat2) * Math.sin(dlon)
+    val clat = Math.toDegrees(Math.atan2(
+        Math.sin(lat1) + Math.sin(lat2),
+        Math.sqrt((Math.cos(lat1) + bx) * (Math.cos(lat1) + bx) + by * by)
+    ))
+    val clon = Math.toDegrees(lon1 + Math.atan2(by, Math.cos(lat1) + bx))
+    return GeoPoint(clat,clon)
 }

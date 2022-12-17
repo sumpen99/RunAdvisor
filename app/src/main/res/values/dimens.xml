@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="bottomMapMenu">50dp</dimen>
+    <dimen name="bottomMapMenuIcon">30dp</dimen>
+</resources>

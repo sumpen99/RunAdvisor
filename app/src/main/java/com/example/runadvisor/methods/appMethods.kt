@@ -3,11 +3,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.Settings
 import android.view.View
+import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.ImageView
 import android.widget.Toast
@@ -25,6 +27,18 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.io.InputStream
+
+fun getScreenWidth() : Int{
+    return Resources.getSystem().displayMetrics.widthPixels
+}
+
+fun getScreenHeight() : Int{
+    return Resources.getSystem().displayMetrics.heightPixels
+}
+
+fun convertDpToPixel(value : Int):Int{
+    return (value* Resources.getSystem().displayMetrics.density).toInt()
+}
 
 @GlideModule
 class AppGlide : AppGlideModule(){
@@ -146,6 +160,17 @@ fun Activity.removeActionBarHeight():Float{
 fun Activity.gpsStatus(){
     val intent = Intent(Settings.ACTION_LOCALE_SETTINGS)
     moveToActivity(intent)
+}
+
+fun ViewGroup.clearChildren(childrenToNotRemove:Int){
+    while(childCount>childrenToNotRemove){
+        var i = childrenToNotRemove
+        val childCount = childCount
+        while(i<childCount){
+            removeView(getChildAt(i))
+            i++
+        }
+    }
 }
 
 @SuppressLint("InternalInsetResource")

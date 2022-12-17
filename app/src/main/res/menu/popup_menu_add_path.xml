@@ -2,11 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/popupAdd"
-        android:title="Add Points" />
+        android:title="Add Track" />
     <item
         android:id="@+id/popupSave"
         android:title="Save Track" />
     <item
-        android:id="@+id/popupClear"
-        android:title="Clear Track" />
+        android:id="@+id/popupExit"
+        android:title="Exit Track" />
 </menu>

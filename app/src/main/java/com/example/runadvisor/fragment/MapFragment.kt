@@ -4,32 +4,32 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.*
+import android.view.View.VISIBLE
 import android.widget.PopupMenu
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.R
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.MenuType
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
+import com.example.runadvisor.methods.clearChildren
 import com.example.runadvisor.struct.MapData
 import com.example.runadvisor.struct.MapPath
+import com.example.runadvisor.widget.TrackMenuBar
+import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.ItemizedIconOverlay
-import org.osmdroid.views.overlay.OverlayItem
-import org.osmdroid.views.overlay.Polyline
+
 
 class MapFragment(private val removable:Boolean,private var menuType:MenuType,private val fragmentId:FragmentInstance) : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
     private lateinit var mapView: MapView
@@ -38,8 +38,6 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private  var mapData:MapData? = null
-    private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
-    private val LOCATION_PERMISSION_CODE = 2
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
 
@@ -54,6 +52,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         setLocation()
         getLocation()
         setEventListener(view)
+        setUserAgent()
         return view
     }
 
@@ -78,15 +77,19 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         if(menuType == MenuType.MENU_BASE){setMenuBase()}
     }
 
+    private fun setUserAgent(){
+        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
+    }
+
     private fun setMenuAddPath(){
         binding.popupBtn.setOnClickListener{
             val popUpMenu =  PopupMenu(parentActivity,binding.popupBtn)
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_add_path,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupAdd->addPointLasso()
+                    R.id.popupAdd->addBottomTrackMenu()
                     R.id.popupSave->printToTerminal("popupSave")
-                    R.id.popupClear->printToTerminal("popupClear")
+                    R.id.popupExit->printToTerminal("popupExit")
                 }
                 true
             }
@@ -152,11 +155,31 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         return this.singleTapConfirmedHelper(p)
     }
 
-    private fun addPointLasso(){
+    private fun addBottomTrackMenu(){
+        binding.bottomMenuLayout.clearChildren(0)
+        binding.bottomMenuLayout.visibility = VISIBLE
+        val trackMenu = TrackMenuBar(
+            parentActivity,
+            null
+        )
+        binding.bottomMenuLayout.addView(TrackMenuBar(parentActivity,null))
+        trackMenu.setEventListener(::adjustPointLasso,::adjustPointLasso,::adjustPointLasso)
+    }
+
+    private fun adjustPointLasso(parameter:Any?){
+        val numPoints:Int = parameter as Int
         if(mapPath == null){
+            if(numPoints <= 0){return}
             mapPath = MapPath(activityContext,mapView)
-            mapPath!!.addLassoOverlay()
+            mapPath!!.setLasso(numPoints)
         }
+        else{
+            printToTerminal("$numPoints")
+            if(!mapPath!!.adjustLasso(numPoints)){return}
+            mapPath!!.removeOverlayFromMap()
+            mapPath!!.buildPolyLine()
+        }
+        mapPath!!.addLassoOverlay()
     }
 
     private fun getLatLon(x:Float,y:Float): GeoPoint {
@@ -175,7 +198,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
         val lat = 59.377172
         val lon = 13.489016
-        mapController.setZoom(20)
+        mapController.setZoom(19)
         val startPoint = GeoPoint(lat,lon)
         mapController.setCenter(startPoint)
 

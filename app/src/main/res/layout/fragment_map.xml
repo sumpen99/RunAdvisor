@@ -29,6 +29,15 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="10dp"
         android:background="@drawable/button"
-        android:text="Menu"
+        android:text="@string/menu"
         android:textColor="@color/white"/>
+
+    <LinearLayout
+        android:id="@+id/bottomMenuLayout"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottomMapMenu"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone">
+    </LinearLayout>
 </RelativeLayout>

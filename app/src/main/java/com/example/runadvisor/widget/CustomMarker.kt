@@ -1,6 +1,5 @@
 package com.example.runadvisor.widget
 import android.graphics.drawable.Drawable
-import androidx.core.graphics.scaleMatrix
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.OverlayItem
 

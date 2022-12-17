@@ -1,32 +1,27 @@
 package com.example.runadvisor.struct
-
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import androidx.appcompat.content.res.AppCompatResources
-import com.example.runadvisor.R
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.calculateTrackLength
+import com.example.runadvisor.methods.getGeoMiddle
 import com.example.runadvisor.widget.CustomMarker
 import com.example.runadvisor.widget.CustomOverlay
-import org.mapsforge.map.rendertheme.renderinstruction.Line
-import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.*
-import org.osmdroid.views.overlay.ItemizedIconOverlay.OnItemGestureListener
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-//https://gist.github.com/jaydee2991/1306961/88c8d5ffadceb0a8df0eff0a889206069b236989
-//https://stackoverflow.com/questions/23108709/show-marker-details-with-image-onclick-marker-openstreetmap
 
 class MapPath(val activityContext: Context,val mapView:MapView) {
+    var currentOverlay:CustomOverlay? = null
     var points = ArrayList<GeoPoint>()
     var trackLength:Double = 0.0
     var rgb = Color.rgb(0,191,255)
-    lateinit var line:Polyline
+    val INCREASE_POINTS = 10
+    var currentPoints = 0
+    var polyLine:Polyline? = null
     val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<CustomMarker>{
         override fun onItemSingleTapUp(index:Int, item:CustomMarker):Boolean {
             //item.hasTouch()
@@ -38,52 +33,53 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         }
     }
 
-    init{
-        buildLasso()
-        buildPolyline()
-        setLineColor()
+    fun setLasso(pointsToAdd:Int){
+        buildLasso(pointsToAdd)
+        buildPolyLine()
     }
 
-    private fun resetTrackLength(){
-        trackLength = 0.0
+    fun buildPolyLine(){
+        buildPolyline()
+        setLineColor()
     }
 
     private fun printTrackLength(){
         printToTerminal("$trackLength")
     }
 
-    private fun buildLasso(){
+    private fun buildLasso(pointsToAdd:Int){
         val bbox = mapView.boundingBox
-        val p = 10.0
-        val step = 360.0*PI/180.0/p
+        currentPoints += INCREASE_POINTS*pointsToAdd
+        currentPoints  = Math.max(currentPoints,INCREASE_POINTS)
+        val step = 360.0*PI/180.0/currentPoints
         var t = 0.0
         val cy = bbox.centerLatitude
         val cx = bbox.centerLongitude
         val r = bbox.lonEast-cx
         var i = 0
-        while(i++<p){
+        while(i++<currentPoints){
             val lat = r * sin(t) + cy
             val lon = r * cos(t) + cx
             points.add(GeoPoint(lat,lon))
             t+=step
         }
-        points.add(points[0])
+        points.add(GeoPoint(points[0].latitude,points[0].longitude))
     }
 
     private fun buildPolyline(){
-        line = Polyline(mapView)
-        line.setPoints(points)
+        polyLine = Polyline(mapView,false)
+        polyLine!!.setPoints(points)
     }
 
     private fun setLineColor(){
-        line.infoWindow = null
-        line.color = rgb
+        polyLine!!.infoWindow = null
+        polyLine!!.color = rgb
     }
 
     fun updateLinePoints(index:Int,geoPoint:GeoPoint){
         //line.points[index] = geoPoint
         points[index] = geoPoint
-        line.setPoints(points)
+        polyLine!!.setPoints(points)
     }
 
     fun addLassoOverlay(){
@@ -103,16 +99,63 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
     }
 
     private fun addLassoLines(){
-        mapView.overlays.add(mapView.overlays.size,line)
+        mapView.overlays.add(mapView.overlays.size,polyLine!!)
     }
 
     private fun addLassoPoints(){
         var i = 0
-        val overlay = CustomOverlay(activityContext,ArrayList<CustomMarker>(),gestureListener,this)
-        while(i<points.size-1){
-            overlay.addCustomItem("","",points[i],i)
+        currentOverlay = CustomOverlay(activityContext,ArrayList<CustomMarker>(),gestureListener,this)
+        while(i<points.size){
+            currentOverlay!!.addCustomItem("","",points[i],i)
             i++
         }
-        mapView.overlays.add(overlay)
+        mapView.overlays.add(currentOverlay)
+    }
+
+    fun adjustLasso(numPoints:Int):Boolean{
+        val temPoints = ArrayList<GeoPoint>()
+        var i = 0
+        var count = 0
+        if(numPoints<0){
+            if(currentPoints <= INCREASE_POINTS){return false}
+            while(i<points.size){
+                temPoints[count++] = points[i]
+                i+=2
+            }
+            points = temPoints
+        }
+        else{
+            i = 1
+            var newPoint:GeoPoint = GeoPoint(0.0,0.0)
+            var lastPoint:GeoPoint = points[0]
+            var currentPoint:GeoPoint = GeoPoint(0.0,0.0)
+            while(i<points.size){
+                currentPoint = points[i]
+                newPoint = getGeoMiddle(lastPoint,currentPoint)
+                temPoints.add(lastPoint)
+                temPoints.add(newPoint)
+                lastPoint = currentPoint
+                i++
+            }
+            points = temPoints
+        }
+        return true
+    }
+
+    fun removeOverlayFromMap(){
+        if(currentOverlay != null){
+            mapView.overlays.remove(currentOverlay)
+            mapView.overlays.remove(polyLine)
+            polyLine = null
+            resetTrackLength()
+        }
+    }
+
+    fun clearPoints(){
+        points.clear()
+    }
+
+    private fun resetTrackLength(){
+        trackLength = 0.0
     }
 }
