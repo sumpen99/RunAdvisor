@@ -4,12 +4,12 @@ import android.graphics.Color
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.calculateTrackLength
 import com.example.runadvisor.methods.getGeoMiddle
+import com.example.runadvisor.methods.toRadians
 import com.example.runadvisor.widget.CustomMarker
 import com.example.runadvisor.widget.CustomOverlay
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.*
-import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -20,6 +20,7 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
     var trackLength:Double = 0.0
     var rgb = Color.rgb(0,191,255)
     val INCREASE_POINTS = 10
+    val MAX_POINTS = 320
     var currentPoints = 0
     var polyLine:Polyline? = null
     val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<CustomMarker>{
@@ -51,7 +52,7 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         val bbox = mapView.boundingBox
         currentPoints += INCREASE_POINTS*pointsToAdd
         currentPoints  = Math.max(currentPoints,INCREASE_POINTS)
-        val step = 360.0*PI/180.0/currentPoints
+        val step = toRadians(360.0)/currentPoints
         var t = 0.0
         val cy = bbox.centerLatitude
         val cx = bbox.centerLongitude
@@ -94,7 +95,7 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
 
     fun drawLasso(){
         trackLength = calculateTrackLength(points)
-        printTrackLength()
+        //printTrackLength()
         mapView.postInvalidate()
     }
 
@@ -115,16 +116,16 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
     fun adjustLasso(numPoints:Int):Boolean{
         val temPoints = ArrayList<GeoPoint>()
         var i = 0
-        var count = 0
         if(numPoints<0){
-            if(currentPoints <= INCREASE_POINTS){return false}
+            if(currentPoints <= INCREASE_POINTS+1){return false}
             while(i<points.size){
-                temPoints[count++] = points[i]
+                temPoints.add(points[i])
                 i+=2
             }
             points = temPoints
         }
         else{
+            if(currentPoints > MAX_POINTS){return false}
             i = 1
             var newPoint:GeoPoint = GeoPoint(0.0,0.0)
             var lastPoint:GeoPoint = points[0]
@@ -137,8 +138,10 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
                 lastPoint = currentPoint
                 i++
             }
+            temPoints.add(points[points.size-1])
             points = temPoints
         }
+        currentPoints = points.size
         return true
     }
 
@@ -151,8 +154,11 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         }
     }
 
-    fun clearPoints(){
+    fun resetMapPath(){
+        removeOverlayFromMap()
         points.clear()
+        currentPoints = 0
+        invalidate()
     }
 
     private fun resetTrackLength(){

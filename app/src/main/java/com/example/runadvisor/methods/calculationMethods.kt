@@ -4,6 +4,14 @@ import java.lang.Math.pow
 import kotlin.math.*
 
 
+fun toRadians(degress:Double):Double{
+    return degress * (Math.PI / 180);
+}
+
+fun toDegrees(radians:Double):Double{
+    return radians * (180 / Math.PI)
+}
+
 fun calculateTrackLength(p:ArrayList<GeoPoint>):Double{
     var i = 1
     var l = 0.0
@@ -16,12 +24,12 @@ fun calculateTrackLength(p:ArrayList<GeoPoint>):Double{
 
 fun latLonToMeter(p1:GeoPoint,p2:GeoPoint):Double{
     val r = 6371e3
-    val d1 = p1.latitude * Math.PI/180
-    val d2 = p2.latitude * Math.PI/180
+    val d1 = toRadians(p1.latitude)
+    val d2 = toRadians(p2.latitude)
     val z1 = p1.altitude
     val z2 = p2.altitude
-    val dlat = (p2.latitude-p1.latitude) * Math.PI/180
-    val dlon = (p2.longitude-p1.longitude) * Math.PI/180
+    val dlat = toRadians(p2.latitude-p1.latitude)
+    val dlon = toRadians(p2.longitude-p1.longitude)
 
     val a = (sin(dlat/2) * sin(dlat/2) +
             cos(d1) * cos(d2) *
@@ -37,18 +45,18 @@ fun latLonToMeter(p1:GeoPoint,p2:GeoPoint):Double{
 
 
 fun getGeoMiddle(p1:GeoPoint,p2:GeoPoint):GeoPoint{
-    val dlon = Math.toRadians(p2.longitude-p1.longitude)
+    val dlon = toRadians(p2.longitude-p1.longitude)
 
-    val lat1 = Math.toRadians(p1.latitude)
-    val lat2 = Math.toRadians(p2.latitude)
-    val lon1 = Math.toRadians(p1.longitude)
+    val lat1 = toRadians(p1.latitude)
+    val lat2 = toRadians(p2.latitude)
+    val lon1 = toRadians(p1.longitude)
 
-    val bx = Math.cos(lat2) * Math.cos(dlon)
-    val by = Math.cos(lat2) * Math.sin(dlon)
-    val clat = Math.toDegrees(Math.atan2(
-        Math.sin(lat1) + Math.sin(lat2),
-        Math.sqrt((Math.cos(lat1) + bx) * (Math.cos(lat1) + bx) + by * by)
+    val bx = cos(lat2) * cos(dlon)
+    val by = cos(lat2) * sin(dlon)
+    val clat = Math.toDegrees(atan2(
+        sin(lat1) + sin(lat2),
+        sqrt((cos(lat1) + bx) * (cos(lat1) + bx) + by * by)
     ))
-    val clon = Math.toDegrees(lon1 + Math.atan2(by, Math.cos(lat1) + bx))
+    val clon = toDegrees(lon1 + atan2(by, cos(lat1) + bx))
     return GeoPoint(clat,clon)
 }

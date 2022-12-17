@@ -8,8 +8,8 @@ import com.example.runadvisor.fragment.UploadFragment
 
 fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment{
     when(fragmentInstance){
-        FragmentInstance.FRAGMENT_MAP->{return MapFragment(false,MenuType.MENU_ADD_PATH,FragmentInstance.FRAGMENT_MAP)}
-        FragmentInstance.FRAGMENT_MAP_CHILD->{return MapFragment(true,MenuType.MENU_ADD_PATH,FragmentInstance.FRAGMENT_MAP_CHILD)}
+        FragmentInstance.FRAGMENT_MAP->{return MapFragment(false,MenuType.MENU_PATH,FragmentInstance.FRAGMENT_MAP)}
+        FragmentInstance.FRAGMENT_MAP_CHILD->{return MapFragment(true,MenuType.MENU_PATH,FragmentInstance.FRAGMENT_MAP_CHILD)}
         FragmentInstance.FRAGMENT_UPLOAD->{return UploadFragment(false,FragmentInstance.FRAGMENT_UPLOAD)}
         FragmentInstance.FRAGMENT_DATA->{return DataFragment(false,FragmentInstance.FRAGMENT_DATA)}
     }

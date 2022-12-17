@@ -51,7 +51,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         setMapView()
         setLocation()
         getLocation()
-        setEventListener(view)
+        setMenuType()
         setUserAgent()
         return view
     }
@@ -71,23 +71,22 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         //addMarker(getLatLon(event.rawX,event.rawY-parentActivity.getTitleBarHeight()))
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setEventListener(view:View){
-        if(menuType == MenuType.MENU_ADD_PATH){setMenuAddPath()}
-        if(menuType == MenuType.MENU_BASE){setMenuBase()}
-    }
-
     private fun setUserAgent(){
         Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
     }
 
-    private fun setMenuAddPath(){
+    private fun setMenuType(){
+        if(menuType == MenuType.MENU_PATH){setMenuPath()}
+        if(menuType == MenuType.MENU_BASE){setMenuBase()}
+    }
+
+    private fun setMenuPath(){
         binding.popupBtn.setOnClickListener{
             val popUpMenu =  PopupMenu(parentActivity,binding.popupBtn)
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_add_path,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupAdd->addBottomTrackMenu()
+                    R.id.popupAdd->addBottomMenu()
                     R.id.popupSave->printToTerminal("popupSave")
                     R.id.popupExit->printToTerminal("popupExit")
                 }
@@ -155,15 +154,19 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         return this.singleTapConfirmedHelper(p)
     }
 
+    private fun addBottomMenu(){
+        if(binding.bottomMenuLayout.visibility == VISIBLE){return}
+        if(menuType== MenuType.MENU_PATH){
+            addBottomTrackMenu()
+        }
+    }
+
     private fun addBottomTrackMenu(){
         binding.bottomMenuLayout.clearChildren(0)
         binding.bottomMenuLayout.visibility = VISIBLE
-        val trackMenu = TrackMenuBar(
-            parentActivity,
-            null
-        )
-        binding.bottomMenuLayout.addView(TrackMenuBar(parentActivity,null))
-        trackMenu.setEventListener(::adjustPointLasso,::adjustPointLasso,::adjustPointLasso)
+        val trackMenu = TrackMenuBar(parentActivity,null)
+        binding.bottomMenuLayout.addView(trackMenu)
+        trackMenu.setEventListener(::adjustPointLasso,::adjustPointLasso,::clearMapPath)
     }
 
     private fun adjustPointLasso(parameter:Any?){
@@ -174,12 +177,18 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             mapPath!!.setLasso(numPoints)
         }
         else{
-            printToTerminal("$numPoints")
             if(!mapPath!!.adjustLasso(numPoints)){return}
             mapPath!!.removeOverlayFromMap()
             mapPath!!.buildPolyLine()
         }
         mapPath!!.addLassoOverlay()
+    }
+
+    private fun clearMapPath(parameter: Any?){
+        if(mapPath!=null){
+            mapPath!!.resetMapPath()
+            mapPath = null
+        }
     }
 
     private fun getLatLon(x:Float,y:Float): GeoPoint {
