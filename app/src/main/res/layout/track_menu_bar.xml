@@ -38,14 +38,14 @@
         android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:hint="(10000 km)"
+        android:hint="(.... km)"
         android:textSize="20sp" />
     <View
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_weight="1" />
     <com.example.runadvisor.widget.CustomImageButton
-        android:id="@+id/exitLassoPoints"
+        android:id="@+id/clearLassoPoints"
         android:layout_width="@dimen/bottomMapMenuIcon"
         android:layout_height="@dimen/bottomMapMenuIcon"
         android:layout_gravity="center"

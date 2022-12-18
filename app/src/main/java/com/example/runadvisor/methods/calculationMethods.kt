@@ -22,6 +22,27 @@ fun calculateTrackLength(p:ArrayList<GeoPoint>):Double{
     return l
 }
 
+fun getCenterOfPoints(p:ArrayList<GeoPoint>):GeoPoint?{
+    if(p.isEmpty()){return null}
+    var i = 1
+    var minLat = p[0].latitude
+    var maxLat = p[0].latitude
+    var minLon = p[0].longitude
+    var maxLon = p[0].longitude
+    while(i<p.size){
+        minLat = Math.min(minLat,p[i].latitude)
+        maxLat = Math.max(maxLat,p[i].latitude)
+        minLon = Math.min(minLon,p[i].longitude)
+        maxLon = Math.max(maxLon,p[i].longitude)
+        i++
+    }
+    return GeoPoint(getMiddlePoint(minLat,maxLat),getMiddlePoint(minLon,maxLon))
+}
+
+fun getMiddlePoint(minPoint: Double, maxPoint: Double):Double{
+    return minPoint + (maxPoint - minPoint) / 2
+}
+
 fun latLonToMeter(p1:GeoPoint,p2:GeoPoint):Double{
     val r = 6371e3
     val d1 = toRadians(p1.latitude)

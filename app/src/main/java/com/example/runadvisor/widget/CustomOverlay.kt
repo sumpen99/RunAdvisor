@@ -65,6 +65,7 @@ class CustomOverlay(private val activityContext:Context,
                         GeoPoint(mapView!!.projection.fromPixels(event.x.toInt(),event.y.toInt())))
                     mapPath.updateLinePoints(markerHasTouch!!.index,markerHasTouch!!.geoPoint)
                     mapPath.drawLasso()
+                    mapPath.getNewTrackLength()
                     return true
                 }
             }

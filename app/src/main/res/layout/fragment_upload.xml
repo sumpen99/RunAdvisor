@@ -91,7 +91,6 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight=".5"
-            android:src="@drawable/ic_image_placeholder_foreground"
             app:layout_constraintBottom_toTopOf="@+id/loadImageBtn"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.117"

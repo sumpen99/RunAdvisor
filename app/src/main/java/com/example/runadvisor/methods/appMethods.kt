@@ -5,6 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.Settings
@@ -61,6 +64,15 @@ fun View.hideKeyboard() {
     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.hideSoftInputFromWindow(windowToken, 0)
 }
+
+/*fun View.takeScreenshot():Bitmap{
+    val bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val bgDrawable = background
+    if(bgDrawable!=null){bgDrawable.draw(canvas)}
+    else{canvas.drawColor(Color.WHITE)}
+    return bitmap
+}*/
 
 @SuppressLint("IntentReset")
 //https://stackoverflow.com/questions/5309190/android-pick-images-from-gallery
@@ -126,6 +138,17 @@ fun Activity.downloadImage(item: PublicRunItem,imageView:ImageView){
     loadImageFromStorage(storageRef,imageView)
 }
 
+fun Activity.loadImageFromBitmap(bitmap:Bitmap,imageView:ImageView){
+    val factory = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build()
+    GlideApp.with(this)
+        .load(bitmap)
+        .error(R.drawable.ic_load_error_foreground)
+        .circleCrop()
+        .override(200, 200)
+        .transition(DrawableTransitionOptions.withCrossFade(factory))
+        .into(imageView)
+}
+
 fun Activity.loadImageFromStorage(storeRef: StorageReference,imageView:ImageView){
     val factory = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build()
     GlideApp.with(this)
@@ -182,3 +205,5 @@ fun Activity.getTitleBarHeight():Int{
     }
     return result
 }
+
+fun Double.format(digits: Int) = "%.${digits}f".format(this)

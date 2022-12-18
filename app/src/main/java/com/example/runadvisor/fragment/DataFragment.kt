@@ -56,7 +56,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance): Fragm
         return removable
     }
 
-    override fun processWork(parameter: Any?){}
+    override fun receivedData(parameter: Any?){}
 
     override fun callbackDispatchTouchEvent(event: MotionEvent){}
 

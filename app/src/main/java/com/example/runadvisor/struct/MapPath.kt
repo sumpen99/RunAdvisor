@@ -1,8 +1,10 @@
 package com.example.runadvisor.struct
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.calculateTrackLength
+import com.example.runadvisor.methods.getCenterOfPoints
 import com.example.runadvisor.methods.getGeoMiddle
 import com.example.runadvisor.methods.toRadians
 import com.example.runadvisor.widget.CustomMarker
@@ -14,9 +16,12 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class MapPath(val activityContext: Context,val mapView:MapView) {
+class MapPath(val activityContext: Context,
+              val mapView:MapView,
+                val callbackUpdateTrackLength:(args:Double)->Unit) {
     var currentOverlay:CustomOverlay? = null
     var points = ArrayList<GeoPoint>()
+    var savedTracks = ArrayList<SavedTrack>()
     var trackLength:Double = 0.0
     var rgb = Color.rgb(0,191,255)
     val INCREASE_POINTS = 10
@@ -87,15 +92,23 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         addLassoLines()
         addLassoPoints()
         drawLasso()
+        getNewTrackLength()
     }
 
     fun invalidate(){
         mapView.postInvalidate()
     }
 
-    fun drawLasso(){
+    fun getNewTrackLength(){
         trackLength = calculateTrackLength(points)
-        //printTrackLength()
+        callbackUpdateTrackLength(getTrackLengthInKm())
+    }
+
+    private fun getTrackLengthInKm():Double{
+        return trackLength/1000
+    }
+
+    fun drawLasso(){
         mapView.postInvalidate()
     }
 
@@ -125,7 +138,7 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
             points = temPoints
         }
         else{
-            if(currentPoints > MAX_POINTS){return false}
+            if(currentPoints > MAX_POINTS || currentPoints == 0){return false}
             i = 1
             var newPoint:GeoPoint = GeoPoint(0.0,0.0)
             var lastPoint:GeoPoint = points[0]
@@ -145,7 +158,13 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
         return true
     }
 
-    fun removeOverlayFromMap(){
+    fun removeOverlayMarkers(){
+        if(currentOverlay != null){
+            mapView.overlays.remove(currentOverlay)
+        }
+    }
+
+    fun removeOverlaysFromMap(){
         if(currentOverlay != null){
             mapView.overlays.remove(currentOverlay)
             mapView.overlays.remove(polyLine)
@@ -155,13 +174,31 @@ class MapPath(val activityContext: Context,val mapView:MapView) {
     }
 
     fun resetMapPath(){
-        removeOverlayFromMap()
+        removeOverlaysFromMap()
         points.clear()
         currentPoints = 0
+        getNewTrackLength()
         invalidate()
     }
 
     private fun resetTrackLength(){
         trackLength = 0.0
+    }
+
+    fun saveCurrentTrack(bitmap:Bitmap):Boolean{
+        val centerGeoPoint = getCenterOfPoints(points)
+        if(centerGeoPoint!=null){
+            savedTracks.add(SavedTrack(bitmap,points,centerGeoPoint))
+            currentPoints = 0
+            points.clear()
+            //removeOverlayMarkers()
+            invalidate()
+            return true
+        }
+        return false
+    }
+
+    fun trackIsOnMap():Boolean{
+        return (points.size > 0 && currentOverlay != null && polyLine != null)
     }
 }

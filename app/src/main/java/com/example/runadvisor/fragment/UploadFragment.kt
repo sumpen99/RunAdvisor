@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.TextUtils.replace
 import android.view.*
 import android.widget.CheckBox
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
@@ -25,11 +26,13 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
 import com.example.runadvisor.io.printToTerminal
+import com.example.runadvisor.struct.SavedTrack
 
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private var _binding: FragmentUploadBinding? = null
+    var savedTracks = ArrayList<SavedTrack>()
     private val binding get() = _binding!!
     private val GALLERY_REQUEST_CODE = 102
     private val PICK_IMAGE = 1
@@ -44,6 +47,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         setParentActivity()
         setActivityContext()
         setEventListener(view)
+        checkForSavedTracks()
         return view
     }
 
@@ -55,8 +59,8 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         return fragmentId
     }
 
-    override fun processWork(parameter: Any?){
-
+    override fun receivedData(parameter: Any?){
+        if(parameter!=null){savedTracks = parameter as ArrayList<SavedTrack>}
     }
 
     override fun callbackDispatchTouchEvent(event: MotionEvent){}
@@ -67,6 +71,12 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun setParentActivity() {
         parentActivity = requireActivity()
+    }
+
+    private fun checkForSavedTracks(){
+        if(savedTracks.isEmpty()){return}
+        val bitmap = savedTracks[0].bitmap
+        parentActivity.loadImageFromBitmap(bitmap,binding.imageMapView)
     }
 
     private fun clearLastUpload(){

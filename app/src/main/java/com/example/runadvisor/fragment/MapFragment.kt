@@ -1,6 +1,5 @@
 package com.example.runadvisor.fragment
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -9,18 +8,23 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.*
+import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.PopupMenu
+import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.view.drawToBitmap
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.R
+import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.MenuType
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.clearChildren
+import com.example.runadvisor.methods.showMessage
 import com.example.runadvisor.struct.MapData
 import com.example.runadvisor.struct.MapPath
 import com.example.runadvisor.widget.TrackMenuBar
@@ -35,6 +39,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private lateinit var mapView: MapView
     private lateinit var locationManager: LocationManager
     private var mapPath:MapPath? = null
+    private var trackMenu:TrackMenuBar?=null
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private  var mapData:MapData? = null
@@ -56,6 +61,14 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         return view
     }
 
+    override fun longPressHelper(p: GeoPoint?): Boolean {
+        return this.longPressHelper(p)
+    }
+
+    override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
+        return this.singleTapConfirmedHelper(p)
+    }
+
     override fun isRemovable():Boolean{
         return removable
     }
@@ -64,31 +77,51 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         return fragmentId
     }
 
-    override fun processWork(parameter: Any?){}
+    override fun receivedData(parameter: Any?){}
 
     override fun callbackDispatchTouchEvent(event: MotionEvent) {
         //printMotionEvent(event)
         //addMarker(getLatLon(event.rawX,event.rawY-parentActivity.getTitleBarHeight()))
     }
 
-    private fun setUserAgent(){
-        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
+    private fun setActivityContext(){activityContext = requireContext()}
+
+    private fun setParentActivity(){parentActivity = requireActivity()}
+
+    private fun setLocationManager(){locationManager = activityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager}
+
+    private fun setMapView(){
+        mapView = binding.map
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setMultiTouchControls(true)
+        mapView.setBuiltInZoomControls(false)
     }
 
+    private fun setUserAgent(){Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID}
+
+
+    /*
+    *   ##########################################################################
+    *               POPUP BOTTOM MENU FUNCTIONS
+    *   ##########################################################################
+    * */
+
     private fun setMenuType(){
-        if(menuType == MenuType.MENU_PATH){setMenuPath()}
+        if(menuType == MenuType.MENU_TRACK){
+            setTrackMenu()
+        }
         if(menuType == MenuType.MENU_BASE){setMenuBase()}
     }
 
-    private fun setMenuPath(){
+    private fun setTrackMenu(){
         binding.popupBtn.setOnClickListener{
             val popUpMenu =  PopupMenu(parentActivity,binding.popupBtn)
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_add_path,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
                     R.id.popupAdd->addBottomMenu()
-                    R.id.popupSave->printToTerminal("popupSave")
-                    R.id.popupExit->printToTerminal("popupExit")
+                    R.id.popupSave->saveTrack()
+                    R.id.popupExit->exitBackToUpload()
                 }
                 true
             }
@@ -111,17 +144,79 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         }
     }
 
-    private fun setActivityContext(){
-        activityContext = requireContext()
+    private fun saveTrack(){
+        var msg = ""
+        if(mapPath!=null && mapPath!!.trackIsOnMap()){
+            mapPath!!.removeOverlayMarkers()
+            if(mapPath!!.saveCurrentTrack(mapView.drawToBitmap())){msg = "Track Is Saved"}
+            else{msg = "Error Occurred"}
+            parentActivity.showMessage(msg,Toast.LENGTH_SHORT)
+        }
     }
 
-    private fun setParentActivity(){
-        parentActivity = requireActivity()
+    private fun addBottomMenu(){
+        if(binding.bottomMenuLayout.visibility == VISIBLE){return}
+        binding.bottomMenuLayout.visibility = VISIBLE
+        binding.bottomMenuLayout.clearChildren(0)
+
+        if(menuType== MenuType.MENU_TRACK){
+            trackMenu = TrackMenuBar(parentActivity,null)
+            binding.bottomMenuLayout.addView(trackMenu)
+            trackMenu!!.setEventListener(
+                ::adjustPointLasso,
+                ::adjustPointLasso,
+                ::clearMapPath)
+        }
     }
 
-    private fun setLocationManager(){
-        locationManager = activityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+    private fun adjustPointLasso(parameter:Any?){
+        val numPoints:Int = parameter as Int
+        if(mapPath == null){
+            if(numPoints <= 0){return}
+            mapPath = MapPath(activityContext,mapView,::updateTrackLength)
+            mapPath!!.setLasso(numPoints)
+        }
+        else{
+            if(!mapPath!!.adjustLasso(numPoints)){return}
+            mapPath!!.removeOverlaysFromMap()
+            mapPath!!.buildPolyLine()
+        }
+        mapPath!!.addLassoOverlay()
     }
+
+    private fun clearMapPath(parameter: Any?){
+        if(mapPath!=null){
+            mapPath!!.resetMapPath()
+            mapPath = null
+        }
+    }
+
+    private fun removeBottomMenu(){
+        binding.bottomMenuLayout.visibility = GONE
+        binding.bottomMenuLayout.clearChildren(0)
+    }
+
+    private fun exitBackToUpload(){
+        if(mapPath!=null && mapPath!!.savedTracks.isNotEmpty()){
+            (parentActivity as HomeActivity).pushDataToFragment(
+                FragmentInstance.FRAGMENT_UPLOAD,
+                mapPath!!.savedTracks)
+            mapPath!!.removeOverlaysFromMap()
+        }
+        removeBottomMenu()
+        (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
+    }
+
+    private fun updateTrackLength(trackLength:Double){
+        trackMenu!!.setTrackLength(trackLength)
+    }
+
+    /*
+    *   ##########################################################################
+    *               GPS SPECIFIC FUNCTIONS
+    *   ##########################################################################
+    * */
+
 
     private fun getLocation() {
         if(checkGpsProviderStatus()){
@@ -137,58 +232,6 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     private fun checkGpsProviderStatus():Boolean{
         return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
-    }
-
-    private fun setMapView(){
-        mapView = binding.map
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setMultiTouchControls(true)
-        mapView.setBuiltInZoomControls(false)
-    }
-
-    override fun longPressHelper(p: GeoPoint?): Boolean {
-        return this.longPressHelper(p)
-    }
-
-    override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
-        return this.singleTapConfirmedHelper(p)
-    }
-
-    private fun addBottomMenu(){
-        if(binding.bottomMenuLayout.visibility == VISIBLE){return}
-        if(menuType== MenuType.MENU_PATH){
-            addBottomTrackMenu()
-        }
-    }
-
-    private fun addBottomTrackMenu(){
-        binding.bottomMenuLayout.clearChildren(0)
-        binding.bottomMenuLayout.visibility = VISIBLE
-        val trackMenu = TrackMenuBar(parentActivity,null)
-        binding.bottomMenuLayout.addView(trackMenu)
-        trackMenu.setEventListener(::adjustPointLasso,::adjustPointLasso,::clearMapPath)
-    }
-
-    private fun adjustPointLasso(parameter:Any?){
-        val numPoints:Int = parameter as Int
-        if(mapPath == null){
-            if(numPoints <= 0){return}
-            mapPath = MapPath(activityContext,mapView)
-            mapPath!!.setLasso(numPoints)
-        }
-        else{
-            if(!mapPath!!.adjustLasso(numPoints)){return}
-            mapPath!!.removeOverlayFromMap()
-            mapPath!!.buildPolyLine()
-        }
-        mapPath!!.addLassoOverlay()
-    }
-
-    private fun clearMapPath(parameter: Any?){
-        if(mapPath!=null){
-            mapPath!!.resetMapPath()
-            mapPath = null
-        }
     }
 
     private fun getLatLon(x:Float,y:Float): GeoPoint {

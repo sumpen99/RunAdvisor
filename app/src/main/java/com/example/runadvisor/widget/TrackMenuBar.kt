@@ -1,8 +1,10 @@
 package com.example.runadvisor.widget
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.TextView
 import com.example.runadvisor.R
 import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.io.printToTerminal
@@ -11,6 +13,7 @@ import com.example.runadvisor.methods.*
 class TrackMenuBar(
     context: Context?,
     attrs: AttributeSet?):LinearLayout(context,attrs) {
+    private lateinit var trackLengthTextView:TextView
     init{
         inflate(context, R.layout.track_menu_bar,this)
         val height = convertDpToPixel((resources.getDimension(R.dimen.bottomMapMenu)).toInt())
@@ -19,13 +22,19 @@ class TrackMenuBar(
 
     fun setEventListener(callbackAdd:(args:Any?)->Unit,
                          callbackDecrease:(args:Any?)->Unit,
-                         callbackExit:(args:Any?)->Unit){
+                         callbackClear:(args:Any?)->Unit){
         val addPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.addLassoPoints)
         val decreasePointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.decreaseLassoPoints)
-        val exitLassoPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.exitLassoPoints)
+        val clearLassoPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.clearLassoPoints)
+        trackLengthTextView = (context as HomeActivity).findViewById<TextView>(R.id.lassoCurrentKM)
         addPointsBtn.setCallback(1,callbackAdd)
         decreasePointsBtn.setCallback(-1,callbackDecrease)
-        exitLassoPointsBtn.setCallback(0,callbackExit)
+        clearLassoPointsBtn.setCallback(0,callbackClear)
+    }
+
+    @SuppressLint("SetTextI18n")
+    fun setTrackLength(trackLength:Double){
+        trackLengthTextView.text = trackLength.format(4) + " km"
     }
 
 }

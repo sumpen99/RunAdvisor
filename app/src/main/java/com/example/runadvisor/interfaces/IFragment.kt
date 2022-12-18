@@ -5,7 +5,7 @@ import com.example.runadvisor.enums.FragmentInstance
 
 interface IFragment {
     fun callbackDispatchTouchEvent(event: MotionEvent)
-    fun processWork(parameter:Any?)
+    fun receivedData(parameter:Any?)
     fun getFragmentID(): FragmentInstance
     fun isRemovable():Boolean
 }

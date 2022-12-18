@@ -101,6 +101,11 @@ class HomeActivity:AppCompatActivity() {
         }
     }
 
+    fun pushDataToFragment(fragmentInstance: FragmentInstance,parameter:Any){
+        var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
+        if(frag!=null){(frag as IFragment).receivedData(parameter)}
+    }
+
     fun navigateFragment(fragmentInstance: FragmentInstance){
         if(fragmentTracker.currentFragmentIsInstanceOf(fragmentInstance))return
         var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
