@@ -1,14 +1,14 @@
 package com.example.runadvisor.fragment
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import android.widget.CheckBox
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
 import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentUploadBinding
@@ -23,10 +23,13 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.util.*
 import com.example.runadvisor.struct.SavedTrack
+import com.example.runadvisor.widget.CustomMapAdapter
 
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var customAdapter: CustomMapAdapter
     private var _binding: FragmentUploadBinding? = null
     var savedTracks = ArrayList<SavedTrack>()
     private val binding get() = _binding!!
@@ -42,8 +45,11 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         val view: View = binding.root
         setParentActivity()
         setActivityContext()
-        setEventListener(view)
-        checkForSavedTracks()
+        setEventListener()
+        if(checkForSavedTracks()){
+            setRecyclerView()
+            setAdapter()
+        }
         return view
     }
 
@@ -69,36 +75,23 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         parentActivity = requireActivity()
     }
 
-    private fun checkForSavedTracks(){
-        if(savedTracks.isEmpty()){return}
-        val bitmap = savedTracks[0].bitmap
-        //parentActivity.loadImageFromBitmap(bitmap,binding.imageMapView)
+    private fun setRecyclerView(){
+        recyclerView = binding.trackRecyclerview
+        recyclerView.layoutManager = LinearLayoutManager(activityContext)
     }
 
-    private fun clearLastUpload(){
-        filePath = null
-        fileUri = null
+    private fun setAdapter(){
+        customAdapter = CustomMapAdapter(parentActivity,savedTracks)
+        recyclerView.adapter = customAdapter
     }
 
-    @SuppressLint("ClickableViewAccessibility")
-    private fun setEventListener(view: View){
-        binding.uploadItemBtn.setOnClickListener{ uploadUserRunItem()}
-        //binding.loadImageBtn.setOnClickListener{selectImageFromGallery(PICK_IMAGE)}
-        binding.drawPathBtn.setOnClickListener{drawPathOnMap()}
-        /*view.setOnTouchListener { v, event ->
-            when(event.actionMasked){
-                MotionEvent.ACTION_DOWN -> {
-                    binding.cityText.hideKeyboard()
-                    binding.streetText.hideKeyboard()
-                    binding.runKmText.hideKeyboard()}
-                //MotionEvent.ACTION_POINTER_DOWN -> {}
-                //MotionEvent.ACTION_MOVE -> {}
-                //MotionEvent.ACTION_UP -> {}
-                //MotionEvent.ACTION_POINTER_UP -> {}
-                //MotionEvent.ACTION_CANCEL -> {}
-            }
-            true
-        }*/
+    private fun checkForSavedTracks():Boolean{
+        return savedTracks.isNotEmpty()
+    }
+
+    private fun setEventListener(){
+        binding.uploadItemBtn.setCallback(null,::uploadUserRunItem)
+        binding.drawPathBtn.setCallback(null,::drawPathOnMap)
     }
 
     @Deprecated("Deprecated in Java")
@@ -115,11 +108,11 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         }
     }
 
-    private fun drawPathOnMap(){
+    private fun drawPathOnMap(parameters:Any?){
         (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_MAP_CHILD)
     }
 
-    private fun uploadUserRunItem(){
+    private fun uploadUserRunItem(parameters:Any?){
         parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)
         /*if(validUploadData()){
             val user = Firebase.auth.currentUser

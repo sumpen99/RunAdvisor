@@ -33,8 +33,8 @@ class TrackMenuBar(
     }
 
     @SuppressLint("SetTextI18n")
-    fun setTrackLength(trackLength:Double){
-        trackLengthTextView.text = trackLength.format(4) + " km"
+    fun setTrackLength(trackLength:String){
+        trackLengthTextView.text = "$trackLength km"
     }
 
 }

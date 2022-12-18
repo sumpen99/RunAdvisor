@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="300dp"
     android:layout_margin="10dp"
     app:cardElevation="6dp">
 
@@ -25,6 +25,10 @@
             android:layout_height="match_parent"
             android:layout_weight=".5"
             android:orientation="vertical">
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
             <TextView
                 android:id="@+id/trackCityText"
                 android:layout_width="wrap_content"
@@ -52,12 +56,18 @@
                 android:text="Kilometers"
                 android:textSize="20sp"
                 android:textStyle="bold" />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
             <CheckBox
                 android:id="@+id/trackShare"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Share With Public"/>
+                android:scaleX="2.0"
+                android:scaleY="2.0"
+                android:text="Share"/>
 
         </LinearLayout>
     </LinearLayout>

@@ -3,10 +3,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
 import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.methods.calculateTrackLength
-import com.example.runadvisor.methods.getCenterOfPoints
-import com.example.runadvisor.methods.getGeoMiddle
-import com.example.runadvisor.methods.toRadians
+import com.example.runadvisor.methods.*
 import com.example.runadvisor.widget.CustomMarker
 import com.example.runadvisor.widget.CustomOverlay
 import org.osmdroid.util.GeoPoint
@@ -18,7 +15,7 @@ import kotlin.math.sin
 
 class MapPath(val activityContext: Context,
               val mapView:MapView,
-                val callbackUpdateTrackLength:(args:Double)->Unit) {
+                val callbackUpdateTrackLength:(args:String)->Unit) {
     var currentOverlay:CustomOverlay? = null
     var points = ArrayList<GeoPoint>()
     var savedTracks = ArrayList<SavedTrack>()
@@ -101,7 +98,7 @@ class MapPath(val activityContext: Context,
 
     fun getNewTrackLength(){
         trackLength = calculateTrackLength(points)
-        callbackUpdateTrackLength(getTrackLengthInKm())
+        callbackUpdateTrackLength(getStringTrackLength())
     }
 
     private fun getTrackLengthInKm():Double{
@@ -109,7 +106,7 @@ class MapPath(val activityContext: Context,
     }
 
     private fun getStringTrackLength():String{
-        return "${getTrackLengthInKm()}"
+        return getTrackLengthInKm().format(4)
     }
 
     fun drawLasso(){
@@ -195,7 +192,6 @@ class MapPath(val activityContext: Context,
             savedTracks.add(SavedTrack(bitmap,points,centerGeoPoint,zoom,city,street,getStringTrackLength()))
             currentPoints = 0
             points.clear()
-            //removeOverlayMarkers()
             invalidate()
             return true
         }

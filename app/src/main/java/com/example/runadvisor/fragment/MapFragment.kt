@@ -78,26 +78,23 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         return this.singleTapConfirmedHelper(p)
     }
 
-    override fun isRemovable():Boolean{
-        return removable
-    }
+    override fun isRemovable():Boolean{return removable}
 
-    override fun getFragmentID(): FragmentInstance {
-        return fragmentId
-    }
+    override fun getFragmentID(): FragmentInstance {return fragmentId}
 
     override fun receivedData(parameter: Any?){}
 
-    override fun callbackDispatchTouchEvent(event: MotionEvent) {
-        //printMotionEvent(event)
-        //addMarker(getLatLon(event.rawX,event.rawY-parentActivity.getTitleBarHeight()))
-    }
+    override fun callbackDispatchTouchEvent(event: MotionEvent) {}
 
     private fun setActivityContext(){activityContext = requireContext()}
 
     private fun setParentActivity(){parentActivity = requireActivity()}
 
     private fun setLocationManager(){locationManager = activityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager}
+
+    private fun setUserAgent(){Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID}
+
+    private fun setUrlCallInProgress(value:Boolean){urlCallInProgress = value}
 
     private fun setMapView(){
         mapView = binding.map
@@ -111,13 +108,6 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         mapData!!.geoPoint = mapView.mapCenter as GeoPoint
         mapData!!.zoom = mapView.zoomLevel
     }
-
-    private fun setUserAgent(){Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID}
-
-    private fun setUrlCallInProgress(value:Boolean){
-        urlCallInProgress = value
-    }
-
 
     /*
     *   ##########################################################################
@@ -224,7 +214,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
     }
 
-    private fun updateTrackLength(trackLength:Double){
+    private fun updateTrackLength(trackLength:String){
         trackMenu!!.setTrackLength(trackLength)
     }
 
