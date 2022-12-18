@@ -9,156 +9,78 @@
     tools:context=".MainActivity">
 
     <LinearLayout
-        android:id="@+id/cityLayout"
+        android:id="@+id/trackListLayout"
         android:layout_width="match_parent"
-        android:layout_height="75dp"
+        android:layout_height="0dp"
         android:orientation="horizontal"
         android:padding="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.024">
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/cityText"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:hint="City"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/streetText"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:hint="Street"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/milageLayout"
-        android:layout_width="match_parent"
-        android:layout_height="75dp"
-        android:orientation="horizontal"
-        android:padding="10dp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonsLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cityLayout"
-        app:layout_constraintVertical_bias="0.067">
-
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/runKmText"
-            android:layout_width="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/trackRecyclerview"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:hint="(km)"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:paddingTop="10dp"
+            android:paddingStart="10dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="5dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <CheckBox android:id="@+id/checkboxShare"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:text="Share With Public"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:itemCount="15"
+            tools:listitem="@layout/upload_track_card" />
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/drawMapLayout"
+        android:id="@+id/buttonsLayout"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="75dp"
         android:orientation="horizontal"
         android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/milageLayout"
-        app:layout_constraintVertical_bias="0.148">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.975">
 
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imageMapView"
+        <View
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            app:layout_constraintBottom_toTopOf="@+id/loadImageBtn"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.117"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/drawPathBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight=".2"
-            android:layout_gravity="center"
             android:background="@drawable/button"
-            android:text="Draw Path"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.433"/>
-    </LinearLayout>
+            android:layout_gravity="center"
+            android:text="Draw Tracks"
+            android:textColor="@color/white" />
 
-    <LinearLayout
-        android:id="@+id/chooseImageLayout"
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
-        android:orientation="horizontal"
-        android:padding="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/drawMapLayout"
-        app:layout_constraintVertical_bias="0.148">
-        <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/imageView"
+        <View
             android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:src="@drawable/ic_image_placeholder_foreground"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.117"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cityLayout"
-            app:layout_constraintVertical_bias="1.0" />
+            android:layout_height="0dp"
+            android:layout_weight="1" />
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/loadImageBtn"
+            android:id="@+id/uploadItemBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight=".2"
-            android:layout_gravity="center"
             android:background="@drawable/button"
-            android:text="Load Image"
-            android:textColor="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.433"/>
+            android:layout_gravity="center"
+            android:text="Upload"
+            android:textColor="@color/white" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
     </LinearLayout>
-
-    <androidx.appcompat.widget.AppCompatButton
-        android:id="@+id/uploadItemBtn"
-        android:layout_width="171dp"
-        android:layout_height="72dp"
-        android:layout_marginBottom="36dp"
-        android:background="@drawable/button"
-        android:text="Upload Item"
-        android:textColor="@color/white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

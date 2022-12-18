@@ -14,11 +14,9 @@ import com.example.runadvisor.R
 import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printPublicRunItem
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.PublicRunItem
-import com.example.runadvisor.widget.CustomAdapter
+import com.example.runadvisor.widget.CustomDataAdapter
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
@@ -30,7 +28,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance): Fragm
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private lateinit var recyclerView:RecyclerView
-    private lateinit var customAdapter:CustomAdapter
+    private lateinit var customAdapter:CustomDataAdapter
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
 
@@ -74,7 +72,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance): Fragm
     }
 
     private fun setAdapter(){
-        customAdapter = CustomAdapter(parentActivity)
+        customAdapter = CustomDataAdapter(parentActivity)
         recyclerView.adapter = customAdapter
     }
 

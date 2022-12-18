@@ -29,6 +29,8 @@ import com.firebase.ui.storage.images.FirebaseImageLoader
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.InputStream
 
 fun getScreenWidth() : Int{
@@ -207,3 +209,17 @@ fun Activity.getTitleBarHeight():Int{
 }
 
 fun Double.format(digits: Int) = "%.${digits}f".format(this)
+
+fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith {
+    when (val value = this[it])
+    {
+        is JSONArray ->
+        {
+            val map = (0 until value.length()).associate { Pair(it.toString(), value[it]) }
+            JSONObject(map).toMap().values.toList()
+        }
+        is JSONObject -> value.toMap()
+        JSONObject.NULL -> null
+        else            -> value
+    }
+}

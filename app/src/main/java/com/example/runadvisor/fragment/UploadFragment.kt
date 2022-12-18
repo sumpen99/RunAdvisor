@@ -5,10 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.TextUtils.replace
 import android.view.*
 import android.widget.CheckBox
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
@@ -22,10 +20,8 @@ import com.example.runadvisor.struct.UserRunItem
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import java.util.*
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.struct.SavedTrack
 
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
@@ -76,7 +72,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     private fun checkForSavedTracks(){
         if(savedTracks.isEmpty()){return}
         val bitmap = savedTracks[0].bitmap
-        parentActivity.loadImageFromBitmap(bitmap,binding.imageMapView)
+        //parentActivity.loadImageFromBitmap(bitmap,binding.imageMapView)
     }
 
     private fun clearLastUpload(){
@@ -87,9 +83,9 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     @SuppressLint("ClickableViewAccessibility")
     private fun setEventListener(view: View){
         binding.uploadItemBtn.setOnClickListener{ uploadUserRunItem()}
-        binding.loadImageBtn.setOnClickListener{selectImageFromGallery(PICK_IMAGE)}
+        //binding.loadImageBtn.setOnClickListener{selectImageFromGallery(PICK_IMAGE)}
         binding.drawPathBtn.setOnClickListener{drawPathOnMap()}
-        view.setOnTouchListener { v, event ->
+        /*view.setOnTouchListener { v, event ->
             when(event.actionMasked){
                 MotionEvent.ACTION_DOWN -> {
                     binding.cityText.hideKeyboard()
@@ -102,7 +98,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
                 //MotionEvent.ACTION_CANCEL -> {}
             }
             true
-        }
+        }*/
     }
 
     @Deprecated("Deprecated in Java")
@@ -115,7 +111,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         ) {
             filePath = parentActivity.getFilePathFromIntent(data)
             fileUri = data.data!!
-            parentActivity.loadImageFromPhone(fileUri.toString(),binding.imageView)
+            //parentActivity.loadImageFromPhone(fileUri.toString(),binding.imageView)
         }
     }
 
@@ -124,7 +120,8 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     private fun uploadUserRunItem(){
-        if(validUploadData()){
+        parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)
+        /*if(validUploadData()){
             val user = Firebase.auth.currentUser
             val city = binding.cityText.text.toString()
             val street = binding.streetText.text.toString()
@@ -141,7 +138,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
                     if(task.isSuccessful && item.shareWithPublic){uploadPublicRunItem(item)}
                     else{parentActivity.showMessage("Upload Failed ${task.exception}", Toast.LENGTH_SHORT)}}
         }
-        else{parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)}
+        else{parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)}*/
     }
 
 
@@ -170,9 +167,9 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun validUploadData():Boolean{
         return (Firebase.auth.currentUser!=null &&
-                binding.cityText.text.toString().isNotEmpty() &&
-                binding.streetText.text.toString().isNotEmpty() &&
-                binding.runKmText.text.toString().isNotEmpty() &&
+                //binding.cityText.text.toString().isNotEmpty() &&
+                //binding.streetText.text.toString().isNotEmpty() &&
+                //binding.runKmText.text.toString().isNotEmpty() &&
                 filePath != null &&
                 fileUri != null)
     }

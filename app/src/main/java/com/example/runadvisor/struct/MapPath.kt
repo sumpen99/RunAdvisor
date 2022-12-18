@@ -108,6 +108,10 @@ class MapPath(val activityContext: Context,
         return trackLength/1000
     }
 
+    private fun getStringTrackLength():String{
+        return "${getTrackLengthInKm()}"
+    }
+
     fun drawLasso(){
         mapView.postInvalidate()
     }
@@ -185,10 +189,10 @@ class MapPath(val activityContext: Context,
         trackLength = 0.0
     }
 
-    fun saveCurrentTrack(bitmap:Bitmap):Boolean{
+    fun saveCurrentTrack(bitmap:Bitmap,zoom:Int,city:String,street:String,):Boolean{
         val centerGeoPoint = getCenterOfPoints(points)
         if(centerGeoPoint!=null){
-            savedTracks.add(SavedTrack(bitmap,points,centerGeoPoint))
+            savedTracks.add(SavedTrack(bitmap,points,centerGeoPoint,zoom,city,street,getStringTrackLength()))
             currentPoints = 0
             points.clear()
             //removeOverlayMarkers()

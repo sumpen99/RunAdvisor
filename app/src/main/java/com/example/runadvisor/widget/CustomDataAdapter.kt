@@ -10,7 +10,7 @@ import com.example.runadvisor.R
 import com.example.runadvisor.methods.downloadImage
 import com.example.runadvisor.struct.PublicRunItem
 
-class CustomAdapter(private val activity: Activity):RecyclerView.Adapter<CustomAdapter.ViewHolder>() {
+class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<CustomDataAdapter.ViewHolder>() {
     val serverData = ArrayList<PublicRunItem>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)

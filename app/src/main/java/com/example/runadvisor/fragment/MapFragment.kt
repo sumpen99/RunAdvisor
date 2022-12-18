@@ -25,14 +25,20 @@ import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.clearChildren
 import com.example.runadvisor.methods.showMessage
+import com.example.runadvisor.methods.toMap
 import com.example.runadvisor.struct.MapData
 import com.example.runadvisor.struct.MapPath
 import com.example.runadvisor.widget.TrackMenuBar
+import com.squareup.okhttp.OkHttpClient
+import io.grpc.internal.JsonParser
+import org.json.JSONObject
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
+import java.net.URL
+import kotlin.concurrent.thread
 
 
 class MapFragment(private val removable:Boolean,private var menuType:MenuType,private val fragmentId:FragmentInstance) : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
@@ -42,9 +48,12 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private var trackMenu:TrackMenuBar?=null
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
-    private  var mapData:MapData? = null
+    private var urlCallInProgress:Boolean = false
+    private var mapData:MapData? = null
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
+    private val URL_TIMER:Long = 1000
+    private var lastUrlCall:Long = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -97,7 +106,17 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         mapView.setBuiltInZoomControls(false)
     }
 
+    private fun setMapData(){
+        mapData = MapData()
+        mapData!!.geoPoint = mapView.mapCenter as GeoPoint
+        mapData!!.zoom = mapView.zoomLevel
+    }
+
     private fun setUserAgent(){Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID}
+
+    private fun setUrlCallInProgress(value:Boolean){
+        urlCallInProgress = value
+    }
 
 
     /*
@@ -145,12 +164,10 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private fun saveTrack(){
-        var msg = ""
-        if(mapPath!=null && mapPath!!.trackIsOnMap()){
-            mapPath!!.removeOverlayMarkers()
-            if(mapPath!!.saveCurrentTrack(mapView.drawToBitmap())){msg = "Track Is Saved"}
-            else{msg = "Error Occurred"}
-            parentActivity.showMessage(msg,Toast.LENGTH_SHORT)
+        if(mapPath!=null && mapPath!!.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress){
+            setUrlCallInProgress(true)
+            setSearchTimer()
+            getCurrentAddressInfo(mapPath!!.points[0])
         }
     }
 
@@ -256,11 +273,73 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     }
 
-    private fun setMapData(){
-        mapData = MapData()
-        mapData!!.geoPoint = mapView.mapCenter as GeoPoint
-        mapData!!.zoom = mapView.zoomLevel
+    /*
+    *   ##########################################################################
+    *               GET ADDRESS FROM OSM SERVER
+    *   ##########################################################################
+    * */
+
+    private fun getCurrentAddressInfo(geoPoint:GeoPoint){
+        val requestString = "https://nominatim.openstreetmap.org/reverse?lat=" +
+                geoPoint.latitude.toString() + "&lon=" + geoPoint.longitude.toString() + "&zoom=18&format=jsonv2"
+        var city:Any? = null
+        var street:Any? = null
+        thread {
+            val json =  try {URL(requestString).readText()}
+                        catch (err: Exception){return@thread}
+            try{
+                val jsonObj = JSONObject(json)
+                val parser = jsonObj.toMap()
+                val address = parser.get("address") as Map<String,*>
+                city = address.get("city")
+                street = address.get("road")
+            }
+            catch(err:Exception){
+                //this.parentActivity.runOnUiThread{parentActivity.showMessage(err.message.toString(),Toast.LENGTH_LONG)}
+            }
+            this.parentActivity.runOnUiThread{
+                onReceivedAddressInfo(city,street)
+                setUrlCallInProgress(false)
+            }
+        }
     }
+
+    private fun onReceivedAddressInfo(city:Any?,street:Any?){
+        var msg = ""
+        if(city == null || street == null){msg = "No Address Info..."}
+        else{
+            mapPath!!.removeOverlayMarkers()
+            val bmp = mapView.drawToBitmap()
+            val zoom = mapView.zoomLevel
+            if(mapPath!!.saveCurrentTrack(bmp,zoom,city as String,street as String)){msg = "Track Saved!"}
+            else{msg = "Error Occurred..."}
+        }
+        parentActivity.showMessage(msg,Toast.LENGTH_LONG)
+    }
+
+    /*
+    *   ##########################################################################
+    *               RESPECT NOMINATIM 1/SEC POLICY
+    *   ##########################################################################
+    * */
+
+    private fun checkSearchTimer():Boolean{
+        if(System.currentTimeMillis()-lastUrlCall < URL_TIMER){
+            parentActivity.showMessage("Please wait and try again...",Toast.LENGTH_SHORT)
+            return false
+        }
+        return true
+    }
+
+    private fun setSearchTimer(){
+        lastUrlCall = System.currentTimeMillis()
+    }
+
+    /*
+    *   ##########################################################################
+    *               ON START STOP RESUME
+    *   ##########################################################################
+    * */
 
     override fun onResume() {
         super.onResume()
