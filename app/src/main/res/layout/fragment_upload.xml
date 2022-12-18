@@ -67,6 +67,19 @@
             android:layout_weight="1" />
 
         <com.example.runadvisor.widget.CustomImageButton
+            android:id="@+id/clearItemBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@color/backgrounddark"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_clear_track_items_foreground" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <com.example.runadvisor.widget.CustomImageButton
             android:id="@+id/uploadItemBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

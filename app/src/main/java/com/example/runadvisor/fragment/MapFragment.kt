@@ -194,7 +194,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private fun clearMapPath(parameter: Any?){
         if(mapPath!=null){
             mapPath!!.resetMapPath()
-            mapPath = null
+            //mapPath = null
         }
     }
 
@@ -275,7 +275,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         var city:Any? = null
         var street:Any? = null
         thread {
-            val json =  try {URL(requestString).readText()}
+            /*val json =  try {URL(requestString).readText()}
                         catch (err: Exception){return@thread}
             try{
                 val jsonObj = JSONObject(json)
@@ -286,7 +286,9 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             }
             catch(err:Exception){
                 //this.parentActivity.runOnUiThread{parentActivity.showMessage(err.message.toString(),Toast.LENGTH_LONG)}
-            }
+            }*/
+            city = "karlstad"
+            street = "muraregatan"
             this.parentActivity.runOnUiThread{
                 onReceivedAddressInfo(city,street)
                 setUrlCallInProgress(false)
@@ -304,7 +306,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             if(mapPath!!.saveCurrentTrack(bmp,zoom,city as String,street as String)){msg = "Track Saved!"}
             else{msg = "Error Occurred..."}
         }
-        parentActivity.showMessage(msg,Toast.LENGTH_LONG)
+        parentActivity.showMessage(msg,Toast.LENGTH_SHORT)
     }
 
     /*

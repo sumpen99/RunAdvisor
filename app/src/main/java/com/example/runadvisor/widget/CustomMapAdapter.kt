@@ -9,19 +9,36 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.loadImageFromBitmap
 import com.example.runadvisor.struct.SavedTrack
 
-class CustomMapAdapter(private val activity: Activity,private val userData:ArrayList<SavedTrack>): RecyclerView.Adapter<CustomMapAdapter.ViewHolder>() {
+class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<CustomMapAdapter.ViewHolder>() {
+    private val userData = ArrayList<SavedTrack>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.upload_track_card, parent, false)
         return ViewHolder(view)
     }
 
+    fun clearView(){
+        if(userData.isNotEmpty()){
+            val lastIndex = itemCount
+            userData.clear()
+            notifyItemRangeRemoved(1,lastIndex)
+        }
+    }
+
     fun addItem(item:SavedTrack){
         userData.add(item)
-        notifyItemInserted(itemCount-1)
+        notifyItemInserted(itemCount)
+    }
+
+    fun addItems(items:ArrayList<SavedTrack>){
+        printToTerminal("${items.size}")
+        val start = itemCount
+        userData.addAll(items)
+        notifyItemRangeInserted(start,items.size)
     }
 
     @SuppressLint("SetTextI18n")

@@ -139,7 +139,8 @@ class MapPath(val activityContext: Context,
             points = temPoints
         }
         else{
-            if(currentPoints > MAX_POINTS || currentPoints == 0){return false}
+            if(currentPoints > MAX_POINTS){return false}
+            if(currentPoints == 0){buildLasso(1);return true}
             i = 1
             var newPoint:GeoPoint = GeoPoint(0.0,0.0)
             var lastPoint:GeoPoint = points[0]

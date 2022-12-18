@@ -14,6 +14,7 @@ import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.PublicRunItem
 import com.example.runadvisor.struct.UserRunItem
@@ -28,10 +29,10 @@ import com.example.runadvisor.widget.CustomMapAdapter
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var customAdapter: CustomMapAdapter
+    private var uploadView:View? = null
+    private var recyclerView: RecyclerView? = null
+    private var customAdapter: CustomMapAdapter? = null
     private var _binding: FragmentUploadBinding? = null
-    var savedTracks = ArrayList<SavedTrack>()
     private val binding get() = _binding!!
     private val GALLERY_REQUEST_CODE = 102
     private val PICK_IMAGE = 1
@@ -39,18 +40,18 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     private var filePath:String? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?): View {
+        if(uploadView!=null){return uploadView!!}
         _binding = FragmentUploadBinding.inflate(inflater, container, false)
-        val view: View = binding.root
+        uploadView = binding.root
         setParentActivity()
         setActivityContext()
         setEventListener()
-        if(checkForSavedTracks()){
-            setRecyclerView()
-            setAdapter()
-        }
-        return view
+        setRecyclerView()
+        setAdapter()
+        return uploadView!!
     }
 
     override fun isRemovable():Boolean{
@@ -62,7 +63,9 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     override fun receivedData(parameter: Any?){
-        if(parameter!=null){savedTracks = parameter as ArrayList<SavedTrack>}
+        if(parameter!=null && customAdapter!=null){
+            customAdapter!!.addItems(parameter as ArrayList<SavedTrack>)
+        }
     }
 
     override fun callbackDispatchTouchEvent(event: MotionEvent){}
@@ -77,20 +80,17 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun setRecyclerView(){
         recyclerView = binding.trackRecyclerview
-        recyclerView.layoutManager = LinearLayoutManager(activityContext)
+        recyclerView!!.layoutManager = LinearLayoutManager(activityContext)
     }
 
     private fun setAdapter(){
-        customAdapter = CustomMapAdapter(parentActivity,savedTracks)
-        recyclerView.adapter = customAdapter
-    }
-
-    private fun checkForSavedTracks():Boolean{
-        return savedTracks.isNotEmpty()
+        customAdapter = CustomMapAdapter(parentActivity)
+        recyclerView!!.adapter = customAdapter
     }
 
     private fun setEventListener(){
         binding.uploadItemBtn.setCallback(null,::uploadUserRunItem)
+        binding.clearItemBtn.setCallback(null,::clearItemsFromRecycleView)
         binding.drawPathBtn.setCallback(null,::drawPathOnMap)
     }
 
@@ -105,6 +105,12 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
             filePath = parentActivity.getFilePathFromIntent(data)
             fileUri = data.data!!
             //parentActivity.loadImageFromPhone(fileUri.toString(),binding.imageView)
+        }
+    }
+
+    private fun clearItemsFromRecycleView(parameter:Any?){
+        if(customAdapter!=null){
+            customAdapter!!.clearView()
         }
     }
 
