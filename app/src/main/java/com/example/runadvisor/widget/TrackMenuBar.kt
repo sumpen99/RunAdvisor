@@ -22,13 +22,16 @@ class TrackMenuBar(
 
     fun setEventListener(callbackAdd:(args:Any?)->Unit,
                          callbackDecrease:(args:Any?)->Unit,
+                         callbackSave:(args:Any?)->Unit,
                          callbackClear:(args:Any?)->Unit){
         val addPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.addLassoPoints)
         val decreasePointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.decreaseLassoPoints)
+        val saveLassoPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.saveLassoPoints)
         val clearLassoPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.clearLassoPoints)
         trackLengthTextView = (context as HomeActivity).findViewById<TextView>(R.id.lassoCurrentKM)
         addPointsBtn.setCallback(1,callbackAdd)
         decreasePointsBtn.setCallback(-1,callbackDecrease)
+        saveLassoPointsBtn.setCallback(0,callbackSave)
         clearLassoPointsBtn.setCallback(0,callbackClear)
     }
 

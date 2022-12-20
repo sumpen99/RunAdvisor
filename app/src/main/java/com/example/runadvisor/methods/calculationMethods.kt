@@ -22,6 +22,24 @@ fun calculateTrackLength(p:ArrayList<GeoPoint>):Double{
     return l
 }
 
+fun getGeoPointToDouble(p:GeoPoint):ArrayList<Double>{
+    val newList = ArrayList<Double>()
+    newList.add(p.latitude)
+    newList.add(p.longitude)
+    return newList
+}
+
+fun getGeoPointsToDouble(p:ArrayList<GeoPoint>):ArrayList<Double>{
+    val newList = ArrayList<Double>()
+    var i = 0
+    while(i<p.size){
+        newList.add(p[i].latitude)
+        newList.add(p[i].longitude)
+        i++
+    }
+    return newList
+}
+
 fun getCenterOfPoints(p:ArrayList<GeoPoint>):GeoPoint?{
     if(p.isEmpty()){return null}
     var i = 1

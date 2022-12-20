@@ -60,15 +60,13 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="1" />
-            <CheckBox
-                android:id="@+id/trackShare"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:scaleX="2.0"
-                android:scaleY="2.0"
-                android:text="Share"/>
-
+            <com.example.runadvisor.widget.CustomImageButton
+                android:id="@+id/trackRemove"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:background="@color/backgroundmediumdark"
+                android:layout_gravity="right"
+                android:src="@drawable/ic_clear_track_items_foreground" />
         </LinearLayout>
     </LinearLayout>
 

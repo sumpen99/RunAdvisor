@@ -9,6 +9,8 @@ import com.example.runadvisor.widget.CustomOverlay
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.*
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -190,7 +192,15 @@ class MapPath(val activityContext: Context,
     fun saveCurrentTrack(bitmap:Bitmap,zoom:Int,city:String,street:String,):Boolean{
         val centerGeoPoint = getCenterOfPoints(points)
         if(centerGeoPoint!=null){
-            savedTracks.add(SavedTrack(bitmap,points,centerGeoPoint,zoom,city,street,getStringTrackLength()))
+            savedTracks.add(
+                SavedTrack(
+                    bitmap,
+                    ArrayList(points),
+                    centerGeoPoint,
+                    zoom,
+                    city,
+                    street,
+                    getStringTrackLength()))
             currentPoints = 0
             points.clear()
             invalidate()

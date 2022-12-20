@@ -27,6 +27,6 @@ fun getUserItemCollection():String{
     return "RunItems"
 }
 
-fun getPublicCollection():String{
-    return "PublicData"
+fun getRunItemsCollection():String{
+    return "UserRunItems"
 }

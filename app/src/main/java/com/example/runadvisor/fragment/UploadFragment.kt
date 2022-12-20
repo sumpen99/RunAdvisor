@@ -2,11 +2,15 @@ package com.example.runadvisor.fragment
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
-import android.widget.Toast
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
@@ -14,30 +18,34 @@ import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.struct.PublicRunItem
-import com.example.runadvisor.struct.UserRunItem
+import com.example.runadvisor.struct.RunItem
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.util.*
 import com.example.runadvisor.struct.SavedTrack
+import com.example.runadvisor.struct.ServerDetails
 import com.example.runadvisor.widget.CustomMapAdapter
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import kotlin.collections.ArrayList
 
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private var uploadView:View? = null
-    private var recyclerView: RecyclerView? = null
-    private var customAdapter: CustomMapAdapter? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var progressBar:ProgressBar
+    private lateinit var customAdapter: CustomMapAdapter
     private var _binding: FragmentUploadBinding? = null
     private val binding get() = _binding!!
     private val GALLERY_REQUEST_CODE = 102
     private val PICK_IMAGE = 1
     private var fileUri: Uri? = null
     private var filePath:String? = null
+    private val errorMessages = ArrayList<ServerDetails>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,7 +59,13 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         setEventListener()
         setRecyclerView()
         setAdapter()
+
         return uploadView!!
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        if(progressBar == null){addProgressBar()}
     }
 
     override fun isRemovable():Boolean{
@@ -63,8 +77,8 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     override fun receivedData(parameter: Any?){
-        if(parameter!=null && customAdapter!=null){
-            customAdapter!!.addItems(parameter as ArrayList<SavedTrack>)
+        if(parameter!=null){
+            customAdapter.addItems(parameter as ArrayList<SavedTrack>)
         }
     }
 
@@ -80,18 +94,34 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun setRecyclerView(){
         recyclerView = binding.trackRecyclerview
-        recyclerView!!.layoutManager = LinearLayoutManager(activityContext)
+        recyclerView.layoutManager = LinearLayoutManager(activityContext)
     }
 
     private fun setAdapter(){
         customAdapter = CustomMapAdapter(parentActivity)
-        recyclerView!!.adapter = customAdapter
+        recyclerView.adapter = customAdapter
     }
 
     private fun setEventListener(){
-        binding.uploadItemBtn.setCallback(null,::uploadUserRunItem)
-        binding.clearItemBtn.setCallback(null,::clearItemsFromRecycleView)
+        binding.uploadItemBtn.setCallback(null,::uploadDataToServer)
         binding.drawPathBtn.setCallback(null,::drawPathOnMap)
+    }
+
+    private fun addProgressBar(){
+        progressBar = ProgressBar(parentActivity)
+        progressBar.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT)
+        progressBar.visibility = View.GONE
+        val layout = parentActivity.findViewById<ConstraintLayout>(R.id.uploadLayout)
+        progressBar.x = (getScreenWidth()/2 - progressBar.width/2).toFloat()
+        progressBar.y = (getScreenHeight()/2 - parentActivity.removeActionBarHeight()).toFloat()
+        layout.addView(progressBar)
+    }
+
+    private fun setProgressbar(show:Boolean){
+        if(show){progressBar.visibility = View.VISIBLE}
+        else{progressBar.visibility = View.GONE}
     }
 
     @Deprecated("Deprecated in Java")
@@ -108,68 +138,63 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         }
     }
 
-    private fun clearItemsFromRecycleView(parameter:Any?){
-        if(customAdapter!=null){
-            customAdapter!!.clearView()
-        }
-    }
+    private fun clearItemsFromRecycleView(){customAdapter.clearView()}
 
     private fun drawPathOnMap(parameters:Any?){
         (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_MAP_CHILD)
     }
 
-    private fun uploadUserRunItem(parameters:Any?){
-        parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)
-        /*if(validUploadData()){
-            val user = Firebase.auth.currentUser
-            val city = binding.cityText.text.toString()
-            val street = binding.streetText.text.toString()
-            val runKm = binding.runKmText.text.toString()
-            val shareWithPublic = (binding.checkboxShare as CheckBox).isChecked
-            val urlId = UUID.randomUUID().toString()
-            val downloadUrl = urlId + ".${filePath!!.split(".")[1]}"
-            val item = UserRunItem(city,street,runKm,shareWithPublic, UUID.randomUUID().toString(),downloadUrl)
-            Firebase.firestore
-                .collection(getUserCollection())
-                .document(user!!.uid)
-                .collection(getUserItemCollection()).
-                add(item).addOnCompleteListener { task ->
-                    if(task.isSuccessful && item.shareWithPublic){uploadPublicRunItem(item)}
-                    else{parentActivity.showMessage("Upload Failed ${task.exception}", Toast.LENGTH_SHORT)}}
+    private fun uploadDataToServer(parameter:Any?){
+        if(customAdapter.itemCount <=0){return}
+        errorMessages.clear()
+        viewLifecycleOwner.lifecycleScope.launch{
+            setProgressbar(true)
+            uploadUserRunItem(0)
+            //if(errorMessages.size>0){printToTerminal(errorMessages[0].msg)}
+            // dont remove not uploaded items
+            clearItemsFromRecycleView()
+            setProgressbar(false)
         }
-        else{parentActivity.showMessage("Not a valid form...",Toast.LENGTH_SHORT)}*/
     }
 
-
-
-    private fun uploadPublicRunItem(userItem: UserRunItem){
-        val publicItem = PublicRunItem(userItem.city,userItem.street,userItem.runKm,userItem.downloadUrl)
+    //https://stackoverflow.com/questions/71692116/how-to-initiate-a-truely-asynchronous-function-with-coroutines
+    //https://betterprogramming.pub/how-to-use-kotlin-coroutines-with-firebase-6f8577a3e00f
+    private suspend fun uploadUserRunItem(pos:Int){
+        val savedTrack = customAdapter.getSavedTrack(pos)
+        if(savedTrack==null){return}
+        val downloadUrl = UUID.randomUUID().toString()
+        val user = Firebase.auth.currentUser
+        var uploadImage = false
+        val runItem = RunItem(
+            savedTrack.city,
+            savedTrack.street,
+            savedTrack.trackLength,
+            downloadUrl,
+            getGeoPointsToDouble(savedTrack.geoPoints),
+            getGeoPointToDouble(savedTrack.center)
+        )
         Firebase.firestore
-            .collection(getPublicCollection())
-            .document(userItem.runItemID)
-            .set(publicItem).addOnCompleteListener { task ->
-                if(task.isSuccessful) {uploadImageToFirebase(publicItem)}
-                else{parentActivity.showMessage(task.exception.toString(), Toast.LENGTH_SHORT)}}
+            .collection(getRunItemsCollection())
+            .document(user!!.uid)
+            .collection(getUserItemCollection())
+            .add(runItem).addOnCompleteListener { task ->
+                if(task.isSuccessful){uploadImage = true}
+                else{errorMessages.add(ServerDetails(pos,task.exception.toString()))}
+            }.await()
+        if(uploadImage){uploadImageToFirebase(downloadUrl,savedTrack.bitmap)}
+        uploadUserRunItem(pos+1)
     }
 
-    private fun uploadImageToFirebase(item: PublicRunItem) {
-        val database = Firebase.storage.reference
-        val path = "${getImagePath()}${item.downloadUrl}"
-        val storageRef = database.child(path)
-        storageRef.putFile(fileUri!!)
-            .addOnCompleteListener { task ->
-                var msg = "Item Uploaded"
-                if(!task.isSuccessful){msg = task.exception.toString()}
-                parentActivity.showMessage(msg,Toast.LENGTH_SHORT)
-            }
-    }
-
-    private fun validUploadData():Boolean{
-        return (Firebase.auth.currentUser!=null &&
-                //binding.cityText.text.toString().isNotEmpty() &&
-                //binding.streetText.text.toString().isNotEmpty() &&
-                //binding.runKmText.text.toString().isNotEmpty() &&
-                filePath != null &&
-                fileUri != null)
+    private suspend fun uploadImageToFirebase(downloadUrl:String,bitmap:Bitmap) {
+        val path = "${getImagePath()}$downloadUrl"
+        val imageUri = parentActivity.getImageUri(bitmap, downloadUrl)
+        if (imageUri != null) {
+            val database = Firebase.storage.reference
+            val storageRef = database.child(path)
+            storageRef.putFile(imageUri)
+                .addOnCompleteListener { task ->
+                    parentActivity.deleteFile(imageUri)
+                }.await()
+        }
     }
 }

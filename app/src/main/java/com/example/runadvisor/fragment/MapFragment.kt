@@ -111,7 +111,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     /*
     *   ##########################################################################
-    *               POPUP BOTTOM MENU FUNCTIONS
+    *               POPUP BOTTOM MENU
     *   ##########################################################################
     * */
 
@@ -129,7 +129,6 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
                     R.id.popupAdd->addBottomMenu()
-                    R.id.popupSave->saveTrack()
                     R.id.popupExit->exitBackToUpload()
                 }
                 true
@@ -153,14 +152,6 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         }
     }
 
-    private fun saveTrack(){
-        if(mapPath!=null && mapPath!!.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress){
-            setUrlCallInProgress(true)
-            setSearchTimer()
-            getCurrentAddressInfo(mapPath!!.points[0])
-        }
-    }
-
     private fun addBottomMenu(){
         if(binding.bottomMenuLayout.visibility == VISIBLE){return}
         binding.bottomMenuLayout.visibility = VISIBLE
@@ -172,9 +163,32 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             trackMenu!!.setEventListener(
                 ::adjustPointLasso,
                 ::adjustPointLasso,
+                ::saveTrack,
                 ::clearMapPath)
         }
     }
+
+    private fun exitBackToUpload(){
+        if(mapPath!=null && mapPath!!.savedTracks.isNotEmpty()){
+            (parentActivity as HomeActivity).pushDataToFragment(
+                FragmentInstance.FRAGMENT_UPLOAD,
+                mapPath!!.savedTracks)
+            mapPath!!.removeOverlaysFromMap()
+        }
+        removeBottomMenu()
+        (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
+    }
+
+    private fun removeBottomMenu(){
+        binding.bottomMenuLayout.visibility = GONE
+        binding.bottomMenuLayout.clearChildren(0)
+    }
+
+    /*
+    *   ##########################################################################
+    *               POPUP BOTTOM MENU FUNCTIONS
+    *   ##########################################################################
+    * */
 
     private fun adjustPointLasso(parameter:Any?){
         val numPoints:Int = parameter as Int
@@ -191,27 +205,19 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         mapPath!!.addLassoOverlay()
     }
 
+    private fun saveTrack(parameter:Any?){
+        if(mapPath!=null && mapPath!!.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress){
+            setUrlCallInProgress(true)
+            setSearchTimer()
+            getCurrentAddressInfo(mapPath!!.points[0])
+        }
+    }
+
     private fun clearMapPath(parameter: Any?){
         if(mapPath!=null){
             mapPath!!.resetMapPath()
             //mapPath = null
         }
-    }
-
-    private fun removeBottomMenu(){
-        binding.bottomMenuLayout.visibility = GONE
-        binding.bottomMenuLayout.clearChildren(0)
-    }
-
-    private fun exitBackToUpload(){
-        if(mapPath!=null && mapPath!!.savedTracks.isNotEmpty()){
-            (parentActivity as HomeActivity).pushDataToFragment(
-                FragmentInstance.FRAGMENT_UPLOAD,
-                mapPath!!.savedTracks)
-            mapPath!!.removeOverlaysFromMap()
-        }
-        removeBottomMenu()
-        (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
     }
 
     private fun updateTrackLength(trackLength:String){
@@ -223,7 +229,6 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     *               GPS SPECIFIC FUNCTIONS
     *   ##########################################################################
     * */
-
 
     private fun getLocation() {
         if(checkGpsProviderStatus()){
@@ -287,8 +292,8 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             catch(err:Exception){
                 //this.parentActivity.runOnUiThread{parentActivity.showMessage(err.message.toString(),Toast.LENGTH_LONG)}
             }*/
-            city = "karlstad"
-            street = "muraregatan"
+            city = "Karlstad"
+            street = "Muraregatan"
             this.parentActivity.runOnUiThread{
                 onReceivedAddressInfo(city,street)
                 setUrlCallInProgress(false)

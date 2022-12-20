@@ -2,11 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/popupAdd"
-        android:title="Add Track" />
-    <item
-        android:id="@+id/popupSave"
-        android:title="Save Track" />
+        android:title="Add Track Menu" />
     <item
         android:id="@+id/popupExit"
-        android:title="Exit Track" />
+        android:title="Exit" />
 </menu>

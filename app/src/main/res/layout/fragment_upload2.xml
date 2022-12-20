@@ -1,36 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/uploadLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:layout_marginBottom="10dp"
     tools:context=".MainActivity">
 
     <LinearLayout
         android:id="@+id/trackListLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:padding="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonsLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
+        android:padding="10dp">
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/trackRecyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="10dp"
             android:paddingStart="10dp"
+            android:paddingTop="10dp"
             android:paddingEnd="10dp"
             android:paddingBottom="5dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
             tools:itemCount="15"
             tools:listitem="@layout/upload_track_card" />
 
@@ -40,22 +34,17 @@
         android:id="@+id/buttonsLayout"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.975">
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal">
 
 
         <com.example.runadvisor.widget.CustomImageButton
             android:id="@+id/drawPathBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/backgrounddark"
             android:layout_gravity="center"
             android:alpha=".5"
+            android:background="@color/backgrounddark"
             android:src="@drawable/ic_draw_track_foreground" />
 
         <View
@@ -67,11 +56,20 @@
             android:id="@+id/uploadItemBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@color/backgrounddark"
             android:layout_gravity="right"
-            android:src="@drawable/ic_upload_track_foreground"
-            android:alpha=".5"/>
-
+            android:alpha=".5"
+            android:background="@color/backgrounddark"
+            android:src="@drawable/ic_upload_track_foreground" />
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <ProgressBar
+        style="?android:attr/progressBarStyleLarge"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/progressBar"
+        android:progressDrawable="@drawable/circular_progress_bar"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"/>
+
+</RelativeLayout>

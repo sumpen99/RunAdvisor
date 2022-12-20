@@ -9,4 +9,5 @@
     <color name="white">#FFFFFFFF</color>
     <color name="zonfri">#5faa63</color>
     <color name="backgrounddark">#121212</color>
+    <color name="backgroundmediumdark">#424242</color>
 </resources>

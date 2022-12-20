@@ -78,7 +78,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance): Fragm
 
     //https://stackoverflow.com/questions/31367599/how-to-update-recyclerview-adapter-data
     private fun loadData(){
-        val docRef = Firebase.firestore.collection("PublicData")
+        val docRef = Firebase.firestore.collection("UserRunItems")
         docRef.get().addOnSuccessListener { documentSnapShot->
             for(document in documentSnapShot.documents){
                 val runItem = document.toObject<PublicRunItem>()
