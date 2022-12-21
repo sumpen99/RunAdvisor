@@ -2,14 +2,12 @@ package com.example.runadvisor.struct
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.widget.CustomMarker
 import com.example.runadvisor.widget.CustomOverlay
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.*
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.cos
 import kotlin.math.sin
@@ -46,10 +44,6 @@ class MapPath(val activityContext: Context,
     fun buildPolyLine(){
         buildPolyline()
         setLineColor()
-    }
-
-    private fun printTrackLength(){
-        printToTerminal("$trackLength")
     }
 
     private fun buildLasso(pointsToAdd:Int){
@@ -165,6 +159,7 @@ class MapPath(val activityContext: Context,
     fun removeOverlayMarkers(){
         if(currentOverlay != null){
             mapView.overlays.remove(currentOverlay)
+            invalidate()
         }
     }
 
@@ -203,7 +198,7 @@ class MapPath(val activityContext: Context,
                     getStringTrackLength()))
             currentPoints = 0
             points.clear()
-            invalidate()
+            //invalidate()
             return true
         }
         return false

@@ -24,7 +24,7 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
         return userData[pos]
     }
 
-    private fun removeCard(pos:Int){
+    fun removeCard(pos:Int){
         if(pos>=itemCount){return}
         userData.removeAt(pos)
         notifyItemRemoved(pos)

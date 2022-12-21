@@ -29,21 +29,23 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance): Fragm
     private lateinit var parentActivity: Activity
     private lateinit var recyclerView:RecyclerView
     private lateinit var customAdapter:CustomDataAdapter
+    private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
+        if(dataView!=null){return dataView!!}
         _binding = FragmentDataBinding.inflate(inflater, container, false)
-        val view: View = binding.root
+        dataView = binding.root
         setParentActivity()
         setActivityContext()
         setRecyclerView()
         setAdapter()
         //setEventListener(view)
         loadData()
-        return view
+        return dataView!!
     }
 
     override fun getFragmentID(): FragmentInstance {

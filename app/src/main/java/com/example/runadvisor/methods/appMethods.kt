@@ -13,8 +13,7 @@ import android.provider.Settings
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
-import android.widget.ImageView
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Registry
@@ -106,6 +105,17 @@ fun Fragment.selectImageFromGallery(requestCode:Int) {
     //),
     //GALLERY_REQUEST_CODE
     //)
+}
+
+fun Fragment.getProgressbar(activity:Activity):ProgressBar{
+    val progressBar = ProgressBar(activity)
+    progressBar.layoutParams = LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT)
+    progressBar.visibility = View.GONE
+    progressBar.x = (getScreenWidth() /2 - progressBar.width/2).toFloat()
+    progressBar.y = (getScreenHeight() /2 - activity.removeActionBarHeight())
+    return progressBar
 }
 
 fun Activity.showMessage(msg:String,duration:Int){

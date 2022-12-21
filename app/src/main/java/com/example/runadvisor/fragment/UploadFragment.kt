@@ -6,6 +6,8 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.view.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -17,6 +19,7 @@ import com.example.runadvisor.R
 import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
+import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.RunItem
@@ -35,17 +38,17 @@ import kotlin.collections.ArrayList
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
-    private var uploadView:View? = null
     private lateinit var recyclerView: RecyclerView
-    private lateinit var progressBar:ProgressBar
     private lateinit var customAdapter: CustomMapAdapter
+    private var uploadView:View? = null
+    private var progressBar:ProgressBar? = null
     private var _binding: FragmentUploadBinding? = null
     private val binding get() = _binding!!
     private val GALLERY_REQUEST_CODE = 102
     private val PICK_IMAGE = 1
     private var fileUri: Uri? = null
     private var filePath:String? = null
-    private val errorMessages = ArrayList<ServerDetails>()
+    private val uploadResult = ArrayList<ServerDetails>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -108,20 +111,14 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     private fun addProgressBar(){
-        progressBar = ProgressBar(parentActivity)
-        progressBar.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT)
-        progressBar.visibility = View.GONE
+        progressBar = getProgressbar(parentActivity)
         val layout = parentActivity.findViewById<ConstraintLayout>(R.id.uploadLayout)
-        progressBar.x = (getScreenWidth()/2 - progressBar.width/2).toFloat()
-        progressBar.y = (getScreenHeight()/2 - parentActivity.removeActionBarHeight()).toFloat()
         layout.addView(progressBar)
     }
 
     private fun setProgressbar(show:Boolean){
-        if(show){progressBar.visibility = View.VISIBLE}
-        else{progressBar.visibility = View.GONE}
+        if(show){progressBar!!.visibility = VISIBLE}
+        else{progressBar!!.visibility = GONE}
     }
 
     @Deprecated("Deprecated in Java")
@@ -138,7 +135,13 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         }
     }
 
-    private fun clearItemsFromRecycleView(){customAdapter.clearView()}
+    private fun clearAllItemsFromRecycleView(){customAdapter.clearView()}
+
+    private fun clearItemsFromRecycleView(){
+       for(result:ServerDetails in uploadResult){
+           if(result.serverResult == ServerResult.UPLOAD_OK){customAdapter.removeCard(result.pos)}
+       }
+    }
 
     private fun drawPathOnMap(parameters:Any?){
         (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_MAP_CHILD)
@@ -146,12 +149,13 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun uploadDataToServer(parameter:Any?){
         if(customAdapter.itemCount <=0){return}
-        errorMessages.clear()
+        uploadResult.clear()
         viewLifecycleOwner.lifecycleScope.launch{
             setProgressbar(true)
             uploadUserRunItem(0)
             //if(errorMessages.size>0){printToTerminal(errorMessages[0].msg)}
             // dont remove not uploaded items
+            //clearAllItemsFromRecycleView()
             clearItemsFromRecycleView()
             setProgressbar(false)
         }
@@ -179,13 +183,13 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
             .collection(getUserItemCollection())
             .add(runItem).addOnCompleteListener { task ->
                 if(task.isSuccessful){uploadImage = true}
-                else{errorMessages.add(ServerDetails(pos,task.exception.toString()))}
+                else{uploadResult.add(ServerDetails(pos,task.exception.toString(),ServerResult.UPLOAD_ERROR))}
             }.await()
-        if(uploadImage){uploadImageToFirebase(downloadUrl,savedTrack.bitmap)}
+        if(uploadImage){uploadImageToFirebase(downloadUrl,savedTrack.bitmap,pos)}
         uploadUserRunItem(pos+1)
     }
 
-    private suspend fun uploadImageToFirebase(downloadUrl:String,bitmap:Bitmap) {
+    private suspend fun uploadImageToFirebase(downloadUrl:String,bitmap:Bitmap,pos:Int) {
         val path = "${getImagePath()}$downloadUrl"
         val imageUri = parentActivity.getImageUri(bitmap, downloadUrl)
         if (imageUri != null) {
@@ -193,6 +197,8 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
             val storageRef = database.child(path)
             storageRef.putFile(imageUri)
                 .addOnCompleteListener { task ->
+                    if(task.isSuccessful){uploadResult.add(ServerDetails(pos,"",ServerResult.UPLOAD_OK))}
+                    else{uploadResult.add(ServerDetails(pos,task.exception.toString(),ServerResult.UPLOAD_ERROR))}
                     parentActivity.deleteFile(imageUri)
                 }.await()
         }
