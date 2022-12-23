@@ -72,14 +72,6 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    private fun initUserCollection(){
-        val user = auth.currentUser
-        if(user!=null){
-            //Firebase.firestore.collection("Users").add("",User(user.email.toString()))
-            //Firebase.firestore.collection("Users").document(user.uid).set(User(user.email.toString()))
-        }
-    }
-
     private fun illegalUserInput():Boolean{
         return (emailField.text.toString().isEmpty() || passwordField.text.toString().isEmpty())
     }

@@ -12,10 +12,12 @@ import android.widget.CheckBox
 import android.widget.ProgressBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
+import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
@@ -37,7 +39,7 @@ import kotlin.collections.ArrayList
 class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     Fragment(R.layout.fragment_data), IFragment {
     private lateinit var activityContext: Context
-    private lateinit var parentActivity: Activity
+    private lateinit var parentActivity: HomeActivity
     private lateinit var recyclerView:RecyclerView
     private lateinit var customAdapter:CustomDataAdapter
     private var checkBoxes = ArrayList<CheckBox>()
@@ -45,11 +47,11 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
+    private var firstInit = true
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
-        //if(dataView!=null){loadData();return dataView!!}
         if(dataView!=null){return dataView!!}
         _binding = FragmentDataBinding.inflate(inflater, container, false)
         dataView = binding.root
@@ -58,7 +60,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
         setRecyclerView()
         setAdapter()
         //setEventListener(view)
-        //loadData()
+        loadData()
         return dataView!!
     }
 
@@ -66,7 +68,8 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(progressBar == null){
+        if(firstInit){
+            firstInit = false
             setEventListener(view)
             addProgressBar()
             //loadData()
@@ -108,7 +111,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     }
 
     private fun setParentActivity() {
-        parentActivity = requireActivity()
+        parentActivity = requireActivity() as HomeActivity
     }
 
     private fun setRecyclerView(){
@@ -141,16 +144,29 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
 
     //https://medium.com/@deepak140596/firebase-firestore-using-view-models-and-livedata-f9a012233917
 
-    private fun loadData(){
-        viewLifecycleOwner.lifecycleScope.launch{
-            setProgressbar(true)
-            getDocument()
-            setProgressbar(false)
-        }
+    fun notifyRecycleView(items:List<RunItem>){
+        customAdapter.addRunItems(items)
     }
 
-    private suspend fun getDocument(){
-        Firebase.firestore.collection(getItemCollection())
+    private fun loadData(){
+        parentActivity.firestoreViewModel.getRunItems().observe(parentActivity, Observer { it->
+            if(it!=null){
+                notifyRecycleView(it)
+            }
+            //printToTerminal(savedRunItems!!.size.toString())
+        })
+        //getDocument()
+        /*viewLifecycleOwner.lifecycleScope.launch{
+            setProgressbar(true)
+            setProgressbar(false)
+        }*/
+    }
+
+    private fun getDocument(){
+        if(parentActivity.runItemsIsNotNull()){
+            customAdapter.addRunItems(parentActivity.getRunItems())
+        }
+        /*Firebase.firestore.collection(getItemCollection())
         .get()
         .addOnSuccessListener{documentSnapShot ->
             for(document in documentSnapShot.documents){
@@ -162,7 +178,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
                     }
                 }
             }
-        }.await()
+        }.await()*/
     }
 
     private fun loadImageFromStorage(storeRef: StorageReference){
@@ -175,7 +191,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
 
     override fun onResume() {
         super.onResume()
-        loadData()
+        //loadData()
     }
 
     override fun onPause() {

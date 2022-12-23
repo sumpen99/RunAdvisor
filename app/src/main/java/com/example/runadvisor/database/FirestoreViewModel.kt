@@ -61,8 +61,12 @@ class FirestoreViewModel:ViewModel() {
             }
 
             val savedRunItemList : MutableList<RunItem> = mutableListOf()
-            for (doc in value!!) {
+            /*for (doc in value!!) {
                 val runItem = doc.toObject(RunItem::class.java)
+                savedRunItemList.add(runItem)
+            }*/
+            for (doc in value!!.documentChanges) {
+                val runItem = doc.document.toObject(RunItem::class.java)
                 savedRunItemList.add(runItem)
             }
             savedRunItems.value = savedRunItemList

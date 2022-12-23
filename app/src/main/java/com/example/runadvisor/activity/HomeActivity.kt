@@ -1,8 +1,6 @@
 package com.example.runadvisor.activity
-
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -10,21 +8,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.*
-
 import com.example.runadvisor.R
-import com.example.runadvisor.database.FirestoreRepository
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
+import com.example.runadvisor.fragment.DataFragment
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.fragmentInstanceToFragment
 import com.example.runadvisor.methods.getTitleBarHeight
 import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.RunItem
-import com.example.runadvisor.struct.UserItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import java.net.URI
 
 
 class HomeActivity:AppCompatActivity() {
@@ -47,7 +42,7 @@ class HomeActivity:AppCompatActivity() {
         setEventListener()
         askForStoragePermissions()
         askForLocationPermission()
-        getRunItems()
+        //loadRunItems()
     }
 
 
@@ -161,12 +156,23 @@ class HomeActivity:AppCompatActivity() {
     *   ##########################################################################
     * */
 
-    private fun getRunItems(){
+    /*private fun loadRunItems(){
         firestoreViewModel.getRunItems().observe(this, Observer { it->
             savedRunItems = it
+            val frag:Fragment? = fragmentTracker.findOpenFragments(FragmentInstance.FRAGMENT_DATA)
+            if(frag!=null && it!=null){
+                (frag as DataFragment).notifyRecycleView(it)
+            }
+            //printToTerminal(savedRunItems!!.size.toString())
         })
-        if(savedRunItems!=null){printToTerminal(savedRunItems!!.size.toString())}
-        else{printToTerminal("List Is Null")}
+    }*/
+
+    fun runItemsIsNotNull():Boolean{
+        return savedRunItems != null
+    }
+
+    fun getRunItems():List<RunItem>{
+        return savedRunItems!!
     }
 
 

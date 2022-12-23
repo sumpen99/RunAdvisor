@@ -24,6 +24,12 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
         return ViewHolder(view)
     }
 
+    fun addRunItems(runItems:List<RunItem>){
+        val pos = serverData.size
+        serverData.addAll(runItems)
+        notifyItemRangeChanged(pos,runItems.size)
+    }
+
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if(serverData.isEmpty()){return}
