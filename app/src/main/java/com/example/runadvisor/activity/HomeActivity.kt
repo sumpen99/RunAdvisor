@@ -12,13 +12,10 @@ import com.example.runadvisor.R
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.fragment.DataFragment
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.fragmentInstanceToFragment
 import com.example.runadvisor.methods.getTitleBarHeight
 import com.example.runadvisor.struct.FragmentTracker
-import com.example.runadvisor.struct.RunItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
@@ -30,8 +27,6 @@ class HomeActivity:AppCompatActivity() {
     private val binding get() = _binding!!
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private val LOCATION_PERMISSION_CODE = 2
-    private var savedRunItems:List<RunItem>? = null
-
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,9 +37,7 @@ class HomeActivity:AppCompatActivity() {
         setEventListener()
         askForStoragePermissions()
         askForLocationPermission()
-        //loadRunItems()
     }
-
 
     private fun setDataBinding(){
         _binding = ActivityHomeBinding.inflate(layoutInflater)
@@ -165,7 +158,7 @@ class HomeActivity:AppCompatActivity() {
             }
             //printToTerminal(savedRunItems!!.size.toString())
         })
-    }*/
+    }
 
     fun runItemsIsNotNull():Boolean{
         return savedRunItems != null
@@ -173,7 +166,7 @@ class HomeActivity:AppCompatActivity() {
 
     fun getRunItems():List<RunItem>{
         return savedRunItems!!
-    }
+    }*/
 
 
     /*

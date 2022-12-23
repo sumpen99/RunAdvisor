@@ -1,7 +1,4 @@
 package com.example.runadvisor.fragment
-
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,11 +6,8 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.ProgressBar
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
@@ -22,17 +16,9 @@ import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.widget.CustomDataAdapter
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.firestore.ktx.toObject
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import kotlin.collections.ArrayList
 
 
@@ -43,7 +29,6 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     private lateinit var recyclerView:RecyclerView
     private lateinit var customAdapter:CustomDataAdapter
     private var checkBoxes = ArrayList<CheckBox>()
-    private var progressBar: ProgressBar? = null
     private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
@@ -59,20 +44,15 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
         setActivityContext()
         setRecyclerView()
         setAdapter()
-        //setEventListener(view)
         loadData()
         return dataView!!
     }
-
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if(firstInit){
             firstInit = false
             setEventListener(view)
-            addProgressBar()
-            //loadData()
         }
     }
 
@@ -124,62 +104,25 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
         recyclerView.adapter = customAdapter
     }
 
-    private fun addProgressBar(){
-        val layout = parentActivity.findViewById<ConstraintLayout>(R.id.dataLayout)
-        progressBar = getProgressbar(parentActivity,layout)
-    }
-
-    private fun setProgressbar(show:Boolean){
-        if(show){progressBar!!.visibility = View.VISIBLE
-        }
-        else{progressBar!!.visibility = View.GONE
-        }
-    }
-
     /*
     *   ##########################################################################
     *                               LOAD DATA
     *   ##########################################################################
     * */
 
-    //https://medium.com/@deepak140596/firebase-firestore-using-view-models-and-livedata-f9a012233917
-
-    fun notifyRecycleView(items:List<RunItem>){
-        customAdapter.addRunItems(items)
-    }
-
     private fun loadData(){
         parentActivity.firestoreViewModel.getRunItems().observe(parentActivity, Observer { it->
             if(it!=null){
-                notifyRecycleView(it)
+                customAdapter.addRunItems(it)
             }
-            //printToTerminal(savedRunItems!!.size.toString())
         })
-        //getDocument()
-        /*viewLifecycleOwner.lifecycleScope.launch{
-            setProgressbar(true)
-            setProgressbar(false)
-        }*/
     }
 
-    private fun getDocument(){
-        if(parentActivity.runItemsIsNotNull()){
-            customAdapter.addRunItems(parentActivity.getRunItems())
-        }
-        /*Firebase.firestore.collection(getItemCollection())
-        .get()
-        .addOnSuccessListener{documentSnapShot ->
-            for(document in documentSnapShot.documents){
-                if(!documentSnapShot.metadata.isFromCache){
-                    val runItem = document.toObject<RunItem>()
-                    if(runItem!=null){
-                        customAdapter.serverData.add(runItem)
-                        customAdapter.notifyItemInserted(customAdapter.serverData.size-1)
-                    }
-                }
-            }
-        }.await()*/
-    }
+    /*
+    *   ##########################################################################
+    *                               LOAD IMAGES
+    *   ##########################################################################
+    * */
 
     private fun loadImageFromStorage(storeRef: StorageReference){
         //parentActivity.loadImageFromStorage(storeRef,binding.imageView)
