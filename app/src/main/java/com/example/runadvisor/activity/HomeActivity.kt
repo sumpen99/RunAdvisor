@@ -2,14 +2,18 @@ package com.example.runadvisor.activity
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
+import android.net.Uri
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.*
+
 import com.example.runadvisor.R
+import com.example.runadvisor.database.FirestoreRepository
+import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
@@ -17,30 +21,67 @@ import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.fragmentInstanceToFragment
 import com.example.runadvisor.methods.getTitleBarHeight
 import com.example.runadvisor.struct.FragmentTracker
-import com.example.runadvisor.struct.MapData
+import com.example.runadvisor.struct.RunItem
+import com.example.runadvisor.struct.UserItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.net.URI
 
 
 class HomeActivity:AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
-    private lateinit var mapData:MapData
+    lateinit var firestoreViewModel: FirestoreViewModel
     private var fragmentTracker = FragmentTracker()
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private val LOCATION_PERMISSION_CODE = 2
+    private var savedRunItems:List<RunItem>? = null
 
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+        setViewModel()
         setDataBinding()
         setUpNavMenu()
         setEventListener()
         askForStoragePermissions()
         askForLocationPermission()
-
+        getRunItems()
     }
+
+
+    private fun setDataBinding(){
+        _binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+    }
+
+    private fun setUpNavMenu(){
+        bottomNavMenu = binding.bottomNavigationView
+    }
+
+    private fun setEventListener(){
+        bottomNavMenu.setOnItemSelectedListener {it: MenuItem ->
+            when(it.itemId){
+                R.id.navHome->clearFragments()
+                R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP)
+                R.id.navData->navigateFragment(FragmentInstance.FRAGMENT_DATA)
+                R.id.navUpload->navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
+                //R.id.navData->moveToActivity(Intent(this, HomeActivity::class.java))
+            }
+            true
+        }
+    }
+
+    private fun setViewModel(){
+        firestoreViewModel = ViewModelProviders.of(this).get(FirestoreViewModel::class.java)
+    }
+
+    /*
+    *   ##########################################################################
+    *               ASK FOR PERMISSIONS
+    *   ##########################################################################
+    * */
 
     private fun askForLocationPermission(){
         if(ActivityCompat.checkSelfPermission(
@@ -79,27 +120,11 @@ class HomeActivity:AppCompatActivity() {
         }
     }
 
-    private fun setDataBinding(){
-        _binding = ActivityHomeBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-    }
-
-    private fun setUpNavMenu(){
-        bottomNavMenu = binding.bottomNavigationView
-    }
-
-    private fun setEventListener(){
-        bottomNavMenu.setOnItemSelectedListener {it: MenuItem ->
-            when(it.itemId){
-                R.id.navHome->clearFragments()
-                R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP)
-                R.id.navData->navigateFragment(FragmentInstance.FRAGMENT_DATA)
-                R.id.navUpload->navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
-            //R.id.navData->moveToActivity(Intent(this, HomeActivity::class.java))
-            }
-            true
-        }
-    }
+    /*
+    *   ##########################################################################
+    *               NAVIGATE BETWEEN FRAGMENTS
+    *   ##########################################################################
+    * */
 
     fun pushDataToFragment(fragmentInstance: FragmentInstance,parameter:Any){
         var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
@@ -131,8 +156,26 @@ class HomeActivity:AppCompatActivity() {
     private fun outsideNavMenu(event: MotionEvent):Boolean{ return event.y <bottomNavMenu.y+getTitleBarHeight()}
 
     /*
-    * TODO REMOVE AND CHANGE THIS ONE -> ONLY USED BY MAP...
+    *   ##########################################################################
+    *               TALK TO FIREBASE
+    *   ##########################################################################
     * */
+
+    private fun getRunItems(){
+        firestoreViewModel.getRunItems().observe(this, Observer { it->
+            savedRunItems = it
+        })
+        if(savedRunItems!=null){printToTerminal(savedRunItems!!.size.toString())}
+        else{printToTerminal("List Is Null")}
+    }
+
+
+    /*
+    *   ##########################################################################
+    *               TO BE REMOVED
+    *   ##########################################################################
+    * */
+
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         super.dispatchTouchEvent(event)
         if(fragmentTracker.isEmpty()){return false}
@@ -156,19 +199,5 @@ class HomeActivity:AppCompatActivity() {
         return true
     }
 
-    /*override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val permissionsToRequest = ArrayList<String>()
-        var i = 0
-        while (i < grantResults.size) {
-            permissionsToRequest.add(permissions[i])
-            i++
-        }
-        if (permissionsToRequest.size > 0) {
-            ActivityCompat.requestPermissions(
-                this,
-                permissionsToRequest.toTypedArray(),
-                REQUEST_PERMISSIONS_REQUEST_CODE)
-        }
-    }*/
+
 }

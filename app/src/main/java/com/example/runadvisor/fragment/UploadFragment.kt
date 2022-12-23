@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.*
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.LinearLayout
 import android.widget.ProgressBar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
@@ -21,25 +20,29 @@ import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.struct.RunItem
+import com.example.runadvisor.struct.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
 import java.util.*
-import com.example.runadvisor.struct.SavedTrack
-import com.example.runadvisor.struct.ServerDetails
 import com.example.runadvisor.widget.CustomMapAdapter
+import com.google.android.gms.tasks.OnCompleteListener
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.QuerySnapshot
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlin.collections.ArrayList
 
 class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
-    private lateinit var parentActivity: Activity
+    private lateinit var parentActivity: HomeActivity
     private lateinit var recyclerView: RecyclerView
     private lateinit var customAdapter: CustomMapAdapter
+    private lateinit var messageToUser: MessageToUser
     private var uploadView:View? = null
     private var progressBar:ProgressBar? = null
     private var _binding: FragmentUploadBinding? = null
@@ -62,7 +65,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
         setEventListener()
         setRecyclerView()
         setAdapter()
-
+        setInfoToUser()
         return uploadView!!
     }
 
@@ -92,7 +95,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     private fun setParentActivity() {
-        parentActivity = requireActivity()
+        parentActivity = requireActivity() as HomeActivity
     }
 
     private fun setRecyclerView(){
@@ -111,14 +114,22 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     private fun addProgressBar(){
-        progressBar = getProgressbar(parentActivity)
         val layout = parentActivity.findViewById<ConstraintLayout>(R.id.uploadLayout)
-        layout.addView(progressBar)
+        progressBar = getProgressbar(parentActivity,layout)
     }
 
     private fun setProgressbar(show:Boolean){
         if(show){progressBar!!.visibility = VISIBLE}
         else{progressBar!!.visibility = GONE}
+    }
+
+    private fun setInfoToUser(){
+        messageToUser = MessageToUser(parentActivity,null)
+    }
+
+    private fun showUserMessage(msg:String){
+        messageToUser.setMessage(msg)
+        messageToUser.showMessage()
     }
 
     @Deprecated("Deprecated in Java")
@@ -138,9 +149,18 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     private fun clearAllItemsFromRecycleView(){customAdapter.clearView()}
 
     private fun clearItemsFromRecycleView(){
-       for(result:ServerDetails in uploadResult){
-           if(result.serverResult == ServerResult.UPLOAD_OK){customAdapter.removeCard(result.pos)}
-       }
+        var msg = ""
+        for(result:ServerDetails in uploadResult){
+            // DID NOT WORK SO GOOD
+           /*if(result.serverResult == ServerResult.UPLOAD_OK){customAdapter.removeCard(result.pos)}
+           else{msg+= "Item ${result.pos+1}: ${result.msg}\n"}*/
+            if(result.serverResult != ServerResult.UPLOAD_OK){
+                msg+= "Item ${result.pos+1}: ${result.msg}\n"
+            }
+        }
+        clearAllItemsFromRecycleView()
+        if(msg.isEmpty()){showUserMessage("Upload Successful!")}
+        else{showUserMessage(msg)}
     }
 
     private fun drawPathOnMap(parameters:Any?){
@@ -149,58 +169,65 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun uploadDataToServer(parameter:Any?){
         if(customAdapter.itemCount <=0){return}
-        uploadResult.clear()
+        parentActivity.firestoreViewModel.clearServerDetails()
         viewLifecycleOwner.lifecycleScope.launch{
             setProgressbar(true)
-            uploadUserRunItem(0)
-            //if(errorMessages.size>0){printToTerminal(errorMessages[0].msg)}
-            // dont remove not uploaded items
-            //clearAllItemsFromRecycleView()
+            uploadPublicRunItem(0)
             clearItemsFromRecycleView()
             setProgressbar(false)
         }
     }
 
-    //https://stackoverflow.com/questions/71692116/how-to-initiate-a-truely-asynchronous-function-with-coroutines
-    //https://betterprogramming.pub/how-to-use-kotlin-coroutines-with-firebase-6f8577a3e00f
-    private suspend fun uploadUserRunItem(pos:Int){
+    private suspend fun uploadPublicRunItem(pos:Int){
         val savedTrack = customAdapter.getSavedTrack(pos)
         if(savedTrack==null){return}
         val downloadUrl = UUID.randomUUID().toString()
-        val user = Firebase.auth.currentUser
-        var uploadImage = false
+        val imageUri = parentActivity.getImageUri(savedTrack.bitmap, downloadUrl)
+        if(imageUri==null){return}
+        val docId = UUID.randomUUID().toString()
+        val userItem = UserItem(docId,downloadUrl)
         val runItem = RunItem(
             savedTrack.city,
             savedTrack.street,
             savedTrack.trackLength,
             downloadUrl,
             getGeoPointsToDouble(savedTrack.geoPoints),
-            getGeoPointToDouble(savedTrack.center)
+            getGeoPointToDouble(savedTrack.center),
+            savedTrack.zoom,
+            docId
         )
-        Firebase.firestore
-            .collection(getRunItemsCollection())
-            .document(user!!.uid)
-            .collection(getUserItemCollection())
-            .add(runItem).addOnCompleteListener { task ->
-                if(task.isSuccessful){uploadImage = true}
-                else{uploadResult.add(ServerDetails(pos,task.exception.toString(),ServerResult.UPLOAD_ERROR))}
-            }.await()
-        if(uploadImage){uploadImageToFirebase(downloadUrl,savedTrack.bitmap,pos)}
-        uploadUserRunItem(pos+1)
+        // If Something went wrong, delete everything
+        if(!(parentActivity.firestoreViewModel.savePublicRunItemToFirebase(pos,runItem)&&
+            parentActivity.firestoreViewModel.saveImageToFirebase(pos,imageUri,downloadUrl)&&
+            parentActivity.firestoreViewModel.saveUserRunItemToFirebase(pos,userItem))){
+
+            parentActivity.firestoreViewModel.deletePublicRunItem(runItem)
+            parentActivity.firestoreViewModel.deleteImage(runItem)
+            parentActivity.firestoreViewModel.deleteUserRunItem(userItem)
+
+        }
+
+        parentActivity.deleteFile(imageUri)
+        uploadPublicRunItem(pos+1)
     }
 
-    private suspend fun uploadImageToFirebase(downloadUrl:String,bitmap:Bitmap,pos:Int) {
-        val path = "${getImagePath()}$downloadUrl"
-        val imageUri = parentActivity.getImageUri(bitmap, downloadUrl)
-        if (imageUri != null) {
-            val database = Firebase.storage.reference
-            val storageRef = database.child(path)
-            storageRef.putFile(imageUri)
-                .addOnCompleteListener { task ->
-                    if(task.isSuccessful){uploadResult.add(ServerDetails(pos,"",ServerResult.UPLOAD_OK))}
-                    else{uploadResult.add(ServerDetails(pos,task.exception.toString(),ServerResult.UPLOAD_ERROR))}
-                    parentActivity.deleteFile(imageUri)
-                }.await()
-        }
+
+
+    private suspend fun removeDocument(docId:String){
+        val eventsRef: CollectionReference = Firebase.firestore.collection(getUserRunItemsCollection())
+        val docIdQuery: Query = eventsRef.whereEqualTo("docId", docId)
+        docIdQuery.get().addOnCompleteListener{task->
+                if(task.isSuccessful){
+                    for (document in task.result){
+                        document.reference.delete().addOnSuccessListener{
+                            printToTerminal("Document successfully deleted!")
+                        }.addOnFailureListener{
+                            printToTerminal("Error deleting document ${it.message.toString()}")}
+                    }
+                }
+                else{printToTerminal("Error getting documents: ${task.exception}")}
+            }.await()
+
     }
+
 }

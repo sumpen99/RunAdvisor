@@ -20,13 +20,17 @@ fun getImagePath():String{
 }
 
 fun getUserCollection():String{
-    return "UserData"
+    return "Users"
 }
 
-fun getUserItemCollection():String{
+fun getItemCollection():String{
     return "RunItems"
 }
 
-fun getRunItemsCollection():String{
+fun getUserRunItemsCollection():String{
     return "UserRunItems"
+}
+
+fun getPublicRunItemsCollection():String{
+    return "PublicRunItems"
 }

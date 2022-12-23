@@ -2,4 +2,5 @@
 <resources>
     <dimen name="bottomMapMenu">50dp</dimen>
     <dimen name="bottomMapMenuIcon">30dp</dimen>
+    <dimen name="cardText">18sp</dimen>
 </resources>

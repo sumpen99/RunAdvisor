@@ -127,9 +127,8 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private fun addProgressBar(){
-        progressBar = getProgressbar(parentActivity)
         val layout = parentActivity.findViewById<RelativeLayout>(R.id.mapBaseLayout)
-        layout.addView(progressBar)
+        progressBar = getProgressbar(parentActivity,layout)
     }
 
     private fun setProgressbar(show:Boolean){

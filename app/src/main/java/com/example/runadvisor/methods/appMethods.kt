@@ -1,6 +1,8 @@
 package com.example.runadvisor.methods
+
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
 import android.content.res.Resources
@@ -10,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.provider.Settings
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -22,7 +25,8 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
-import com.example.runadvisor.struct.PublicRunItem
+import com.example.runadvisor.enums.SortOperation
+import com.example.runadvisor.struct.RunItem
 import com.firebase.ui.storage.images.FirebaseImageLoader
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
@@ -107,14 +111,33 @@ fun Fragment.selectImageFromGallery(requestCode:Int) {
     //)
 }
 
-fun Fragment.getProgressbar(activity:Activity):ProgressBar{
-    val progressBar = ProgressBar(activity)
-    progressBar.layoutParams = LinearLayout.LayoutParams(
+fun Fragment.uncheckCheckBoxes(pos:Int,checkBoxes:ArrayList<CheckBox>){
+    var i = 0
+    while(i<checkBoxes.size){
+        if(i!=pos){checkBoxes[i].isChecked = false}
+        i++
+    }
+}
+
+fun Fragment.getProgressbar(activity:Activity,viewGroup:ViewGroup):ProgressBar{
+    val progressBar = ProgressBar(activity,null,android.R.attr.progressBarStyleHorizontal)
+    /*progressBar.layoutParams = LinearLayout.LayoutParams(
         ViewGroup.LayoutParams.WRAP_CONTENT,
-        ViewGroup.LayoutParams.WRAP_CONTENT)
+        ViewGroup.LayoutParams.WRAP_CONTENT)*/
     progressBar.visibility = View.GONE
-    progressBar.x = (getScreenWidth() /2 - progressBar.width/2).toFloat()
-    progressBar.y = (getScreenHeight() /2 - activity.removeActionBarHeight())
+    progressBar.isIndeterminate = true
+
+    val params = RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams.MATCH_PARENT,
+        RelativeLayout.LayoutParams.MATCH_PARENT
+    )
+
+    val rl = RelativeLayout(activity)
+
+    rl.gravity = Gravity.CENTER
+    rl.addView(progressBar)
+
+    viewGroup.addView(rl, params)
     return progressBar
 }
 
@@ -145,7 +168,7 @@ fun Activity.moveToActivity(intent:Intent){
     startActivity(intent)
 }
 
-fun Activity.downloadImage(item: PublicRunItem,imageView:ImageView){
+fun Activity.downloadImage(item: RunItem, imageView:ImageView){
     val database = Firebase.storage.reference
     val path = "${getImagePath()}${item.downloadUrl}"
     val storageRef = database.child(path)

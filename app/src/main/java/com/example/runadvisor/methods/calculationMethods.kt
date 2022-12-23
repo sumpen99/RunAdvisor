@@ -40,6 +40,16 @@ fun getGeoPointsToDouble(p:ArrayList<GeoPoint>):ArrayList<Double>{
     return newList
 }
 
+fun getDoubleToGeoPoints(p:ArrayList<Double>):ArrayList<GeoPoint>{
+    val newList = ArrayList<GeoPoint>()
+    var i = 1
+    while(i<p.size){
+        newList.add(GeoPoint(p[i-1],p[i]))
+        i+=2
+    }
+    return newList
+}
+
 fun getCenterOfPoints(p:ArrayList<GeoPoint>):GeoPoint?{
     if(p.isEmpty()){return null}
     var i = 1

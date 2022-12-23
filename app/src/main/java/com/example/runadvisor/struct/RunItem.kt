@@ -5,6 +5,8 @@ data class RunItem(
     val street:String?=null,
     val trackLength:String?=null,
     val downloadUrl:String?=null,
-    val coordinates:ArrayList<Double>,
-    val center:ArrayList<Double>
-    )
+    val coordinates:ArrayList<Double>? = null,
+    val center:ArrayList<Double>? = null,
+    val zoom:Int? = null,
+    val docID:String? = null
+    ):java.io.Serializable
