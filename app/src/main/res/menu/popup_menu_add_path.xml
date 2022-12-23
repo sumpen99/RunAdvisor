@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/popupAdd"
-        android:title="Add Track Menu" />
+        android:id="@+id/popupDrawPoints"
+        android:title="Path By Draw" />
+    <item
+        android:id="@+id/popupGpsPoints"
+        android:title="Path By Gps" />
     <item
         android:id="@+id/popupExit"
         android:title="Exit" />

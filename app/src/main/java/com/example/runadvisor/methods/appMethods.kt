@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.Bitmap
+import android.location.Location
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -33,6 +34,7 @@ import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import org.json.JSONArray
 import org.json.JSONObject
+import org.osmdroid.util.GeoPoint
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
@@ -282,4 +284,8 @@ fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith {
         JSONObject.NULL -> null
         else            -> value
     }
+}
+
+fun getCenterOfHome(): GeoPoint {
+    return GeoPoint(59.379108,13.500179)
 }

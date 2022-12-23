@@ -14,6 +14,7 @@ import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.drawToBitmap
 import androidx.fragment.app.Fragment
@@ -27,10 +28,7 @@ import com.example.runadvisor.enums.MenuType
 import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.methods.clearChildren
-import com.example.runadvisor.methods.getProgressbar
-import com.example.runadvisor.methods.showMessage
-import com.example.runadvisor.methods.toMap
+import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
 import com.example.runadvisor.widget.TrackMenuBar
 import kotlinx.coroutines.Dispatchers
@@ -52,6 +50,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private lateinit var activityContext: Context
     private lateinit var parentActivity: Activity
     private lateinit var mapView: MapView
+    private var mapBaseView:View? = null
     private var urlCallInProgress:Boolean = false
     private var progressBar:ProgressBar? = null
     private var trackMenu:TrackMenuBar?=null
@@ -65,7 +64,8 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         _binding = FragmentMapBinding.inflate(inflater,container,false)
-        val view: View = binding.root
+        if(mapBaseView!=null){return mapBaseView!!}
+        mapBaseView = binding.root
         setParentActivity()
         setActivityContext()
         setLocationManager()
@@ -75,7 +75,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         setMenuType()
         setUserAgent()
         setInfoToUser()
-        return view
+        return mapBaseView!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -121,7 +121,8 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private fun setMapData(){
-        mapData = MapData()
+        if(mapData == null){mapData = MapData()
+        }
         mapData!!.geoPoint = mapView.mapCenter as GeoPoint
         mapData!!.zoom = mapView.zoomLevel
     }
@@ -155,7 +156,8 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_add_path,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupAdd->addBottomMenu()
+                    R.id.popupDrawPoints->addBottomMenu()
+                    R.id.popupGpsPoints->{}
                     R.id.popupExit->exitBackToUpload()
                 }
                 true
@@ -340,11 +342,22 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     *   ##########################################################################
     * */
 
-    private fun getLocation() {
-        if(checkGpsProviderStatus()){
-            if(ContextCompat.checkSelfPermission(activityContext, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
-            }
+    private fun getLocation():GeoPoint? {
+        val location:Location?
+        if(checkGpsProviderStatus() &&
+            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            location =  locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            if(location!=null){return GeoPoint(location.latitude,location.longitude)}
+        }
+        return null
+    }
+
+    private fun getLocationUpdates(){
+        if(checkGpsProviderStatus() &&
+            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
         }
     }
 
@@ -363,12 +376,13 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
             mapController.setCenter(mapData!!.geoPoint)
             return
         }
-
-        val lat = 59.377172
-        val lon = 13.489016
-        mapController.setZoom(19)
-        val startPoint = GeoPoint(lat,lon)
-        mapController.setCenter(startPoint)
+        var location = getLocation()
+        location = getCenterOfHome()
+        if(location == null){
+            location = getCenterOfHome()
+        }
+        mapController.setZoom(17)
+        mapController.setCenter(location)
 
     }
 
@@ -400,16 +414,17 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     override fun onResume() {
         super.onResume()
+        setLocation()
         mapView.onResume()
     }
 
     override fun onPause() {
         super.onPause()
+        setMapData()
         mapView.onPause()
     }
 
     override fun onDestroyView() {
-        setMapData()
         super.onDestroyView()
         _binding = null
     }
