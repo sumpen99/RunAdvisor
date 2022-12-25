@@ -80,12 +80,6 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
         sortOnCity.setOnClickListener{sortDataSet(2,sortOnCity.isChecked,SortOperation.SORT_CITY)}
     }
 
-    private fun sortDataSet(pos:Int,isChecked:Boolean,op: SortOperation){
-        if(!isChecked){return}
-        uncheckCheckBoxes(pos,checkBoxes)
-
-    }
-
     private fun setActivityContext() {
         activityContext = requireContext()
     }
@@ -116,6 +110,18 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
                 customAdapter.addRunItems(it)
             }
         })
+    }
+
+    /*
+    *   ##########################################################################
+    *                               SORT DATA BY CLOSEST TO USER
+    *   ##########################################################################
+    * */
+
+    private fun sortDataSet(pos:Int,isChecked:Boolean,op: SortOperation){
+        if(!isChecked){return}
+        uncheckCheckBoxes(pos,checkBoxes)
+
     }
 
     /*

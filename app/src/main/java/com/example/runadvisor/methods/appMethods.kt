@@ -1,14 +1,17 @@
 package com.example.runadvisor.methods
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.Bitmap
 import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -18,6 +21,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.Registry
@@ -26,7 +30,7 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
-import com.example.runadvisor.enums.SortOperation
+import com.example.runadvisor.struct.MessageToUser
 import com.example.runadvisor.struct.RunItem
 import com.firebase.ui.storage.images.FirebaseImageLoader
 import com.google.firebase.ktx.Firebase
@@ -39,6 +43,12 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 
+/*
+*   ##########################################################################
+*                            APP DIMENSIONS
+*   ##########################################################################
+*
+* */
 
 fun getScreenWidth() : Int{
     return Resources.getSystem().displayMetrics.widthPixels
@@ -48,13 +58,38 @@ fun getScreenHeight() : Int{
     return Resources.getSystem().displayMetrics.heightPixels
 }
 
+@SuppressLint("InternalInsetResource")
+fun Activity.getTitleBarHeight():Int{
+    var result = 0
+    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+    if(resourceId>0){
+        result = resources.getDimensionPixelSize(resourceId)
+    }
+    return result
+}
+
+fun Activity.removeActionBarHeight():Float{
+    val styledAttributes = baseContext.theme.obtainStyledAttributes(
+        intArrayOf(android.R.attr.actionBarSize)
+    )
+    val mActionBarSize = styledAttributes.getDimension(0,0.0f)
+    styledAttributes.recycle()
+    return mActionBarSize
+}
+
 fun convertDpToPixel(value : Int):Int{
     return (value* Resources.getSystem().displayMetrics.density).toInt()
 }
 
+/*
+*   ##########################################################################
+*                            GLIDE LIBRARY
+*   ##########################################################################
+*
+* */
+
 @GlideModule
 class AppGlide : AppGlideModule(){
-
     override fun registerComponents(
         context: Context,
         glide: Glide,
@@ -69,23 +104,74 @@ class AppGlide : AppGlideModule(){
     }
 }
 
-fun View.hideKeyboard() {
-    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-    imm.hideSoftInputFromWindow(windowToken, 0)
+/*
+*   ##########################################################################
+*                            ADD PROGRESSBAR
+*   ##########################################################################
+*
+* */
+
+fun Fragment.getProgressbar(activity:Activity,viewGroup:ViewGroup):ProgressBar{
+    val progressBar = ProgressBar(activity,null,android.R.attr.progressBarStyleHorizontal)
+    /*progressBar.layoutParams = LinearLayout.LayoutParams(
+        ViewGroup.LayoutParams.WRAP_CONTENT,
+        ViewGroup.LayoutParams.WRAP_CONTENT)*/
+    progressBar.visibility = View.GONE
+    progressBar.isIndeterminate = true
+
+    val params = RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams.MATCH_PARENT,
+        RelativeLayout.LayoutParams.MATCH_PARENT
+    )
+
+    val rl = RelativeLayout(activity)
+
+    rl.gravity = Gravity.CENTER
+    rl.addView(progressBar)
+
+    viewGroup.addView(rl, params)
+    return progressBar
 }
 
-/*fun View.takeScreenshot():Bitmap{
-    val bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
-    val bgDrawable = background
-    if(bgDrawable!=null){bgDrawable.draw(canvas)}
-    else{canvas.drawColor(Color.WHITE)}
-    return bitmap
-}*/
+/*
+*   ##########################################################################
+*                            TOAST MESSAGE
+*   ##########################################################################
+*
+* */
+
+fun Activity.showMessage(msg:String,duration:Int){
+    Toast.makeText(this,msg,duration).show()
+}
+
+
+/*
+*   ##########################################################################
+*                            FILES -> IMAGES
+*   ##########################################################################
+*
+* */
+
+fun Activity.getFilePathFromIntent(data: Intent):String?{
+    var picturePath:String? = null
+    val selectedImage: Uri = data.data!!
+    val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+
+    val cursor: Cursor? = contentResolver.query(
+        selectedImage,
+        filePathColumn, null, null, null
+    )
+    if(cursor!=null){
+        cursor.moveToFirst()
+        val columnIndex: Int = cursor.getColumnIndex(filePathColumn[0])
+        picturePath = cursor.getString(columnIndex)
+        cursor.close()
+
+    }
+    return picturePath
+}
 
 @SuppressLint("IntentReset")
-//https://stackoverflow.com/questions/5309190/android-pick-images-from-gallery
-// TO TAKE PHOTO INSTEAD
 fun Fragment.selectImageFromGallery(requestCode:Int) {
     val getIntent = Intent(Intent.ACTION_GET_CONTENT)
     getIntent.type = "image/*"
@@ -113,62 +199,14 @@ fun Fragment.selectImageFromGallery(requestCode:Int) {
     //)
 }
 
-fun Fragment.uncheckCheckBoxes(pos:Int,checkBoxes:ArrayList<CheckBox>){
-    var i = 0
-    while(i<checkBoxes.size){
-        if(i!=pos){checkBoxes[i].isChecked = false}
-        i++
-    }
-}
-
-fun Fragment.getProgressbar(activity:Activity,viewGroup:ViewGroup):ProgressBar{
-    val progressBar = ProgressBar(activity,null,android.R.attr.progressBarStyleHorizontal)
-    /*progressBar.layoutParams = LinearLayout.LayoutParams(
-        ViewGroup.LayoutParams.WRAP_CONTENT,
-        ViewGroup.LayoutParams.WRAP_CONTENT)*/
-    progressBar.visibility = View.GONE
-    progressBar.isIndeterminate = true
-
-    val params = RelativeLayout.LayoutParams(
-        RelativeLayout.LayoutParams.MATCH_PARENT,
-        RelativeLayout.LayoutParams.MATCH_PARENT
-    )
-
-    val rl = RelativeLayout(activity)
-
-    rl.gravity = Gravity.CENTER
-    rl.addView(progressBar)
-
-    viewGroup.addView(rl, params)
-    return progressBar
-}
-
-fun Activity.showMessage(msg:String,duration:Int){
-    Toast.makeText(this,msg,duration).show()
-}
-
-fun Activity.getFilePathFromIntent(data: Intent):String?{
-    var picturePath:String? = null
-    val selectedImage: Uri = data.data!!
-    val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-
-    val cursor: Cursor? = contentResolver.query(
-        selectedImage,
-        filePathColumn, null, null, null
-    )
-    if(cursor!=null){
-        cursor.moveToFirst()
-        val columnIndex: Int = cursor.getColumnIndex(filePathColumn[0])
-        picturePath = cursor.getString(columnIndex)
-        cursor.close()
-
-    }
-    return picturePath
-}
-
-fun Activity.moveToActivity(intent:Intent){
-    startActivity(intent)
-}
+/*fun View.takeScreenshot():Bitmap{
+    val bitmap = Bitmap.createBitmap(width,height,Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val bgDrawable = background
+    if(bgDrawable!=null){bgDrawable.draw(canvas)}
+    else{canvas.drawColor(Color.WHITE)}
+    return bitmap
+}*/
 
 fun Activity.downloadImage(item: RunItem, imageView:ImageView){
     val database = Firebase.storage.reference
@@ -235,13 +273,36 @@ fun Activity.loadImageFromPhone(imagePath:String,imageView:ImageView){
         .into(imageView)
 }
 
-fun Activity.removeActionBarHeight():Float{
-    val styledAttributes = baseContext.theme.obtainStyledAttributes(
-        intArrayOf(android.R.attr.actionBarSize)
-    )
-    val mActionBarSize = styledAttributes.getDimension(0,0.0f)
-    styledAttributes.recycle()
-    return mActionBarSize
+/*
+*   ##########################################################################
+*                            GPS FUNCTIONS
+*   ##########################################################################
+*
+* */
+
+fun Fragment.getLocation():GeoPoint? {
+    val location: Location?
+    if(checkGpsProviderStatus() &&
+        ContextCompat.checkSelfPermission(requireContext(),
+            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(requireContext(),
+            Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        location =  (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        if(location!=null){return GeoPoint(location.latitude,location.longitude)}
+    }
+    return null
+}
+
+fun Fragment.getLocationUpdates(locationListener:LocationListener){
+    if(checkGpsProviderStatus() &&
+        ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
+    }
+}
+
+fun Fragment.checkGpsProviderStatus():Boolean{
+    return (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
 }
 
 fun Activity.gpsStatus(){
@@ -249,28 +310,18 @@ fun Activity.gpsStatus(){
     moveToActivity(intent)
 }
 
-fun ViewGroup.clearChildren(childrenToNotRemove:Int){
-    while(childCount>childrenToNotRemove){
-        var i = childrenToNotRemove
-        val childCount = childCount
-        while(i<childCount){
-            removeView(getChildAt(i))
-            i++
-        }
-    }
+fun getCenterOfHome(): GeoPoint {
+    return GeoPoint(59.379108,13.500179)
 }
 
-@SuppressLint("InternalInsetResource")
-fun Activity.getTitleBarHeight():Int{
-    var result = 0
-    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-    if(resourceId>0){
-        result = resources.getDimensionPixelSize(resourceId)
-    }
-    return result
-}
 
-fun Double.format(digits: Int) = "%.${digits}f".format(this)
+
+/*
+*   ##########################################################################
+*                                JSON
+*   ##########################################################################
+*
+* */
 
 fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith {
     when (val value = this[it])
@@ -286,6 +337,83 @@ fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith {
     }
 }
 
-fun getCenterOfHome(): GeoPoint {
-    return GeoPoint(59.379108,13.500179)
+/*
+*   ##########################################################################
+*                                CLEAR CHILDREN
+*   ##########################################################################
+*
+* */
+
+fun ViewGroup.clearChildren(childrenToNotRemove:Int){
+    while(childCount>childrenToNotRemove){
+        var i = childrenToNotRemove
+        val childCount = childCount
+        while(i<childCount){
+            removeView(getChildAt(i))
+            i++
+        }
+    }
 }
+
+/*
+*   ##########################################################################
+*                                INTENT
+*   ##########################################################################
+*
+* */
+
+fun Activity.moveToActivity(intent:Intent){
+    startActivity(intent)
+}
+
+/*
+*   ##########################################################################
+*                                CHECK/UNCHECK CHECKBOXES
+*   ##########################################################################
+*
+* */
+
+fun Fragment.uncheckCheckBoxes(pos:Int,checkBoxes:ArrayList<CheckBox>){
+    var i = 0
+    while(i<checkBoxes.size){
+        if(i!=pos){checkBoxes[i].isChecked = false}
+        i++
+    }
+}
+
+/*
+*   ##########################################################################
+*                                EDIT TEXTVIEW
+*   ##########################################################################
+*
+* */
+
+fun View.hideKeyboard() {
+    val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    imm.hideSoftInputFromWindow(windowToken, 0)
+}
+
+/*
+*   ##########################################################################
+*                                SELECT FILE FROM DEVICE
+*   ##########################################################################
+*
+* */
+
+/*@Deprecated("Deprecated in Java")
+private val GALLERY_REQUEST_CODE = 102
+private val PICK_IMAGE = 1
+private var fileUri: Uri? = null
+private var filePath:String? = null
+override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    super.onActivityResult(requestCode, resultCode, data)
+    if (requestCode == PICK_IMAGE
+        && resultCode == Activity.RESULT_OK
+        && data != null
+        && data.data != null
+    ) {
+        filePath = parentActivity.getFilePathFromIntent(data)
+        fileUri = data.data!!
+        //parentActivity.loadImageFromPhone(fileUri.toString(),binding.imageView)
+    }
+}*/

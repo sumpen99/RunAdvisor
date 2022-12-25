@@ -4,7 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.widget.CustomMarker
-import com.example.runadvisor.widget.CustomOverlay
+import com.example.runadvisor.widget.OverlayTrackPath
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.*
@@ -13,10 +13,10 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class MapPath(val activityContext: Context,
-              val mapView:MapView,
-                val callbackUpdateTrackLength:(args:String)->Unit) {
-    var currentOverlay:CustomOverlay? = null
+class MapTrackPath(val activityContext: Context,
+                   val mapView:MapView,
+                   val callbackUpdateTrackLength:(args:String)->Unit) {
+    var currentOverlay:OverlayTrackPath? = null
     var points = ArrayList<GeoPoint>()
     var savedTracks = ArrayList<SavedTrack>()
     var trackLength:Double = 0.0
@@ -83,7 +83,7 @@ class MapPath(val activityContext: Context,
 
     fun addLassoOverlay(){
         addLassoLines()
-        addLassoPoints()
+        addLassoMarkers()
         drawLasso()
         getNewTrackLength()
     }
@@ -113,9 +113,9 @@ class MapPath(val activityContext: Context,
         mapView.overlays.add(mapView.overlays.size,polyLine!!)
     }
 
-    private fun addLassoPoints(){
+    private fun addLassoMarkers(){
         var i = 0
-        currentOverlay = CustomOverlay(activityContext,ArrayList<CustomMarker>(),gestureListener,this)
+        currentOverlay = OverlayTrackPath(activityContext,ArrayList<CustomMarker>(),gestureListener,this)
         while(i<points.size){
             currentOverlay!!.addCustomItem("","",points[i],i)
             i++
@@ -172,7 +172,7 @@ class MapPath(val activityContext: Context,
         }
     }
 
-    fun resetMapPath(){
+    fun resetMapTrackPath(){
         removeOverlaysFromMap()
         points.clear()
         currentPoints = 0
@@ -206,5 +206,26 @@ class MapPath(val activityContext: Context,
 
     fun trackIsOnMap():Boolean{
         return (points.size > 0 && currentOverlay != null && polyLine != null)
+    }
+
+    /*
+    *   ##########################################################################
+    *                               OVERVIEW MAP
+    *   ##########################################################################
+    * */
+
+    fun addOverviewMarkers(runItems:List<RunItem>?){
+        if(runItems==null){return}
+        if(currentOverlay==null){
+            currentOverlay = OverlayTrackPath(activityContext,ArrayList<CustomMarker>(),gestureListener,this)
+        }
+        var i = 0
+        while(i<runItems.size){
+            val item = runItems[i]
+            currentOverlay!!.addCustomItem("","", getDoubleToGeoPoint(item.coordinates!!),i)
+            i++
+        }
+        mapView.overlays.add(currentOverlay)
+        invalidate()
     }
 }

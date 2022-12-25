@@ -15,6 +15,8 @@ fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment{
     }
 }
 
+fun Double.format(digits: Int) = "%.${digits}f".format(this)
+
 fun getImagePath():String{
     return "images/"
 }

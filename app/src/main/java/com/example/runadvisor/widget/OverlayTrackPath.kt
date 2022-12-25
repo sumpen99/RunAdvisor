@@ -3,16 +3,16 @@ import android.content.Context
 import android.graphics.Point
 import android.view.MotionEvent
 import androidx.appcompat.content.res.AppCompatResources
-import com.example.runadvisor.struct.MapPath
+import com.example.runadvisor.struct.MapTrackPath
 import org.osmdroid.api.IMapView
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
-class CustomOverlay(private val activityContext:Context,
-                    private val markers:MutableList<CustomMarker>,
-                    private val pOnItemGestureListener:OnItemGestureListener<CustomMarker>,
-                    private val mapPath:MapPath):
+class OverlayTrackPath(private val activityContext:Context,
+                       private val markers:MutableList<CustomMarker>,
+                       private val pOnItemGestureListener:OnItemGestureListener<CustomMarker>,
+                       private val mapTrackPath:MapTrackPath):
     ItemizedIconOverlay<CustomMarker>(activityContext,markers,pOnItemGestureListener) {
 
     var markerHasTouch:CustomMarker? = null
@@ -21,7 +21,7 @@ class CustomOverlay(private val activityContext:Context,
 
     private fun setMarkerWithTouch(marker:CustomMarker){
         markerHasTouch = marker
-        mapPath.invalidate()
+        mapTrackPath.invalidate()
     }
 
     private fun resetMarkerWithTouch(){
@@ -29,7 +29,7 @@ class CustomOverlay(private val activityContext:Context,
             markerHasTouch!!.lostTouch()
             markerHasTouch = null
         }
-        mapPath.invalidate()
+        mapTrackPath.invalidate()
     }
 
     fun addCustomItem(title:String,snippet:String,geoPoint:GeoPoint,index:Int){
@@ -63,9 +63,9 @@ class CustomOverlay(private val activityContext:Context,
                 if(markerHasTouch!=null){
                     markerHasTouch!!.move(
                         GeoPoint(mapView!!.projection.fromPixels(event.x.toInt(),event.y.toInt())))
-                    mapPath.updateLinePoints(markerHasTouch!!.index,markerHasTouch!!.geoPoint)
-                    mapPath.drawLasso()
-                    mapPath.getNewTrackLength()
+                    mapTrackPath.updateLinePoints(markerHasTouch!!.index,markerHasTouch!!.geoPoint)
+                    mapTrackPath.drawLasso()
+                    mapTrackPath.getNewTrackLength()
                     return true
                 }
             }

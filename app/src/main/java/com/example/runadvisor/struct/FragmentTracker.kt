@@ -2,6 +2,7 @@ package com.example.runadvisor.struct
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 
 class FragmentTracker {
     var root: Fragment?=null

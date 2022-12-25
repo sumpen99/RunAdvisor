@@ -50,6 +50,10 @@ fun getDoubleToGeoPoints(p:ArrayList<Double>):ArrayList<GeoPoint>{
     return newList
 }
 
+fun getDoubleToGeoPoint(p:ArrayList<Double>):GeoPoint{
+    return GeoPoint(p[0],p[1])
+}
+
 fun getCenterOfPoints(p:ArrayList<GeoPoint>):GeoPoint?{
     if(p.isEmpty()){return null}
     var i = 1

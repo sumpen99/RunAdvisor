@@ -1,8 +1,5 @@
 package com.example.runadvisor.fragment
-import android.Manifest
-import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -14,10 +11,9 @@ import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.view.drawToBitmap
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.R
@@ -48,14 +44,14 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private lateinit var locationManager: LocationManager
     private lateinit var messageToUser: MessageToUser
     private lateinit var activityContext: Context
-    private lateinit var parentActivity: Activity
+    private lateinit var parentActivity: HomeActivity
     private lateinit var mapView: MapView
     private var mapBaseView:View? = null
     private var urlCallInProgress:Boolean = false
     private var progressBar:ProgressBar? = null
     private var trackMenu:TrackMenuBar?=null
-    private var mapPath:MapPath? = null
-    private var mapData:MapData? = null
+    private var mapTrackPath:MapTrackPath? = null
+    private var mapData = MapData()
     private var _binding: FragmentMapBinding? = null
     private val binding get() = _binding!!
     private val URL_TIMER:Long = 1000
@@ -63,15 +59,13 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
+        //if(mapBaseView!=null){return mapBaseView!!}
         _binding = FragmentMapBinding.inflate(inflater,container,false)
-        if(mapBaseView!=null){return mapBaseView!!}
         mapBaseView = binding.root
         setParentActivity()
         setActivityContext()
         setLocationManager()
         setMapView()
-        setLocation()
-        getLocation()
         setMenuType()
         setUserAgent()
         setInfoToUser()
@@ -80,7 +74,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if(progressBar == null){addProgressBar()}
+        setMapSpecificDetails()
     }
 
     override fun longPressHelper(p: GeoPoint?): Boolean {
@@ -101,7 +95,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     private fun setActivityContext(){activityContext = requireContext()}
 
-    private fun setParentActivity(){parentActivity = requireActivity()}
+    private fun setParentActivity(){parentActivity = requireActivity() as HomeActivity}
 
     private fun setLocationManager(){locationManager = activityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager}
 
@@ -121,10 +115,12 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private fun setMapData(){
-        if(mapData == null){mapData = MapData()
-        }
-        mapData!!.geoPoint = mapView.mapCenter as GeoPoint
-        mapData!!.zoom = mapView.zoomLevel
+        mapData.geoPoint = mapView.mapCenter as GeoPoint
+        mapData.zoom = mapView.zoomLevel
+    }
+
+    private fun setMapTrackPath(){
+        mapTrackPath = MapTrackPath(activityContext,mapView,::updateTrackLength)
     }
 
     private fun addProgressBar(){
@@ -135,6 +131,22 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private fun setProgressbar(show:Boolean){
         if(show){progressBar!!.visibility = VISIBLE}
         else{progressBar!!.visibility = GONE}
+    }
+
+    private fun setMapSpecificDetails(){
+        if(fragmentId == FragmentInstance.FRAGMENT_MAP_CHILD){
+            if(progressBar == null){addProgressBar()}
+        }
+        // TODO IMPORTENT REMOVE ON DESTROY 
+        else if(fragmentId == FragmentInstance.FRAGMENT_MAP){
+            if(mapTrackPath==null){setMapTrackPath()}
+            parentActivity.firestoreViewModel.getRunItems().observe(parentActivity, Observer { it->
+                if(it!=null){
+                    mapTrackPath!!.addOverviewMarkers(it)
+                }
+            })
+
+        }
     }
 
     /*
@@ -193,16 +205,16 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
                 ::adjustPointLasso,
                 ::adjustPointLasso,
                 ::saveTrack,
-                ::clearMapPath)
+                ::clearMapTrackPath)
         }
     }
 
     private fun exitBackToUpload(){
-        if(mapPath!=null && mapPath!!.savedTracks.isNotEmpty()){
+        if(mapTrackPath!=null && mapTrackPath!!.savedTracks.isNotEmpty()){
             (parentActivity as HomeActivity).pushDataToFragment(
                 FragmentInstance.FRAGMENT_UPLOAD,
-                mapPath!!.savedTracks)
-            mapPath!!.removeOverlaysFromMap()
+                mapTrackPath!!.savedTracks)
+            mapTrackPath!!.removeOverlaysFromMap()
         }
         removeBottomMenu()
         (parentActivity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
@@ -221,17 +233,18 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     private fun adjustPointLasso(parameter:Any?){
         val numPoints:Int = parameter as Int
-        if(mapPath == null){
+        if(mapTrackPath == null){
             if(numPoints <= 0){return}
-            mapPath = MapPath(activityContext,mapView,::updateTrackLength)
-            mapPath!!.setLasso(numPoints)
+            setMapTrackPath()
+            //mapTrackPath = MapTrackPath(activityContext,mapView,::updateTrackLength)
+            mapTrackPath!!.setLasso(numPoints)
         }
         else{
-            if(!mapPath!!.adjustLasso(numPoints)){return}
-            mapPath!!.removeOverlaysFromMap()
-            mapPath!!.buildPolyLine()
+            if(!mapTrackPath!!.adjustLasso(numPoints)){return}
+            mapTrackPath!!.removeOverlaysFromMap()
+            mapTrackPath!!.buildPolyLine()
         }
-        mapPath!!.addLassoOverlay()
+        mapTrackPath!!.addLassoOverlay()
     }
 
     private fun saveTrack(parameter:Any?){
@@ -245,7 +258,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
                 getAddress2(addressInfo,serverResult)
 
                 if(serverResult.serverResult != ServerResult.UPLOAD_ERROR){
-                    if(saveTrackOnSuccess(addressInfo)){mapPath!!.removeOverlayMarkers()}
+                    if(saveTrackOnSuccess(addressInfo)){mapTrackPath!!.removeOverlayMarkers()}
                     else{showUserMessage("UnExpected Error!")}
                 }
                 else{showUserMessage(serverResult.msg)}
@@ -255,10 +268,10 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         }
     }
 
-    private fun clearMapPath(parameter: Any?){
-        if(mapPath!=null){
-            mapPath!!.resetMapPath()
-            //mapPath = null
+    private fun clearMapTrackPath(parameter: Any?){
+        if(mapTrackPath!=null){
+            mapTrackPath!!.resetMapTrackPath()
+            //mapTrackPath = null
         }
     }
 
@@ -284,7 +297,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private suspend fun getAddress(addressInfo:AddressInfo,serverResult:ServerDetails){
-        val geoPoint = mapPath!!.points[0]
+        val geoPoint = mapTrackPath!!.points[0]
         val requestString = "https://nominatim.openstreetmap.org/reverse?lat=" +
                 geoPoint.latitude.toString() + "&lon=" + geoPoint.longitude.toString() + "&zoom=18&format=jsonv2"
         withContext(Dispatchers.IO) {
@@ -315,7 +328,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     private fun saveTrackOnSuccess(addressInfo:AddressInfo):Boolean{
         val bmp = mapView.drawToBitmap()
         val zoom = mapView.zoomLevel
-        return mapPath!!.saveCurrentTrack(bmp,zoom,addressInfo.city,addressInfo.street)
+        return mapTrackPath!!.saveCurrentTrack(bmp,zoom,addressInfo.city,addressInfo.street)
     }
 
     /*
@@ -342,48 +355,27 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     *   ##########################################################################
     * */
 
-    private fun getLocation():GeoPoint? {
-        val location:Location?
-        if(checkGpsProviderStatus() &&
-            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            location =  locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-            if(location!=null){return GeoPoint(location.latitude,location.longitude)}
-        }
-        return null
-    }
-
-    private fun getLocationUpdates(){
-        if(checkGpsProviderStatus() &&
-            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(activityContext,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f, this)
-        }
-    }
-
     override fun onLocationChanged(location: Location) {
         //printToTerminal("OnLocationChanged line 140 MapFragment Latitude: " + location.latitude + " , Longitude: " + location.longitude)
     }
 
-    private fun checkGpsProviderStatus():Boolean{
-        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+    private fun setUserLocationIfAllowed(){
+        //var location = getLocation()
+        val location = getCenterOfHome()
+        /*if(location == null){
+            location = getCenterOfHome()
+        }*/
+        mapView.controller.setZoom(17)
+        mapView.controller.setCenter(location)
+
     }
 
-    private fun setLocation(){
-        val mapController = mapView.controller
-        if(mapData!=null){
-            mapController.setZoom(mapData!!.zoom)
-            mapController.setCenter(mapData!!.geoPoint)
-            return
+    private fun resetLastPosition(){
+        if(mapData.geoPoint == null){setUserLocationIfAllowed()}
+        else{
+            mapView.controller.setZoom(mapData.zoom)
+            mapView.controller.setCenter(mapData.geoPoint)
         }
-        var location = getLocation()
-        location = getCenterOfHome()
-        if(location == null){
-            location = getCenterOfHome()
-        }
-        mapController.setZoom(17)
-        mapController.setCenter(location)
-
     }
 
     /*
@@ -398,7 +390,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
     }
 
     private fun clearForUpload():Boolean{
-        return (mapPath!=null && mapPath!!.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress)
+        return (mapTrackPath!=null && mapTrackPath!!.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress)
     }
 
     private fun getLatLon(x:Float,y:Float): GeoPoint {
@@ -406,6 +398,7 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
         //printToTerminal("X:$x Y:$y")
         return GeoPoint(proj.fromPixels(x.toInt(),y.toInt()))
     }
+
     /*
     *   ##########################################################################
     *               ON START STOP RESUME
@@ -414,19 +407,23 @@ class MapFragment(private val removable:Boolean,private var menuType:MenuType,pr
 
     override fun onResume() {
         super.onResume()
-        setLocation()
+        printToTerminal("resume")
         mapView.onResume()
+        resetLastPosition()
     }
 
     override fun onPause() {
         super.onPause()
-        setMapData()
+        printToTerminal("paus")
         mapView.onPause()
+        setMapData()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+
+        printToTerminal("destroy")
+        //_binding = null
     }
 
 }
