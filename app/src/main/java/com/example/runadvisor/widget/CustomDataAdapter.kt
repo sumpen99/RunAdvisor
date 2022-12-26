@@ -40,9 +40,9 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
         holder.cityTextView.text = itemsViewModel.city
         holder.streetTextView.text = itemsViewModel.street
         holder.trackLengthTextView.text = "${itemsViewModel.trackLength} km"
-        holder.distTextView.text = itemsViewModel.range.format(0) +  " km"
+        holder.distTextView.text = itemsViewModel.range.format(2) + " km Away"
         holder.zoom = itemsViewModel.zoom!!
-        holder.centerPoint = GeoPoint(itemsViewModel.center!![0],itemsViewModel.center[1])
+        holder.centerPoint = GeoPoint(itemsViewModel.center!![0],itemsViewModel.center!![1])
         holder.trackPoints = getDoubleToGeoPoints(itemsViewModel.coordinates!!)
     }
 

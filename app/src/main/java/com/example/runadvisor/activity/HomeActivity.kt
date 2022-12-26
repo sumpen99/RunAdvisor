@@ -14,6 +14,7 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
+import com.example.runadvisor.sort.qSortRunItems
 import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.widget.CustomDataAdapter
@@ -36,9 +37,10 @@ class HomeActivity:AppCompatActivity() {
             while(i<it.size){
                 val trackGeo = getDoubleToGeoPoint(it[i].center!!)
                 val userGeo = getUserLocation()
-                printToTerminal(userGeo.toString())
                 it[i++].range = latLonToMeter(trackGeo,userGeo)/1000.0
             }
+            if(customAdapter.itemCount==0){qSortRunItems(it,0,it.size-1)}
+            else{}
             customAdapter.addRunItems(it)
         }
     }

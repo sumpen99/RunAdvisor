@@ -67,7 +67,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:padding="5dp"
-                    android:text="Range:"
+                    android:text=""
                     android:textSize="@dimen/cardText"
                     android:textStyle="bold" />
                 <TextView
