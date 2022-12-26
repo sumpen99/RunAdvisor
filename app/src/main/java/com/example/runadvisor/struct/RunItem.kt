@@ -8,5 +8,6 @@ data class RunItem(
     val coordinates:ArrayList<Double>? = null,
     val center:ArrayList<Double>? = null,
     val zoom:Int? = null,
-    val docID:String? = null
+    val docID:String? = null,
+    var range:Double = 0.0,
     ):java.io.Serializable

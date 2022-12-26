@@ -11,7 +11,6 @@ import com.example.runadvisor.R
 import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
 import org.osmdroid.config.Configuration
@@ -113,7 +112,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     /*
     *   ##########################################################################
-    *               SOME USEFUL FUNCTIONS
+    *               SHOW MESSAGE TO USER
     *   ##########################################################################
     * */
 

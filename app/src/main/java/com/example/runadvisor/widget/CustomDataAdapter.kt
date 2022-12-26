@@ -11,6 +11,7 @@ import com.example.runadvisor.R
 import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.methods.downloadImage
+import com.example.runadvisor.methods.format
 import com.example.runadvisor.methods.getDoubleToGeoPoints
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.util.GeoPoint
@@ -25,6 +26,7 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
     }
 
     fun addRunItems(runItems:List<RunItem>){
+        if(itemCount==0){}
         val pos = serverData.size
         serverData.addAll(runItems)
         notifyItemRangeChanged(pos,runItems.size)
@@ -38,7 +40,7 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
         holder.cityTextView.text = itemsViewModel.city
         holder.streetTextView.text = itemsViewModel.street
         holder.trackLengthTextView.text = "${itemsViewModel.trackLength} km"
-        holder.distTextView.text = "1000 km"
+        holder.distTextView.text = itemsViewModel.range.format(0) +  " km"
         holder.zoom = itemsViewModel.zoom!!
         holder.centerPoint = GeoPoint(itemsViewModel.center!![0],itemsViewModel.center[1])
         holder.trackPoints = getDoubleToGeoPoints(itemsViewModel.coordinates!!)

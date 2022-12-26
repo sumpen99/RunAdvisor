@@ -280,7 +280,7 @@ fun Activity.loadImageFromPhone(imagePath:String,imageView:ImageView){
 *
 * */
 
-fun Fragment.getLocation():GeoPoint? {
+fun Fragment.getUserLocation():GeoPoint {
     val location: Location?
     if(checkGpsProviderStatus() &&
         ContextCompat.checkSelfPermission(requireContext(),
@@ -290,7 +290,7 @@ fun Fragment.getLocation():GeoPoint? {
         location =  (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(location!=null){return GeoPoint(location.latitude,location.longitude)}
     }
-    return null
+    return getCenterOfSweden()
 }
 
 fun Fragment.getLocationUpdates(locationListener:LocationListener){
@@ -305,6 +305,31 @@ fun Fragment.checkGpsProviderStatus():Boolean{
     return (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
 }
 
+fun Activity.getUserLocation():GeoPoint {
+    val location: Location?
+    if(checkGpsProviderStatus() &&
+        ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(this,
+            Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        location =  (getSystemService(Context.LOCATION_SERVICE) as LocationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER)
+        if(location!=null){return GeoPoint(location.latitude,location.longitude)}
+    }
+    return getCenterOfSweden()
+}
+
+fun Activity.getLocationUpdates(locationListener:LocationListener){
+    if(checkGpsProviderStatus() &&
+        ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        (getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
+    }
+}
+
+fun Activity.checkGpsProviderStatus():Boolean{
+    return (getSystemService(Context.LOCATION_SERVICE) as LocationManager).isProviderEnabled(LocationManager.GPS_PROVIDER)
+}
+
 fun Activity.gpsStatus(){
     val intent = Intent(Settings.ACTION_LOCALE_SETTINGS)
     moveToActivity(intent)
@@ -312,6 +337,10 @@ fun Activity.gpsStatus(){
 
 fun getCenterOfHome(): GeoPoint {
     return GeoPoint(59.379108,13.500179)
+}
+
+fun getCenterOfSweden(): GeoPoint {
+    return GeoPoint(63.167109,15.957184)
 }
 
 

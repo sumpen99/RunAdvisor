@@ -1,9 +1,7 @@
 package com.example.runadvisor.activity
 import android.Manifest
-import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.AttributeSet
 import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -12,12 +10,10 @@ import androidx.lifecycle.*
 import com.example.runadvisor.R
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityHomeBinding
-import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.methods.fragmentInstanceToFragment
-import com.example.runadvisor.methods.getTitleBarHeight
+import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.widget.CustomDataAdapter
@@ -36,6 +32,13 @@ class HomeActivity:AppCompatActivity() {
 
     private var observer = Observer<List<RunItem>?>{ it->
         if(it!=null){
+            var i = 0
+            while(i<it.size){
+                val trackGeo = getDoubleToGeoPoint(it[i].center!!)
+                val userGeo = getUserLocation()
+                printToTerminal(userGeo.toString())
+                it[i++].range = latLonToMeter(trackGeo,userGeo)/1000.0
+            }
             customAdapter.addRunItems(it)
         }
     }
@@ -196,7 +199,7 @@ class HomeActivity:AppCompatActivity() {
 
     /*
     *   ##########################################################################
-    *               TO BE REMOVED
+    *               REMOVE DISPATCH FUNCTION
     *   ##########################################################################
     * */
 
