@@ -1,9 +1,10 @@
 package com.example.runadvisor.activity
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.view.MenuItem
-import android.view.MotionEvent
+import android.util.AttributeSet
+import android.view.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
@@ -11,22 +12,34 @@ import androidx.lifecycle.*
 import com.example.runadvisor.R
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityHomeBinding
+import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.fragmentInstanceToFragment
 import com.example.runadvisor.methods.getTitleBarHeight
 import com.example.runadvisor.struct.FragmentTracker
+import com.example.runadvisor.struct.RunItem
+import com.example.runadvisor.widget.CustomDataAdapter
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
 class HomeActivity:AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
     lateinit var firestoreViewModel: FirestoreViewModel
+    private lateinit var customAdapter:CustomDataAdapter
     private var fragmentTracker = FragmentTracker()
     private var _binding: ActivityHomeBinding? = null
     private val binding get() = _binding!!
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
     private val LOCATION_PERMISSION_CODE = 2
+
+    private var observer = Observer<List<RunItem>?>{ it->
+        if(it!=null){
+            customAdapter.addRunItems(it)
+        }
+    }
+
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,13 +48,19 @@ class HomeActivity:AppCompatActivity() {
         setDataBinding()
         setUpNavMenu()
         setEventListener()
+        setAdapter()
         askForStoragePermissions()
         askForLocationPermission()
+        navigateFragment(FragmentInstance.FRAGMENT_DATA)
     }
 
     private fun setDataBinding(){
         _binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
+    }
+
+    private fun setAdapter(){
+        customAdapter = CustomDataAdapter(this)
     }
 
     private fun setUpNavMenu(){
@@ -51,8 +70,8 @@ class HomeActivity:AppCompatActivity() {
     private fun setEventListener(){
         bottomNavMenu.setOnItemSelectedListener {it: MenuItem ->
             when(it.itemId){
-                R.id.navHome->clearFragments()
-                R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP)
+                R.id.navHome->navigateFragment(FragmentInstance.FRAGMENT_DATA)
+                R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW)
                 R.id.navData->navigateFragment(FragmentInstance.FRAGMENT_DATA)
                 R.id.navUpload->navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
                 //R.id.navData->moveToActivity(Intent(this, HomeActivity::class.java))
@@ -63,6 +82,10 @@ class HomeActivity:AppCompatActivity() {
 
     private fun setViewModel(){
         firestoreViewModel = ViewModelProviders.of(this).get(FirestoreViewModel::class.java)
+    }
+
+    fun getAdapter():CustomDataAdapter{
+        return customAdapter
     }
 
     /*
@@ -115,20 +138,25 @@ class HomeActivity:AppCompatActivity() {
     * */
 
     fun pushDataToFragment(fragmentInstance: FragmentInstance,parameter:Any){
-        var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
+        val frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
         if(frag!=null){(frag as IFragment).receivedData(parameter)}
     }
 
-    fun navigateFragment(fragmentInstance: FragmentInstance){
+    fun navigateFragment(fragmentInstance: FragmentInstance,params:Any?=null){
         if(fragmentTracker.currentFragmentIsInstanceOf(fragmentInstance))return
         var frag:Fragment? = fragmentTracker.findOpenFragments(fragmentInstance)
         if(frag == null){
             frag = fragmentInstanceToFragment(fragmentInstance)
+            if(params!=null){(frag as IFragment).receivedData(params)}
         }
 
         fragmentTracker.remove()
         fragmentTracker.push(frag)
 
+        applyTransaction(frag)
+    }
+
+    private fun applyTransaction(frag:Fragment){
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.homeLayout,frag).commit()
         }
@@ -149,24 +177,21 @@ class HomeActivity:AppCompatActivity() {
     *   ##########################################################################
     * */
 
-    /*private fun loadRunItems(){
-        firestoreViewModel.getRunItems().observe(this, Observer { it->
-            savedRunItems = it
-            val frag:Fragment? = fragmentTracker.findOpenFragments(FragmentInstance.FRAGMENT_DATA)
-            if(frag!=null && it!=null){
-                (frag as DataFragment).notifyRecycleView(it)
-            }
-            //printToTerminal(savedRunItems!!.size.toString())
-        })
+    private fun setObservableData(){
+        firestoreViewModel.getRunItems().observe(this,observer)
+    }
+
+    private fun cancelObservableData(){
+        firestoreViewModel.getRunItems().removeObserver(observer)
     }
 
     fun runItemsIsNotNull():Boolean{
-        return savedRunItems != null
+        return customAdapter.itemCount>0
     }
 
     fun getRunItems():List<RunItem>{
-        return savedRunItems!!
-    }*/
+        return customAdapter.serverData
+    }
 
 
     /*
@@ -198,5 +223,14 @@ class HomeActivity:AppCompatActivity() {
         return true
     }
 
+    override fun onResume() {
+        super.onResume()
+        setObservableData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        cancelObservableData()
+    }
 
 }

@@ -10,16 +10,16 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
 class OverlayTrackPath(private val activityContext:Context,
-                       private val markers:MutableList<CustomMarker>,
-                       private val pOnItemGestureListener:OnItemGestureListener<CustomMarker>,
+                       private val markers:MutableList<TrackPathMarker>,
+                       private val pOnItemGestureListener:OnItemGestureListener<TrackPathMarker>,
                        private val mapTrackPath:MapTrackPath):
-    ItemizedIconOverlay<CustomMarker>(activityContext,markers,pOnItemGestureListener) {
+    ItemizedIconOverlay<TrackPathMarker>(activityContext,markers,pOnItemGestureListener) {
 
-    var markerHasTouch:CustomMarker? = null
+    var markerHasTouch:TrackPathMarker? = null
     private val drawableDefault = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default)
     private val drawableSelected = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.center)
 
-    private fun setMarkerWithTouch(marker:CustomMarker){
+    private fun setMarkerWithTouch(marker:TrackPathMarker){
         markerHasTouch = marker
         mapTrackPath.invalidate()
     }
@@ -33,16 +33,16 @@ class OverlayTrackPath(private val activityContext:Context,
     }
 
     fun addCustomItem(title:String,snippet:String,geoPoint:GeoPoint,index:Int){
-        val marker = CustomMarker(title,snippet,index,geoPoint,::setMarkerWithTouch,drawableDefault,drawableSelected)
+        val marker = TrackPathMarker(title,snippet,index,geoPoint,::setMarkerWithTouch,drawableDefault,drawableSelected)
         marker.setMarker(drawableDefault)
         super.addItem(marker)
     }
 
-    override fun addItems(items: MutableList<CustomMarker>?): Boolean {
+    override fun addItems(items: MutableList<TrackPathMarker>?): Boolean {
         return super.addItems(items)
     }
 
-    override fun createItem(i: Int): CustomMarker {
+    override fun createItem(i: Int): TrackPathMarker {
         return markers[i]
     }
 
@@ -64,7 +64,7 @@ class OverlayTrackPath(private val activityContext:Context,
                     markerHasTouch!!.move(
                         GeoPoint(mapView!!.projection.fromPixels(event.x.toInt(),event.y.toInt())))
                     mapTrackPath.updateLinePoints(markerHasTouch!!.index,markerHasTouch!!.geoPoint)
-                    mapTrackPath.drawLasso()
+                    mapTrackPath.invalidate()
                     mapTrackPath.getNewTrackLength()
                     return true
                 }

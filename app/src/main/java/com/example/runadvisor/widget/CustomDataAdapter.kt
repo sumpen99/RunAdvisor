@@ -63,7 +63,7 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
         }
 
         private fun launchMap(parameter:Any?){
-            (activity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_MAP_CHILD)
+            (activity as HomeActivity).navigateFragment(FragmentInstance.FRAGMENT_MAP_TRACK_ITEM,this)
         }
     }
 }

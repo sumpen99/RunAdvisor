@@ -22,7 +22,7 @@ import com.google.firebase.storage.StorageReference
 import kotlin.collections.ArrayList
 
 
-class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
+class DataFragment():
     Fragment(R.layout.fragment_data), IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: HomeActivity
@@ -44,7 +44,6 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
         setActivityContext()
         setRecyclerView()
         setAdapter()
-        loadData()
         return dataView!!
     }
 
@@ -57,11 +56,11 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     }
 
     override fun getFragmentID(): FragmentInstance {
-        return fragmentId
+        return FragmentInstance.FRAGMENT_DATA
     }
 
     override fun isRemovable():Boolean{
-        return removable
+        return false
     }
 
     override fun receivedData(parameter: Any?){}
@@ -91,11 +90,13 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     private fun setRecyclerView(){
         recyclerView = binding.dataRecyclerview
         recyclerView.layoutManager = LinearLayoutManager(activityContext)
+        recyclerView.adapter = parentActivity.getAdapter()
+        //recyclerView!!.adapter!!.notifyDataSetChanged()
     }
 
     private fun setAdapter(){
-        customAdapter = CustomDataAdapter(parentActivity)
-        recyclerView.adapter = customAdapter
+        //customAdapter = CustomDataAdapter(parentActivity)
+        //recyclerView.adapter = customAdapter
     }
 
     /*
@@ -104,13 +105,13 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
     *   ##########################################################################
     * */
 
-    private fun loadData(){
+    /*private fun loadData(){
         parentActivity.firestoreViewModel.getRunItems().observe(parentActivity, Observer { it->
             if(it!=null){
                 customAdapter.addRunItems(it)
             }
         })
-    }
+    }*/
 
     /*
     *   ##########################################################################
@@ -138,6 +139,13 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
         //parentActivity.loadImageFromPhone(imagePath,binding.imageView)
     }
 
+    /*
+    *   ##########################################################################
+    *                                ON VIEW CHANGED
+    *   ##########################################################################
+    *
+    * */
+
     override fun onResume() {
         super.onResume()
         //loadData()
@@ -149,6 +157,7 @@ class DataFragment(val removable:Boolean,val fragmentId:FragmentInstance):
 
     override fun onDestroyView() {
         super.onDestroyView()
+        _binding = null
     }
 
 }

@@ -3,12 +3,12 @@ import android.graphics.drawable.Drawable
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.OverlayItem
 
-class CustomMarker(
+class TrackPathMarker(
     title:String,
     snippet:String,
     val index:Int,
     var geoPoint:GeoPoint,
-    val callbackSelectedMarker:(CustomMarker)->Unit,
+    val callbackSelectedMarker:(TrackPathMarker)->Unit,
     val drawableDefault: Drawable?,
     val drawableSelected:Drawable?):
     OverlayItem(title,snippet,geoPoint){

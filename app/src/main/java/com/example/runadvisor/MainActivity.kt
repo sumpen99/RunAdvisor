@@ -11,18 +11,24 @@ import com.google.firebase.ktx.Firebase
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        isUserActive()
     }
 
     private fun isUserActive(){
         if(Firebase.auth.currentUser!=null){
-            //Firebase.auth.signOut()
-            //printToTerminal(Firebase.auth.currentUser.toString())
             moveToActivity(Intent(this, HomeActivity()::class.java))
         }
         else{
             moveToActivity(Intent(this,LoginActivity::class.java))
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        isUserActive()
+    }
+
+    override fun onPause() {
+        super.onPause()
     }
 
 }

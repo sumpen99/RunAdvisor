@@ -23,7 +23,7 @@ import com.example.runadvisor.widget.CustomMapAdapter
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 
-class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Fragment(R.layout.fragment_upload),IFragment {
+class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: HomeActivity
     private lateinit var recyclerView: RecyclerView
@@ -57,11 +57,11 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     }
 
     override fun isRemovable():Boolean{
-        return removable
+        return false
     }
 
     override fun getFragmentID(): FragmentInstance {
-        return fragmentId
+        return FragmentInstance.FRAGMENT_UPLOAD
     }
 
     override fun receivedData(parameter: Any?){
@@ -146,7 +146,7 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
     * */
 
     private fun drawPathOnMap(parameters:Any?){
-        parentActivity.navigateFragment(FragmentInstance.FRAGMENT_MAP_CHILD)
+        parentActivity.navigateFragment(FragmentInstance.FRAGMENT_MAP_TRACK_PATH)
     }
 
     /*
@@ -202,6 +202,27 @@ class UploadFragment(val removable:Boolean,val fragmentId:FragmentInstance):Frag
 
     private fun uploadIsPossible():Boolean{
         return (customAdapter.itemCount > 0 && progressBar!!.visibility != View.VISIBLE)
+    }
+
+    /*
+    *   ##########################################################################
+    *                                ON VIEW CHANGED
+    *   ##########################################################################
+    *
+    * */
+
+    override fun onResume() {
+        super.onResume()
+        //loadData()
+    }
+
+    override fun onPause() {
+        super.onPause()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
 }
