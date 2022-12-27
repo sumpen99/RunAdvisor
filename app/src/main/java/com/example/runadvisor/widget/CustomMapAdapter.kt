@@ -8,6 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
+import com.example.runadvisor.methods.getCurrentDate
 import com.example.runadvisor.methods.loadImageFromBitmap
 import com.example.runadvisor.struct.SavedTrack
 
@@ -57,6 +58,7 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
         holder.cityTextView.text = itemsViewModel.city
         holder.streetTextView.text = itemsViewModel.street
         holder.trackLengthTextView.text = itemsViewModel.trackLength + " km"
+        holder.dateTextView.text = itemsViewModel.date
     }
 
     override fun getItemCount(): Int {
@@ -69,6 +71,7 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
         val streetTextView: TextView = itemView.findViewById(R.id.trackStreetText)
         val trackLengthTextView: TextView = itemView.findViewById(R.id.trackKmText)
         val removeCardBtn: CustomImageButton = itemView.findViewById(R.id.trackRemove)
+        val dateTextView:TextView = itemView.findViewById(R.id.trackDateText)
 
         init{
             removeCardBtn.setCallback(null,::removeSelf)

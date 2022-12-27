@@ -9,4 +9,5 @@ class SavedTrack(
     val zoom:Int,
     val city:String,
     val street:String,
-    val trackLength:String)
+    val trackLength:String,
+    val date:String)

@@ -11,13 +11,13 @@
         android:icon="@drawable/ic_map_foreground"
         />
     <item
-        android:id="@+id/navData"
-        android:title="Data"
-        android:icon="@drawable/ic_data_foreground"
-        />
-    <item
         android:id="@+id/navUpload"
         android:title="Upload"
         android:icon="@drawable/ic_upload_foreground"
+        />
+    <item
+        android:id="@+id/navUser"
+        android:title="User"
+        android:icon="@drawable/ic_data_foreground"
         />
 </menu>

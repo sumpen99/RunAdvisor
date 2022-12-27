@@ -32,6 +32,7 @@ class LoginActivity : AppCompatActivity() {
     @SuppressLint("ClickableViewAccessibility")
     private fun setEventListener(view:View){
         auth = Firebase.auth
+        auth.signOut()
         emailField = findViewById(R.id.userEmail)
         passwordField = findViewById(R.id.userPassword)
         logInBtn = findViewById(R.id.logInBtn)

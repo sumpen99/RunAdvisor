@@ -9,7 +9,8 @@ data class RunItem(
     var center:ArrayList<Double>? = null,
     var zoom:Int? = null,
     var docID:String? = null,
-    var range:Double = 0.0,
+    var range:Int = 0,
+    var date:String?=null
     ):java.io.Serializable{
         fun swapValues(city:String?,
                        street:String?,
@@ -19,7 +20,8 @@ data class RunItem(
                        center:ArrayList<Double>?,
                        zoom:Int?,
                        docId:String?,
-                       range:Double){
+                       range:Int,
+                       date:String?){
             this.city = city
             this.street = street
             this.trackLength = trackLength
@@ -29,5 +31,6 @@ data class RunItem(
             this.zoom = zoom
             this.docID = docId
             this.range = range
+            this.date = date
         }
     }

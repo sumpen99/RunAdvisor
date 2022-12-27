@@ -2,6 +2,8 @@ package com.example.runadvisor.methods
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.fragment.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment{
     when(fragmentInstance){
@@ -10,6 +12,7 @@ fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment{
         FragmentInstance.FRAGMENT_MAP_TRACK_PATH->{return MapFragmentTrackPath()}
         FragmentInstance.FRAGMENT_UPLOAD->{return UploadFragment()}
         FragmentInstance.FRAGMENT_DATA->{return DataFragment()}
+        FragmentInstance.FRAGMENT_USER->{return UserFragment()}
     }
 }
 
@@ -33,4 +36,10 @@ fun getUserRunItemsCollection():String{
 
 fun getPublicRunItemsCollection():String{
     return "PublicRunItems"
+}
+
+fun getCurrentDate():String{
+    val myDate = Date()
+    val dateFormat = SimpleDateFormat("yyyy-MM-dd",Locale.getDefault())
+    return dateFormat.format(myDate)
 }

@@ -30,6 +30,8 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
+import com.example.runadvisor.activity.LoginActivity
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.struct.MessageToUser
 import com.example.runadvisor.struct.RunItem
 import com.firebase.ui.storage.images.FirebaseImageLoader
@@ -144,6 +146,26 @@ fun Activity.showMessage(msg:String,duration:Int){
     Toast.makeText(this,msg,duration).show()
 }
 
+/*
+*   ##########################################################################
+*                            SHARED PREFERENCE
+*   ##########################################################################
+*
+* */
+
+fun Activity.writeToSharedPreference(tag:String,value:String):Boolean{
+    val sharedPref = getPreferences(Context.MODE_PRIVATE) ?:return false
+    with(sharedPref.edit()){
+        putString(tag,value)
+        apply()
+    }
+    return true
+}
+
+fun Activity.retriveFromSharedPreference(tag:String):String?{
+    val sharedPref = getPreferences(Context.MODE_PRIVATE) ?:return null
+    return sharedPref.getString(getString(R.string.user_icon),"")
+}
 
 /*
 *   ##########################################################################
@@ -273,6 +295,17 @@ fun Activity.loadImageFromPhone(imagePath:String,imageView:ImageView){
         .into(imageView)
 }
 
+fun Activity.loadUserIconFromPhone(imagePath:String,imageView:ImageView){
+    val factory = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build()
+    GlideApp.with(this)
+        .load(imagePath)
+        .error(R.drawable.ic_user_icon_foreground)
+        .circleCrop()
+        .override(200, 200)
+        .transition(DrawableTransitionOptions.withCrossFade(factory))
+        .into(imageView)
+}
+
 /*
 *   ##########################################################################
 *                            GPS FUNCTIONS
@@ -395,6 +428,12 @@ fun Activity.moveToActivity(intent:Intent){
     startActivity(intent)
 }
 
+fun Fragment.signOutUser(){
+    val intent = Intent(requireContext(),LoginActivity::class.java)
+    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+    startActivity(intent)
+}
+
 /*
 *   ##########################################################################
 *                                CHECK/UNCHECK CHECKBOXES
@@ -421,28 +460,3 @@ fun View.hideKeyboard() {
     val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     imm.hideSoftInputFromWindow(windowToken, 0)
 }
-
-/*
-*   ##########################################################################
-*                                SELECT FILE FROM DEVICE
-*   ##########################################################################
-*
-* */
-
-/*@Deprecated("Deprecated in Java")
-private val GALLERY_REQUEST_CODE = 102
-private val PICK_IMAGE = 1
-private var fileUri: Uri? = null
-private var filePath:String? = null
-override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-    super.onActivityResult(requestCode, resultCode, data)
-    if (requestCode == PICK_IMAGE
-        && resultCode == Activity.RESULT_OK
-        && data != null
-        && data.data != null
-    ) {
-        filePath = parentActivity.getFilePathFromIntent(data)
-        fileUri = data.data!!
-        //parentActivity.loadImageFromPhone(fileUri.toString(),binding.imageView)
-    }
-}*/

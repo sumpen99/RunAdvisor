@@ -13,6 +13,8 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.methods.downloadImage
 import com.example.runadvisor.methods.format
 import com.example.runadvisor.methods.getDoubleToGeoPoints
+import com.example.runadvisor.sort.insertBetweenClosest
+import com.example.runadvisor.sort.qSortRunItems
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.util.GeoPoint
 
@@ -26,10 +28,14 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
     }
 
     fun addRunItems(runItems:List<RunItem>){
-        if(itemCount==0){}
-        val pos = serverData.size
-        serverData.addAll(runItems)
-        notifyItemRangeChanged(pos,runItems.size)
+        if(itemCount==0){
+            qSortRunItems(runItems,0,runItems.size-1)
+            serverData.addAll(runItems)
+        }
+        else{insertBetweenClosest(serverData,runItems)}
+        //val pos = serverData.size
+        //notifyItemRangeChanged(pos,runItems.size)
+        notifyDataSetChanged()
     }
 
     @SuppressLint("SetTextI18n")
@@ -40,10 +46,11 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
         holder.cityTextView.text = itemsViewModel.city
         holder.streetTextView.text = itemsViewModel.street
         holder.trackLengthTextView.text = "${itemsViewModel.trackLength} km"
-        holder.distTextView.text = itemsViewModel.range.format(2) + " km Away"
+        holder.distTextView.text = (itemsViewModel.range/1000.0).format(2) + " km"
         holder.zoom = itemsViewModel.zoom!!
         holder.centerPoint = GeoPoint(itemsViewModel.center!![0],itemsViewModel.center!![1])
         holder.trackPoints = getDoubleToGeoPoints(itemsViewModel.coordinates!!)
+        //holder.dateTextView.text = itemsViewModel.date
     }
 
     override fun getItemCount(): Int {
@@ -56,6 +63,7 @@ class CustomDataAdapter(private val activity: Activity):RecyclerView.Adapter<Cus
         val streetTextView: TextView = itemView.findViewById(R.id.itemStreetText)
         val trackLengthTextView: TextView = itemView.findViewById(R.id.itemKmText)
         val distTextView: TextView = itemView.findViewById(R.id.distText)
+        val dateTextView:TextView = itemView.findViewById(R.id.itemDateText)
         val showTrackOnMapBtn: CustomImageButton = itemView.findViewById(R.id.showTrackOnMap)
         var trackPoints:ArrayList<GeoPoint> = ArrayList()
         var centerPoint:GeoPoint = GeoPoint(0.0,0.0)

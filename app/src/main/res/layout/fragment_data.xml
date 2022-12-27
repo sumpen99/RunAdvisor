@@ -10,7 +10,7 @@
     <GridLayout
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:columnCount="3"
+        android:columnCount="2"
         android:paddingStart="10dp"
         android:paddingEnd="10dp"
         app:layout_constraintBottom_toBottomOf="@+id/dataRecyclerview"
@@ -23,13 +23,8 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_columnWeight="1"
+            android:checked="true"
             android:text="Range"/>
-        <CheckBox
-            android:id="@+id/checkboxTrackLength"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_columnWeight="1"
-            android:text="TrackLength"/>
         <CheckBox
             android:id="@+id/checkboxCity"
             android:layout_width="0dp"
@@ -50,6 +45,5 @@
         app:layout_constraintHorizontal_bias="0.454"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:itemCount="15"
         tools:listitem="@layout/download_track_card" />
 </androidx.constraintlayout.widget.ConstraintLayout>

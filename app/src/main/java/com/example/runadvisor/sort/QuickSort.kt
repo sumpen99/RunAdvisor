@@ -35,7 +35,8 @@ private fun swapRunItem(r1: RunItem,r2: RunItem) {
     val center = r1.center
     val zoom = r1.zoom
     val docID = r1.docID
-    var range = r1.range
-    r1.swapValues(r2.city,r2.street,r2.trackLength,r2.downloadUrl,r2.coordinates,r2.center,r2.zoom,r2.docID,r2.range)
-    r2.swapValues(city,street,trackLength,downloadUrl,coordinates,center,zoom,docID,range)
+    val range = r1.range
+    val date = r1.date
+    r1.swapValues(r2.city,r2.street,r2.trackLength,r2.downloadUrl,r2.coordinates,r2.center,r2.zoom,r2.docID,r2.range,r2.date)
+    r2.swapValues(city,street,trackLength,downloadUrl,coordinates,center,zoom,docID,range,date)
 }

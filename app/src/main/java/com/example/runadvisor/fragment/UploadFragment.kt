@@ -126,9 +126,6 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
     private fun clearItemsFromRecycleView(){
         var msg = ""
         for(result:ServerDetails in uploadResult){
-            // DID NOT WORK SO GOOD
-           /*if(result.serverResult == ServerResult.UPLOAD_OK){customAdapter.removeCard(result.pos)}
-           else{msg+= "Item ${result.pos+1}: ${result.msg}\n"}*/
             if(result.serverResult != ServerResult.UPLOAD_OK){
                 msg+= "Item ${result.pos+1}: ${result.msg}\n"
             }
@@ -183,9 +180,10 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
             getGeoPointsToDouble(savedTrack.geoPoints),
             getGeoPointToDouble(savedTrack.center),
             savedTrack.zoom,
-            docId
-        )
-        // If Something went wrong, delete everything
+            docId,
+            0,
+            savedTrack.date)
+        // If Something went terrible wrong, delete everything
         if(!(parentActivity.firestoreViewModel.savePublicRunItemToFirebase(pos,runItem)&&
             parentActivity.firestoreViewModel.saveImageToFirebase(pos,imageUri,downloadUrl)&&
             parentActivity.firestoreViewModel.saveUserRunItemToFirebase(pos,userItem))){

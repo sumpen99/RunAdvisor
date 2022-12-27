@@ -3,91 +3,129 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="300dp"
+    android:layout_height="380dp"
     android:layout_margin="10dp"
     app:cardElevation="6dp">
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="5dp">
-
-        <ImageView
-            android:id="@+id/itemImageView"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:src="@drawable/ic_image_placeholder_foreground"/>
-
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight=".5"
-            android:orientation="vertical">
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:orientation="horizontal"
+            android:layout_weight=".4"
+            android:padding="5dp">
+            <ImageView
+                android:id="@+id/itemImageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_image_placeholder_foreground"/>
+        </LinearLayout>
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".6"
+            android:columnCount="2">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="City"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
             <TextView
                 android:id="@+id/itemCityText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
                 android:padding="10dp"
-                android:text="City"
+                android:text="Karlstad"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="Street"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/itemStreetText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
                 android:padding="10dp"
-                android:text="Street"
+                android:text="Muraregatan"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="TrackLength"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
             <TextView
                 android:id="@+id/itemKmText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:layout_gravity="start"
                 android:padding="10dp"
-                android:text="Kilometers"
+                android:text="1000 Km"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:orientation="horizontal">
-                <TextView
-                    android:id="@+id/distLbl"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="5dp"
-                    android:text=""
-                    android:textSize="@dimen/cardText"
-                    android:textStyle="bold" />
-                <TextView
-                    android:id="@+id/distText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:padding="5dp"
-                    android:textSize="@dimen/cardText"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-            <com.example.runadvisor.widget.CustomImageButton
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="Date"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/itemDateText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="2022-12-27"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
+        </GridLayout>
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="To Location"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/distText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:padding="10dp"
+                android:text="1000000 km"
+                android:textSize="@dimen/cardText"
+                android:textStyle="bold" />
+           <com.example.runadvisor.widget.CustomImageButton
                 android:id="@+id/showTrackOnMap"
-                android:layout_width="50dp"
-                android:layout_height="50dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:background="@color/backgroundmediumdark"
-                android:layout_gravity="right"
+                android:layout_gravity="end"
                 android:src="@drawable/ic_show_on_map_foreground" />
-        </LinearLayout>
+        </GridLayout>
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

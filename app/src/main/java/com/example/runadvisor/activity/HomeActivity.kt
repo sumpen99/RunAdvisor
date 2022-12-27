@@ -12,9 +12,7 @@ import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityHomeBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.sort.qSortRunItems
 import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.widget.CustomDataAdapter
@@ -37,14 +35,11 @@ class HomeActivity:AppCompatActivity() {
             while(i<it.size){
                 val trackGeo = getDoubleToGeoPoint(it[i].center!!)
                 val userGeo = getUserLocation()
-                it[i++].range = latLonToMeter(trackGeo,userGeo)/1000.0
+                it[i++].range = latLonToMeter(trackGeo,userGeo).toInt()
             }
-            if(customAdapter.itemCount==0){qSortRunItems(it,0,it.size-1)}
-            else{}
             customAdapter.addRunItems(it)
         }
     }
-
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,8 +72,8 @@ class HomeActivity:AppCompatActivity() {
             when(it.itemId){
                 R.id.navHome->navigateFragment(FragmentInstance.FRAGMENT_DATA)
                 R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW)
-                R.id.navData->navigateFragment(FragmentInstance.FRAGMENT_DATA)
                 R.id.navUpload->navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
+                R.id.navUser->navigateFragment(FragmentInstance.FRAGMENT_USER)
                 //R.id.navData->moveToActivity(Intent(this, HomeActivity::class.java))
             }
             true

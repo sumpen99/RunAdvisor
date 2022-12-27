@@ -161,7 +161,8 @@ class MapTrackPath(val context: Context,
                     zoom,
                     city,
                     street,
-                    getStringTrackLength()))
+                    getStringTrackLength(),
+                    getCurrentDate()))
             currentPoints = 0
             points.clear()
             //invalidate()
