@@ -162,9 +162,10 @@ fun Activity.writeToSharedPreference(tag:String,value:String):Boolean{
     return true
 }
 
-fun Activity.retriveFromSharedPreference(tag:String):String?{
+fun Activity.retrieveFromSharedPreference(tag:String,default:String?=null):String?{
+    val def = default?:""
     val sharedPref = getPreferences(Context.MODE_PRIVATE) ?:return null
-    return sharedPref.getString(getString(R.string.user_icon),"")
+    return sharedPref.getString(tag,def)
 }
 
 /*

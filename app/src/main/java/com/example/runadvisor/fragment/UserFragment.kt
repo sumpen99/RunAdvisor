@@ -1,4 +1,5 @@
 package com.example.runadvisor.fragment
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -8,7 +9,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.widget.AppCompatButton
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -17,10 +17,10 @@ import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentUserBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.MessageToUser
 import com.example.runadvisor.widget.CustomDataAdapter
-import com.example.runadvisor.widget.CustomImageButton
 import com.google.firebase.storage.StorageReference
 
 class UserFragment():
@@ -48,10 +48,15 @@ class UserFragment():
         setActivityContext()
         setRecyclerView()
         setAdapter()
-        setEventListener(view)
         setInfoToUser()
         loadImageFromPhone()
+        loadUserName()
         return userView!!
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        setEventListener(view)
     }
 
     override fun getFragmentID(): FragmentInstance {
@@ -73,11 +78,20 @@ class UserFragment():
         messageToUser.setPositiveCallback(::signOut)
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     private fun setEventListener(view: View?){
         val userPicBtn = binding.userImageView
         val userSignOutBtn = binding.userSignOutBtn
+        val userNameTestView = binding.userNameTextView
+        userNameTestView.hideKeyboard()
         userSignOutBtn.setOnClickListener{messageToUser.showMessage()}
         userPicBtn.setCallback(null,::setProfilePicture)
+        requireView().setOnTouchListener { v, event ->
+            when(event.actionMasked){
+                MotionEvent.ACTION_DOWN -> {userNameTestView.hideKeyboard()}
+            }
+            true
+        }
     }
 
     private fun signOut(parameters:Any?){
@@ -86,6 +100,15 @@ class UserFragment():
 
     private fun setProfilePicture(parameters:Any?){
         selectImageFromGallery(PICK_IMAGE)
+    }
+
+    private fun setUserName(){
+        if(binding.userNameTextView.text.isEmpty()){return}
+        parentActivity.writeToSharedPreference(getString(R.string.user_name),binding.userNameTextView.text.toString())
+    }
+
+    private fun loadUserName(){
+        binding.userNameTextView.hint = parentActivity.retrieveFromSharedPreference(getString(R.string.user_name),"UserName").toString()
     }
 
     private fun setActivityContext() {
@@ -135,7 +158,7 @@ class UserFragment():
     }
 
     private fun loadImageFromPhone(){
-        val imgPath = parentActivity.retriveFromSharedPreference(getString(R.string.user_icon))
+        val imgPath = parentActivity.retrieveFromSharedPreference(getString(R.string.user_icon))
         if(imgPath!=null){
             parentActivity.loadUserIconFromPhone(imgPath,binding.userImageView)
         }
@@ -165,11 +188,11 @@ class UserFragment():
 
     override fun onResume() {
         super.onResume()
-        //loadData()
     }
 
     override fun onPause() {
         super.onPause()
+        setUserName()
     }
 
     override fun onDestroyView() {
