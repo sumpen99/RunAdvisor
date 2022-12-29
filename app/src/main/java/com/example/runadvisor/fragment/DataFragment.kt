@@ -10,22 +10,22 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
-import com.example.runadvisor.activity.HomeActivity
+import com.example.runadvisor.MainActivity
 import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.widget.CustomDataAdapter
+import com.example.runadvisor.adapter.CustomDownloadAdapter
 import kotlin.collections.ArrayList
 
 
 class DataFragment():
     Fragment(R.layout.fragment_data), IFragment {
     private lateinit var activityContext: Context
-    private lateinit var parentActivity: HomeActivity
+    private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView:RecyclerView
-    private lateinit var customAdapter:CustomDataAdapter
+    private lateinit var customAdapter: CustomDownloadAdapter
     private var checkBoxes = ArrayList<CheckBox>()
     private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
@@ -72,13 +72,13 @@ class DataFragment():
     }
 
     private fun setParentActivity() {
-        parentActivity = requireActivity() as HomeActivity
+        parentActivity = requireActivity() as MainActivity
     }
 
     private fun setRecyclerView(){
         recyclerView = binding.dataRecyclerview
         recyclerView.layoutManager = LinearLayoutManager(activityContext)
-        recyclerView.adapter = parentActivity.getAdapter()
+        recyclerView.adapter = parentActivity.getPublicAdapter()
         //recyclerView!!.adapter!!.notifyDataSetChanged()
     }
 

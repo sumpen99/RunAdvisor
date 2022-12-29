@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.methods.hideKeyboard
 import com.example.runadvisor.methods.moveToActivity
@@ -59,7 +60,7 @@ class LoginActivity : AppCompatActivity() {
         if( illegalUserInput()){return}
         auth.signInWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener(this) { task ->
-                if(task.isSuccessful){moveToActivity(Intent(this,HomeActivity::class.java))}
+                if(task.isSuccessful){moveToActivity(Intent(this, MainActivity::class.java))}
                 else{showMessage("Authentication failed ${task.exception}",Toast.LENGTH_SHORT)}
             }
     }
@@ -68,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
         if( illegalUserInput()){return}
         auth.createUserWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener { task ->
-                if(task.isSuccessful){moveToActivity(Intent(this,HomeActivity::class.java))}
+                if(task.isSuccessful){moveToActivity(Intent(this,MainActivity::class.java))}
                 else{showMessage("${task.exception}",Toast.LENGTH_SHORT)}
             }
     }

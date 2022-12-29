@@ -1,10 +1,11 @@
-package com.example.runadvisor.widget
+package com.example.runadvisor.overlay
 import android.content.Context
 import android.graphics.Point
 import androidx.appcompat.content.res.AppCompatResources
+import com.example.runadvisor.marker.TrackOverviewMarker
 import com.example.runadvisor.methods.getDoubleToGeoPoint
 import com.example.runadvisor.methods.getDoubleToGeoPoints
-import com.example.runadvisor.struct.MapTrackOverview
+import com.example.runadvisor.map.MapTrackOverview
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
@@ -12,13 +13,14 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 class OverlayTrackOverview(private val activityContext: Context,
                            private val markers:MutableList<TrackOverviewMarker>,
                            private val pOnItemGestureListener: OnItemGestureListener<TrackOverviewMarker>,
-                           private val mapTrackOverview: MapTrackOverview):
+                           private val mapTrackOverview: MapTrackOverview
+):
     ItemizedIconOverlay<TrackOverviewMarker>(activityContext,markers,pOnItemGestureListener) {
 
-    var markerHasTouch:TrackOverviewMarker? = null
+    var markerHasTouch: TrackOverviewMarker? = null
     private val drawableDefault = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default)
 
-    private fun callbackMarkerWithTouch(marker:TrackOverviewMarker){
+    private fun callbackMarkerWithTouch(marker: TrackOverviewMarker){
         mapTrackOverview.removePolyline()
         if(markerHasTouch != null && marker.index == markerHasTouch!!.index){
             markerHasTouch = null

@@ -1,18 +1,23 @@
-package com.example.runadvisor.widget
+package com.example.runadvisor.adapter
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
-import com.example.runadvisor.methods.getCurrentDate
+import com.example.runadvisor.methods.hideKeyboard
 import com.example.runadvisor.methods.loadImageFromBitmap
 import com.example.runadvisor.struct.SavedTrack
+import com.example.runadvisor.widget.CustomImageButton
 
-class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<CustomMapAdapter.ViewHolder>() {
+class CustomUploadAdapter(private val activity: Activity): RecyclerView.Adapter<CustomUploadAdapter.ViewHolder>() {
     private val userData = ArrayList<SavedTrack>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -26,9 +31,19 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
     }
 
     fun removeCard(pos:Int){
-        if(pos>=itemCount){return}
+        if(pos>=itemCount || pos < 0){return}
         userData.removeAt(pos)
         notifyItemRemoved(pos)
+    }
+
+    fun updateCityText(pos:Int,str:String){
+        if(pos>=itemCount){return}
+        userData[pos].city = str
+    }
+
+    fun updateStreetText(pos:Int,str:String){
+        if(pos>=itemCount || pos < 0){return}
+        userData[pos].street = str
     }
 
     fun clearView(){
@@ -37,11 +52,6 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
             userData.clear()
             notifyItemRangeRemoved(0,lastIndex)
         }
-    }
-
-    fun addItem(item:SavedTrack){
-        userData.add(item)
-        notifyItemInserted(itemCount)
     }
 
     fun addItems(items:ArrayList<SavedTrack>){
@@ -55,8 +65,8 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
         if(userData.isEmpty()){return}
         val itemsViewModel = userData[position]
         activity.loadImageFromBitmap(itemsViewModel.bitmap,holder.cardImageView)
-        holder.cityTextView.text = itemsViewModel.city
-        holder.streetTextView.text = itemsViewModel.street
+        holder.cityTextView.hint = itemsViewModel.city
+        holder.streetTextView.hint = itemsViewModel.street
         holder.trackLengthTextView.text = itemsViewModel.trackLength + " km"
         holder.dateTextView.text = itemsViewModel.date
     }
@@ -64,17 +74,42 @@ class CustomMapAdapter(private val activity: Activity): RecyclerView.Adapter<Cus
     override fun getItemCount(): Int {
         return userData.size
     }
-
+    @SuppressLint("ClickableViewAccessibility")
     inner class ViewHolder(ItemView: View) : RecyclerView.ViewHolder(ItemView) {
         val cardImageView: ImageView = itemView.findViewById(R.id.trackImageView)
-        val cityTextView: TextView = itemView.findViewById(R.id.trackCityText)
-        val streetTextView: TextView = itemView.findViewById(R.id.trackStreetText)
+        val cityTextView: EditText = itemView.findViewById(R.id.trackCityText)
+        val streetTextView: EditText = itemView.findViewById(R.id.trackStreetText)
         val trackLengthTextView: TextView = itemView.findViewById(R.id.trackKmText)
         val removeCardBtn: CustomImageButton = itemView.findViewById(R.id.trackRemove)
         val dateTextView:TextView = itemView.findViewById(R.id.trackDateText)
 
         init{
             removeCardBtn.setCallback(null,::removeSelf)
+            ItemView.setOnTouchListener { v, event ->
+                when(event.actionMasked){
+                    MotionEvent.ACTION_DOWN -> {cityTextView.hideKeyboard();streetTextView.hideKeyboard()}
+                }
+                true
+            }
+            cityTextView.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?){
+                    updateCityText(bindingAdapterPosition,s.toString())
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                }
+            })
+            streetTextView.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?){
+                    updateStreetText(bindingAdapterPosition,s.toString())
+                }
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                }
+            })
+
         }
 
         private fun removeSelf(parameter:Any?){

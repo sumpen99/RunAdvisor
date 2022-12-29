@@ -1,11 +1,11 @@
-package com.example.runadvisor.struct
+package com.example.runadvisor.map
 import android.content.Context
 import android.graphics.Bitmap
+import androidx.core.view.drawToBitmap
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.widget.OverlayTrackOverview
-import com.example.runadvisor.widget.TrackPathMarker
-import com.example.runadvisor.widget.OverlayTrackPath
-import com.example.runadvisor.widget.TrackOverviewMarker
+import com.example.runadvisor.marker.TrackPathMarker
+import com.example.runadvisor.overlay.OverlayTrackPath
+import com.example.runadvisor.struct.SavedTrack
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.*
@@ -16,19 +16,19 @@ import kotlin.math.sin
 
 class MapTrackPath(val context: Context,
                    val map:MapView,
-                   val callbackUpdateTrackLength:(args:String)->Unit):MapTrack(context,map) {
+                   val callbackUpdateTrackLength:(args:String)->Unit): MapTrack(context,map) {
     var points = ArrayList<GeoPoint>()
     var savedTracks = ArrayList<SavedTrack>()
     var trackLength:Double = 0.0
     val INCREASE_POINTS = 10
-    val MAX_POINTS = 320
+    val MAX_POINTS = 1280
     var currentPoints = 0
     val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<TrackPathMarker>{
-        override fun onItemSingleTapUp(index:Int, item:TrackPathMarker):Boolean {
+        override fun onItemSingleTapUp(index:Int, item: TrackPathMarker):Boolean {
             //item.hasTouch()
             return true
         }
-        override fun onItemLongPress(index:Int, item:TrackPathMarker):Boolean {
+        override fun onItemLongPress(index:Int, item: TrackPathMarker):Boolean {
             item.hasTouch()
             return true
         }
@@ -150,25 +150,24 @@ class MapTrackPath(val context: Context,
         invalidate()
     }
 
-    fun saveCurrentTrack(bitmap:Bitmap,zoom:Int,city:String,street:String,):Boolean{
+    fun saveCurrentTrack(city:String,street:String){
         val centerGeoPoint = getCenterOfPoints(points)
         if(centerGeoPoint!=null){
+            removeCurrentOverlay()
             savedTracks.add(
                 SavedTrack(
-                    bitmap,
+                    mapView.drawToBitmap(),
                     ArrayList(points),
                     centerGeoPoint,
-                    zoom,
+                    mapView.zoomLevel,
                     city,
                     street,
                     getStringTrackLength(),
-                    getCurrentDate()))
+                    getCurrentDate())
+            )
             currentPoints = 0
             points.clear()
-            //invalidate()
-            return true
         }
-        return false
     }
 
     fun trackIsOnMap():Boolean{

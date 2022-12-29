@@ -1,4 +1,4 @@
-package com.example.runadvisor.widget
+package com.example.runadvisor.marker
 import android.graphics.drawable.Drawable
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.OverlayItem

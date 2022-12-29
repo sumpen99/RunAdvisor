@@ -1,4 +1,5 @@
 package com.example.runadvisor.fragment
+
 import android.content.Context
 import android.location.Location
 import android.location.LocationListener
@@ -7,10 +8,11 @@ import android.os.Bundle
 import android.view.*
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.BuildConfig
+import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
-import com.example.runadvisor.activity.HomeActivity
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
 import org.osmdroid.config.Configuration
@@ -19,11 +21,12 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
+
 abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
     private lateinit var locationManager: LocationManager
     private lateinit var messageToUser: MessageToUser
     protected lateinit var activityContext: Context
-    protected lateinit var parentActivity: HomeActivity
+    protected lateinit var parentActivity: MainActivity
     protected lateinit var mapView: MapView
     private var mapData = MapData()
     private var _binding: FragmentMapBinding? = null
@@ -42,7 +45,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         return view
     }
 
-
     override fun longPressHelper(p: GeoPoint?): Boolean {
         return this.longPressHelper(p)
     }
@@ -53,7 +55,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     private fun setActivityContext(){activityContext = requireContext()}
 
-    private fun setParentActivity(){parentActivity = requireActivity() as HomeActivity}
+    private fun setParentActivity(){parentActivity = requireActivity() as MainActivity}
 
     private fun setLocationManager(){locationManager = activityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager}
 
@@ -82,6 +84,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     * */
 
     override fun onLocationChanged(location: Location) {
+        mapView.controller.setCenter(GeoPoint(location.latitude,location.longitude))
         //printToTerminal("OnLocationChanged line 140 MapFragment Latitude: " + location.latitude + " , Longitude: " + location.longitude)
     }
 

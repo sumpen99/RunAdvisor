@@ -10,9 +10,12 @@ data class RunItem(
     var zoom:Int? = null,
     var docID:String? = null,
     var range:Int = 0,
-    var date:String?=null
+    var date:String?=null,
     ):java.io.Serializable{
-        fun swapValues(city:String?,
+
+    override fun toString(): String {return "$city $street $trackLength $downloadUrl $zoom $docID $date"}
+
+    fun swapValues(city:String?,
                        street:String?,
                        trackLength:String?,
                        downloadUrl:String?,
@@ -33,4 +36,8 @@ data class RunItem(
             this.range = range
             this.date = date
         }
+
+    fun compare(axis:Int):Int{
+            return if (axis == 0) range else city!!.get(0).code
     }
+}

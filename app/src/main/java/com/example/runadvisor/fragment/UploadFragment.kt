@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
-import com.example.runadvisor.activity.HomeActivity
+import com.example.runadvisor.MainActivity
 import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
@@ -19,15 +19,15 @@ import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
 import java.util.*
-import com.example.runadvisor.widget.CustomMapAdapter
+import com.example.runadvisor.adapter.CustomUploadAdapter
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 
 class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
-    private lateinit var parentActivity: HomeActivity
+    private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView: RecyclerView
-    private lateinit var customAdapter: CustomMapAdapter
+    private lateinit var customAdapter: CustomUploadAdapter
     private lateinit var messageToUser: MessageToUser
     private var uploadView:View? = null
     private var progressBar:ProgressBar? = null
@@ -77,7 +77,7 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
     }
 
     private fun setParentActivity() {
-        parentActivity = requireActivity() as HomeActivity
+        parentActivity = requireActivity() as MainActivity
     }
 
     private fun setRecyclerView(){
@@ -86,7 +86,7 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
     }
 
     private fun setAdapter(){
-        customAdapter = CustomMapAdapter(parentActivity)
+        customAdapter = CustomUploadAdapter(parentActivity)
         recyclerView.adapter = customAdapter
     }
 
@@ -183,14 +183,15 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
             docId,
             0,
             savedTrack.date)
-        // If Something went terrible wrong, delete everything
+
         if(!(parentActivity.firestoreViewModel.savePublicRunItemToFirebase(pos,runItem)&&
             parentActivity.firestoreViewModel.saveImageToFirebase(pos,imageUri,downloadUrl)&&
             parentActivity.firestoreViewModel.saveUserRunItemToFirebase(pos,userItem))){
 
-            parentActivity.firestoreViewModel.deletePublicRunItem(runItem)
-            parentActivity.firestoreViewModel.deleteImage(runItem)
-            parentActivity.firestoreViewModel.deleteUserRunItem(userItem)
+            // If Something went wrong, delete everything
+            parentActivity.firestoreViewModel.deletePublicRunItem(runItem.docID!!)
+            parentActivity.firestoreViewModel.deleteImage(runItem.downloadUrl!!)
+            parentActivity.firestoreViewModel.deleteUserRunItem(userItem.docId!!)
 
         }
 
@@ -199,7 +200,12 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
     }
 
     private fun uploadIsPossible():Boolean{
-        return (customAdapter.itemCount > 0 && progressBar!!.visibility != View.VISIBLE)
+        if(customAdapter.itemCount == 0 || progressBar!!.visibility == VISIBLE){return false}
+        if(!parentActivity.verifyStoragePermission()){
+            showUserMessage("Storage Permission Not Granted\nUpload Failed")
+            return false
+        }
+        return true
     }
 
     /*

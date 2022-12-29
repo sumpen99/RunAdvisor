@@ -7,9 +7,9 @@ import java.util.*
 
 fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment{
     when(fragmentInstance){
-        FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW->{return MapFragmentTrackOverview()}
-        FragmentInstance.FRAGMENT_MAP_TRACK_ITEM->{return MapFragmentTrackItem()}
-        FragmentInstance.FRAGMENT_MAP_TRACK_PATH->{return MapFragmentTrackPath()}
+        FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW->{return MapFragmentViewAll()}
+        FragmentInstance.FRAGMENT_MAP_TRACK_ITEM->{return MapFragmentViewItem()}
+        FragmentInstance.FRAGMENT_MAP_TRACK_PATH->{return MapFragmentUpload()}
         FragmentInstance.FRAGMENT_UPLOAD->{return UploadFragment()}
         FragmentInstance.FRAGMENT_DATA->{return DataFragment()}
         FragmentInstance.FRAGMENT_USER->{return UserFragment()}

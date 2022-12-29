@@ -17,8 +17,9 @@
             android:orientation="horizontal"
             android:layout_weight=".4"
             android:padding="5dp">
+
             <ImageView
-                android:id="@+id/itemImageView"
+                android:id="@+id/userTrackImageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/ic_image_placeholder_foreground"/>
@@ -32,95 +33,81 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
                 android:text="City"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/itemCityText"
+                android:id="@+id/userTrackCityText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
                 android:text="Street"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/itemStreetText"
+                android:id="@+id/userTrackStreetText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
-                android:text="TrackLength"
-                android:textSize="@dimen/cardText"
+                android:text="Track"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/itemKmText"
+                android:id="@+id/userTrackKmText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
                 android:text="Date"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/itemDateText"
+                android:id="@+id/userTrackDateText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
+                android:layout_gravity="left"
                 android:padding="10dp"
-                android:textSize="@dimen/cardText"
+                android:textSize="@dimen/userCardText"
                 android:textStyle="bold" />
         </GridLayout>
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:columnCount="3">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:padding="10dp"
-                android:text="To Location"
-                android:textSize="@dimen/cardText"
-                android:textStyle="bold" />
-            <TextView
-                android:id="@+id/distText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:padding="10dp"
-                android:textSize="@dimen/cardText"
-                android:textStyle="bold" />
-           <com.example.runadvisor.widget.CustomImageButton
-                android:id="@+id/showTrackOnMap"
+            android:columnCount="1">
+            <com.example.runadvisor.widget.CustomImageButton
+                android:id="@+id/userTrackRemove"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@color/backgroundmediumdark"
                 android:layout_gravity="end"
-                android:src="@drawable/ic_show_on_map_foreground" />
+                android:src="@drawable/ic_trash_foreground"/>
         </GridLayout>
     </LinearLayout>
+
+
 </androidx.cardview.widget.CardView>

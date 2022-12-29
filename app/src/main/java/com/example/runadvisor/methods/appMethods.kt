@@ -1,11 +1,10 @@
 package com.example.runadvisor.methods
-
-import android.Manifest
+import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.content.res.Resources
 import android.database.Cursor
 import android.graphics.Bitmap
@@ -21,6 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
@@ -31,19 +31,17 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
 import com.example.runadvisor.activity.LoginActivity
-import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.struct.MessageToUser
-import com.example.runadvisor.struct.RunItem
 import com.firebase.ui.storage.images.FirebaseImageLoader
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
-import com.google.firebase.storage.ktx.storage
 import org.json.JSONArray
 import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
+
+private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
+private val LOCATION_PERMISSION_CODE = 2
 
 /*
 *   ##########################################################################
@@ -81,6 +79,29 @@ fun Activity.removeActionBarHeight():Float{
 
 fun convertDpToPixel(value : Int):Int{
     return (value* Resources.getSystem().displayMetrics.density).toInt()
+}
+
+/*
+*   ##########################################################################
+*               ASK FOR PERMISSIONS
+*   ##########################################################################
+* */
+
+fun Activity.verifyLocationPermission():Boolean{
+    return (ActivityCompat.checkSelfPermission(this,ACCESS_FINE_LOCATION) == PERMISSION_GRANTED)
+}
+
+fun Activity.verifyStoragePermission():Boolean{
+    return(ActivityCompat.checkSelfPermission(this,READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this,WRITE_EXTERNAL_STORAGE) == PERMISSION_GRANTED)
+}
+
+fun Activity.askForLocationPermission(){
+    ActivityCompat.requestPermissions(this,arrayOf(ACCESS_FINE_LOCATION),LOCATION_PERMISSION_CODE)
+}
+
+fun Activity.askForStoragePermissions(){
+    ActivityCompat.requestPermissions(this,arrayOf(READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE),REQUEST_PERMISSIONS_REQUEST_CODE)
 }
 
 /*
@@ -231,12 +252,12 @@ fun Fragment.selectImageFromGallery(requestCode:Int) {
     return bitmap
 }*/
 
-fun Activity.downloadImage(item: RunItem, imageView:ImageView){
+/*fun Activity.downloadImage(downloadUrl:String?, imageView:ImageView){
     val database = Firebase.storage.reference
-    val path = "${getImagePath()}${item.downloadUrl}"
+    val path = "${getImagePath()}${downloadUrl}"
     val storageRef = database.child(path)
-    loadImageFromStorage(storageRef,imageView)
-}
+    downloadImageFromStorage(storageRef,imageView)
+}*/
 
 fun Activity.deleteFile(uri: Uri): Boolean {
     val file = File(uri.path!!)
@@ -274,7 +295,7 @@ fun Activity.loadImageFromBitmap(bitmap:Bitmap,imageView:ImageView){
         .into(imageView)
 }
 
-fun Activity.loadImageFromStorage(storeRef: StorageReference,imageView:ImageView){
+fun Activity.downloadImageFromStorage(storeRef: StorageReference,imageView:ImageView){
     val factory = DrawableCrossFadeFactory.Builder().setCrossFadeEnabled(true).build()
     GlideApp.with(this)
         .load(storeRef)
@@ -318,9 +339,9 @@ fun Fragment.getUserLocation():GeoPoint {
     val location: Location?
     if(checkGpsProviderStatus() &&
         ContextCompat.checkSelfPermission(requireContext(),
-            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+            ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
         ContextCompat.checkSelfPermission(requireContext(),
-            Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+            ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
         location =  (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(location!=null){return GeoPoint(location.latitude,location.longitude)}
     }
@@ -329,8 +350,8 @@ fun Fragment.getUserLocation():GeoPoint {
 
 fun Fragment.getLocationUpdates(locationListener:LocationListener){
     if(checkGpsProviderStatus() &&
-        ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-        ContextCompat.checkSelfPermission(requireContext(),Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        ContextCompat.checkSelfPermission(requireContext(),ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(requireContext(),ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
         (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
     }
 }
@@ -342,10 +363,8 @@ fun Fragment.checkGpsProviderStatus():Boolean{
 fun Activity.getUserLocation():GeoPoint {
     val location: Location?
     if(checkGpsProviderStatus() &&
-        ContextCompat.checkSelfPermission(this,
-            Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-        ContextCompat.checkSelfPermission(this,
-            Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        ContextCompat.checkSelfPermission(this,ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(this,ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
         location =  (getSystemService(Context.LOCATION_SERVICE) as LocationManager).getLastKnownLocation(LocationManager.GPS_PROVIDER)
         if(location!=null){return GeoPoint(location.latitude,location.longitude)}
     }
@@ -354,8 +373,8 @@ fun Activity.getUserLocation():GeoPoint {
 
 fun Activity.getLocationUpdates(locationListener:LocationListener){
     if(checkGpsProviderStatus() &&
-        ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-        ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+        ContextCompat.checkSelfPermission(this,ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(this,ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
         (getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
     }
 }
@@ -433,6 +452,7 @@ fun Fragment.signOutUser(){
     val intent = Intent(requireContext(),LoginActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
     startActivity(intent)
+
 }
 
 /*

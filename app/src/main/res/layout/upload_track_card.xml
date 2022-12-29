@@ -38,13 +38,12 @@
                 android:text="City"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
-            <TextView
+            <EditText
                 android:id="@+id/trackCityText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:padding="10dp"
-                android:text="Karlstad"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
             <TextView
@@ -55,13 +54,12 @@
                 android:text="Street"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
-            <TextView
+            <EditText
                 android:id="@+id/trackStreetText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:padding="10dp"
-                android:text="Muraregatan"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
             <TextView
@@ -78,7 +76,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:padding="10dp"
-                android:text="1000 Km"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
             <TextView
@@ -95,7 +92,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
                 android:padding="10dp"
-                android:text="2022-12-27"
                 android:textSize="@dimen/cardText"
                 android:textStyle="bold" />
             <View
@@ -108,7 +104,7 @@
                 android:layout_height="48dp"
                 android:background="@color/backgroundmediumdark"
                 android:layout_gravity="right"
-                android:src="@drawable/ic_trash_foreground" />
+                android:src="@drawable/ic_trash_foreground"/>
         </GridLayout>
     </LinearLayout>
 

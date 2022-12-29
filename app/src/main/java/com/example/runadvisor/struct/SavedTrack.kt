@@ -7,7 +7,7 @@ class SavedTrack(
     val geoPoints:ArrayList<GeoPoint>,
     val center:GeoPoint,
     val zoom:Int,
-    val city:String,
-    val street:String,
+    var city:String,
+    var street:String,
     val trackLength:String,
     val date:String)

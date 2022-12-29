@@ -8,12 +8,15 @@ import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.struct.ServerDetails
 import com.example.runadvisor.struct.UserItem
+import com.google.firebase.firestore.DocumentChange.Type.REMOVED
 import kotlinx.coroutines.tasks.await
 
 class FirestoreViewModel:ViewModel() {
     var serverDetails = ArrayList<ServerDetails>()
     var firebaseRepository = FirestoreRepository()
+    var runItem:RunItem? = null
     var savedRunItems : MutableLiveData<List<RunItem>?> = MutableLiveData()
+    var savedUserItems : MutableLiveData<List<UserItem>?> = MutableLiveData()
 
     fun clearServerDetails(){
         serverDetails.clear()
@@ -52,7 +55,7 @@ class FirestoreViewModel:ViewModel() {
         return result
     }
 
-    fun getRunItems(): LiveData<List<RunItem>?> {
+    fun getPublicRunItems(callbackRemove:(args:RunItem)->Unit): LiveData<List<RunItem>?> {
         firebaseRepository.getSavedPublicRunItems().addSnapshotListener EventListener@{ value, e ->
             if (e != null) {
                 printToTerminal("Listen failed ${e.message.toString()}")
@@ -61,13 +64,10 @@ class FirestoreViewModel:ViewModel() {
             }
 
             val savedRunItemList : MutableList<RunItem> = mutableListOf()
-            /*for (doc in value!!) {
-                val runItem = doc.toObject(RunItem::class.java)
-                savedRunItemList.add(runItem)
-            }*/
             for (doc in value!!.documentChanges) {
                 val runItem = doc.document.toObject(RunItem::class.java)
-                savedRunItemList.add(runItem)
+                if(doc.type == REMOVED){callbackRemove(runItem)}
+                else{savedRunItemList.add(runItem)}
             }
             savedRunItems.value = savedRunItemList
         }
@@ -75,20 +75,40 @@ class FirestoreViewModel:ViewModel() {
         return savedRunItems
     }
 
-    fun deletePublicRunItem(runItem:RunItem){
-        firebaseRepository.deletePublicRunItem(runItem).addOnFailureListener {
+    fun getUserRunItems(): LiveData<List<UserItem>?> {
+        firebaseRepository.getSavedUserRunItems().addSnapshotListener EventListener@{ value, e ->
+            if(e != null) {
+                //printToTerminal("Listen failed ${e.message.toString()}")
+                savedRunItems.value = null
+                return@EventListener
+            }
+            val savedUserItemList : MutableList<UserItem> = mutableListOf()
+            for (doc in value!!.documentChanges) {
+                if(doc.type != REMOVED){
+                    val userItem = doc.document.toObject(UserItem::class.java)
+                    savedUserItemList.add(userItem)
+                }
+            }
+            savedUserItems.value = savedUserItemList
+        }
+
+        return savedUserItems
+    }
+
+    fun deletePublicRunItem(docId:String){
+        firebaseRepository.deletePublicRunItem(docId).addOnFailureListener {
             printToTerminal("Failed to delete PublicRunItem")
         }
     }
 
-    fun deleteUserRunItem(userItem:UserItem){
-        firebaseRepository.deleteUserRunItem(userItem).addOnFailureListener {
+    fun deleteUserRunItem(docId:String){
+        firebaseRepository.deleteUserRunItem(docId).addOnFailureListener {
             printToTerminal("Failed to delete UserRunItem")
         }
     }
 
-    fun deleteImage(runItem:RunItem){
-        firebaseRepository.deleteImage(runItem).addOnFailureListener {
+    fun deleteImage(downloadUrl:String){
+        firebaseRepository.deleteImage(downloadUrl).addOnFailureListener {
             printToTerminal("Failed to delete Image")
         }
     }

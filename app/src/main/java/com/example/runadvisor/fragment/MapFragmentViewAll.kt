@@ -7,11 +7,12 @@ import android.widget.PopupMenu
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.struct.MapTrackOverview
+import com.example.runadvisor.map.MapTrackOverview
+import com.example.runadvisor.methods.getLocationUpdates
 
-class MapFragmentTrackOverview()
+class MapFragmentViewAll()
     :MapFragment() {
-    private lateinit var mapTrackOverview:MapTrackOverview
+    private lateinit var mapTrackOverview: MapTrackOverview
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -41,13 +42,17 @@ class MapFragmentTrackOverview()
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_base,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupGps-> printToTerminal("popupGps")
+                    R.id.popupGps-> enableGps()
                     R.id.popupSearch-> printToTerminal("popupSearch")
                 }
                 true
             }
             popUpMenu.show()
         }
+    }
+
+    private fun enableGps(){
+        parentActivity.getLocationUpdates(this)
     }
 
     private fun loadRunItems(){

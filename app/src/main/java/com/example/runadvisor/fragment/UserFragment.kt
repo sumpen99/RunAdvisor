@@ -13,22 +13,21 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.R
-import com.example.runadvisor.activity.HomeActivity
+import com.example.runadvisor.MainActivity
 import com.example.runadvisor.databinding.FragmentUserBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.MessageToUser
-import com.example.runadvisor.widget.CustomDataAdapter
+import com.example.runadvisor.adapter.CustomUserAdapter
 import com.google.firebase.storage.StorageReference
 
 class UserFragment():
     Fragment(R.layout.fragment_user), IFragment {
     private lateinit var activityContext: Context
-    private lateinit var parentActivity: HomeActivity
+    private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView: RecyclerView
-    private lateinit var customAdapter: CustomDataAdapter
+    private lateinit var customUserAdapter: CustomUserAdapter
     private lateinit var messageToUser: MessageToUser
     private var userView: View? = null
     private var _binding: FragmentUserBinding? = null
@@ -46,8 +45,8 @@ class UserFragment():
         userView = binding.root
         setParentActivity()
         setActivityContext()
+        //setAdapter()
         setRecyclerView()
-        setAdapter()
         setInfoToUser()
         loadImageFromPhone()
         loadUserName()
@@ -70,6 +69,27 @@ class UserFragment():
     override fun receivedData(parameter: Any?){}
 
     override fun callbackDispatchTouchEvent(event: MotionEvent){}
+
+    private fun setActivityContext() {
+        activityContext = requireContext()
+    }
+
+    private fun setParentActivity() {
+        parentActivity = requireActivity() as MainActivity
+    }
+
+    private fun setAdapter(){
+        customUserAdapter = CustomUserAdapter(parentActivity)
+        //recyclerView.adapter = customAdapter
+    }
+
+    private fun setRecyclerView(){
+        recyclerView = binding.userRecyclerview
+        recyclerView.layoutManager = GridLayoutManager(activityContext,2)
+        recyclerView.adapter = parentActivity.getUserAdapter()
+        //recyclerView.adapter = parentActivity.getUserAdapter()
+        //recyclerView!!.adapter!!.notifyDataSetChanged()
+    }
 
     private fun setInfoToUser(){
         messageToUser = MessageToUser(parentActivity,null)
@@ -111,25 +131,6 @@ class UserFragment():
         binding.userNameTextView.hint = parentActivity.retrieveFromSharedPreference(getString(R.string.user_name),"UserName").toString()
     }
 
-    private fun setActivityContext() {
-        activityContext = requireContext()
-    }
-
-    private fun setParentActivity() {
-        parentActivity = requireActivity() as HomeActivity
-    }
-
-    private fun setRecyclerView(){
-        recyclerView = binding.userRecyclerview
-        recyclerView.layoutManager = GridLayoutManager(activityContext,2)
-        recyclerView.adapter = parentActivity.getAdapter()
-        //recyclerView!!.adapter!!.notifyDataSetChanged()
-    }
-
-    private fun setAdapter(){
-        //customAdapter = CustomDataAdapter(parentActivity)
-        //recyclerView.adapter = customAdapter
-    }
 
     /*
     *   ##########################################################################
@@ -138,14 +139,20 @@ class UserFragment():
     * */
 
     /*private fun loadData(){
-        parentActivity.firestoreViewModel.getRunItems().observe(parentActivity, Observer { it->
-            if(it!=null){
-                customAdapter.addRunItems(it)
+        var i = 0
+        val userItems = parentActivity.getUserItems()
+        while(i<userItems.size){
+            val userItem = userItems[i++]
+            val runItem = parentActivity.firestoreViewModel.getRunItem(userItem.docId)
+            if(runItem!=null){
+                printToTerminal(runItem.docID.toString())
+                customUserAdapter.addUserItem(runItem)
             }
-        })
+            else{
+                printToTerminal("runitem is null")
+            }
+        }
     }*/
-
-
 
     /*
     *   ##########################################################################
@@ -197,7 +204,7 @@ class UserFragment():
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null
+        //_binding = null
     }
 
 }

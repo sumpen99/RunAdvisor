@@ -1,4 +1,4 @@
-package com.example.runadvisor.struct
+package com.example.runadvisor.map
 import android.content.Context
 import android.graphics.Color
 import org.osmdroid.util.GeoPoint

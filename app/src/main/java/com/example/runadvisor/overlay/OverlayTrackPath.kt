@@ -1,9 +1,10 @@
-package com.example.runadvisor.widget
+package com.example.runadvisor.overlay
 import android.content.Context
 import android.graphics.Point
 import android.view.MotionEvent
 import androidx.appcompat.content.res.AppCompatResources
-import com.example.runadvisor.struct.MapTrackPath
+import com.example.runadvisor.marker.TrackPathMarker
+import com.example.runadvisor.map.MapTrackPath
 import org.osmdroid.api.IMapView
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -12,14 +13,15 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 class OverlayTrackPath(private val activityContext:Context,
                        private val markers:MutableList<TrackPathMarker>,
                        private val pOnItemGestureListener:OnItemGestureListener<TrackPathMarker>,
-                       private val mapTrackPath:MapTrackPath):
+                       private val mapTrackPath: MapTrackPath
+):
     ItemizedIconOverlay<TrackPathMarker>(activityContext,markers,pOnItemGestureListener) {
 
-    var markerHasTouch:TrackPathMarker? = null
+    var markerHasTouch: TrackPathMarker? = null
     private val drawableDefault = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default)
     private val drawableSelected = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.center)
 
-    private fun setMarkerWithTouch(marker:TrackPathMarker){
+    private fun setMarkerWithTouch(marker: TrackPathMarker){
         markerHasTouch = marker
         mapTrackPath.invalidate()
     }

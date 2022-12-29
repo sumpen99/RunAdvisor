@@ -7,11 +7,11 @@ import android.widget.PopupMenu
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.Toast
-import androidx.core.view.drawToBitmap
 import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
+import com.example.runadvisor.map.MapTrackPath
 import com.example.runadvisor.methods.clearChildren
 import com.example.runadvisor.methods.getProgressbar
 import com.example.runadvisor.methods.showMessage
@@ -25,12 +25,12 @@ import org.json.JSONObject
 import java.net.URL
 import kotlin.concurrent.thread
 
-class MapFragmentTrackPath()
+class MapFragmentUpload
     :MapFragment() {
     private var urlCallInProgress:Boolean = false
     private var progressBar: ProgressBar? = null
     private var trackMenu:TrackMenuBar?=null
-    private var mapTrackPath:MapTrackPath? = null
+    private var mapTrackPath: MapTrackPath? = null
     private val URL_TIMER:Long = 1000
     private var lastUrlCall:Long = 0
 
@@ -142,12 +142,7 @@ class MapFragmentTrackPath()
                 setUrlCallInProgress(true)
                 setSearchTimer()
                 getAddress2(addressInfo,serverResult)
-
-                if(serverResult.serverResult != ServerResult.UPLOAD_ERROR){
-                    if(saveTrackOnSuccess(addressInfo)){mapTrackPath!!.removeCurrentOverlay()}
-                    else{showUserMessage("UnExpected Error!")}
-                }
-                else{showUserMessage(serverResult.msg)}
+                mapTrackPath!!.saveCurrentTrack(addressInfo.city,addressInfo.street)
                 setProgressbar(false)
                 setUrlCallInProgress(false)
             }
@@ -157,7 +152,6 @@ class MapFragmentTrackPath()
     private fun clearMapTrackPath(parameter: Any?){
         if(mapTrackPath!=null){
             mapTrackPath!!.resetMapTrackPath()
-            //mapTrackPath = null
         }
     }
 
@@ -175,9 +169,9 @@ class MapFragmentTrackPath()
         withContext(Dispatchers.IO) {
             thread {
                 serverResult.serverResult = ServerResult.UPLOAD_OK
-                addressInfo.city = "Karlstad"
-                addressInfo.street = "Muraregatan"
-                Thread.sleep(2000)
+                addressInfo.city = "<Insert City>"
+                addressInfo.street = "<Insert Street>"
+                Thread.sleep(500)
             }.join()
         }
     }
@@ -212,12 +206,6 @@ class MapFragmentTrackPath()
         if(addressInfo.street.isEmpty()){addressInfo.street = "<Insert Street>"}
     }
 
-    private fun saveTrackOnSuccess(addressInfo: AddressInfo):Boolean{
-        val bmp = mapView.drawToBitmap()
-        val zoom = mapView.zoomLevel
-        return mapTrackPath!!.saveCurrentTrack(bmp,zoom,addressInfo.city,addressInfo.street)
-    }
-
     /*
     *   ##########################################################################
     *               RESPECT NOMINATIM 1/SEC POLICY
@@ -225,7 +213,7 @@ class MapFragmentTrackPath()
     * */
 
     private fun checkSearchTimer():Boolean{
-        if(System.currentTimeMillis()-lastUrlCall < URL_TIMER){
+        if(System.currentTimeMillis()-lastUrlCall <= URL_TIMER){
             parentActivity.showMessage("Please wait and try again...", Toast.LENGTH_SHORT)
             return false
         }
@@ -237,6 +225,9 @@ class MapFragmentTrackPath()
     }
 
     private fun clearForUpload():Boolean{
-        return (mapTrackPath!=null && mapTrackPath!!.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress)
+        return (mapTrackPath!=null &&
+                mapTrackPath!!.trackIsOnMap() &&
+                checkSearchTimer() && !urlCallInProgress
+                )
     }
 }

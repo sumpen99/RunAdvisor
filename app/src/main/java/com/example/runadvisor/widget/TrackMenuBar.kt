@@ -6,8 +6,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.runadvisor.R
-import com.example.runadvisor.activity.HomeActivity
-import com.example.runadvisor.io.printToTerminal
+import com.example.runadvisor.MainActivity
 import com.example.runadvisor.methods.*
 
 class TrackMenuBar(
@@ -24,11 +23,11 @@ class TrackMenuBar(
                          callbackDecrease:(args:Any?)->Unit,
                          callbackSave:(args:Any?)->Unit,
                          callbackClear:(args:Any?)->Unit){
-        val addPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.addLassoPoints)
-        val decreasePointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.decreaseLassoPoints)
-        val saveLassoPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.saveLassoPoints)
-        val clearLassoPointsBtn = (context as HomeActivity).findViewById<CustomImageButton>(R.id.clearLassoPoints)
-        trackLengthTextView = (context as HomeActivity).findViewById<TextView>(R.id.lassoCurrentKM)
+        val addPointsBtn = (context as MainActivity).findViewById<CustomImageButton>(R.id.addLassoPoints)
+        val decreasePointsBtn = (context as MainActivity).findViewById<CustomImageButton>(R.id.decreaseLassoPoints)
+        val saveLassoPointsBtn = (context as MainActivity).findViewById<CustomImageButton>(R.id.saveLassoPoints)
+        val clearLassoPointsBtn = (context as MainActivity).findViewById<CustomImageButton>(R.id.clearLassoPoints)
+        trackLengthTextView = (context as MainActivity).findViewById<TextView>(R.id.lassoCurrentKM)
         addPointsBtn.setCallback(1,callbackAdd)
         decreasePointsBtn.setCallback(-1,callbackDecrease)
         saveLassoPointsBtn.setCallback(0,callbackSave)

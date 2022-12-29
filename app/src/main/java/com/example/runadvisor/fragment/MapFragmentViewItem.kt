@@ -2,11 +2,11 @@ package com.example.runadvisor.fragment
 import android.view.MotionEvent
 import android.view.View
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.struct.MapTrackOverview
-import com.example.runadvisor.widget.CustomDataAdapter
+import com.example.runadvisor.map.MapTrackOverview
+import com.example.runadvisor.adapter.CustomDownloadAdapter
 
-class MapFragmentTrackItem():MapFragment() {
-    lateinit var viewHolder:CustomDataAdapter.ViewHolder
+class MapFragmentViewItem():MapFragment() {
+    lateinit var viewHolder: CustomDownloadAdapter.ViewHolder
 
     override fun onResume() {
         super.onResume()
@@ -18,7 +18,7 @@ class MapFragmentTrackItem():MapFragment() {
     override fun callbackDispatchTouchEvent(event: MotionEvent) {}
 
     override fun receivedData(parameter: Any?){
-        viewHolder = parameter as CustomDataAdapter.ViewHolder
+        viewHolder = parameter as CustomDownloadAdapter.ViewHolder
     }
 
     override fun isRemovable():Boolean{return true}
