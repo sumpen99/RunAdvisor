@@ -8,8 +8,6 @@ import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapTrackOverview
-import com.example.runadvisor.methods.getCenterOfHome
-import com.example.runadvisor.methods.getLocationUpdates
 
 class MapFragmentViewAll()
     :MapFragment() {
@@ -55,6 +53,7 @@ class MapFragmentViewAll()
     private fun loadRunItems(){
         if(parentActivity.runItemsIsNotNull()){
             mapTrackOverview.addOverviewMarkers(parentActivity.getRunItems())
+            zoomToArea(mapTrackOverview.bbox,1.0)
         }
     }
 
@@ -64,6 +63,11 @@ class MapFragmentViewAll()
     *   ##########################################################################
     *
     * */
+
+    override fun onResume() {
+        super.onResume()
+        loadRunItems()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

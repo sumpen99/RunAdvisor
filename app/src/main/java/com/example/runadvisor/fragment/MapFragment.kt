@@ -22,6 +22,7 @@ import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 
@@ -142,6 +143,32 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         val location = getCenterOfHome()
         mapView.controller.setZoom(17)
         mapView.controller.setCenter(location)
+
+    }
+
+    protected fun zoomToArea(bbox:BoundingBox,paddingFactor:Double=1.0){
+        val ry1: Double = Math.log((Math.sin(toRadians(bbox.latSouth)) + 1) / Math.cos(toRadians(bbox.latSouth)))
+        val ry2: Double = Math.log(((Math.sin(toRadians(bbox.latNorth)) + 1) / Math.cos(toRadians(bbox.latNorth))))
+
+        val ryc = (ry1 + ry2) / 2
+
+        val centerY: Double = toDegrees(Math.atan(Math.sinh(ryc)))
+
+        val resolutionHorizontal: Double = (bbox.lonEast/bbox.lonWest) / getScreenWidth()
+
+        val vy0: Double = Math.log(Math.tan(Math.PI * (0.25 + centerY / 360)))
+        val vy1: Double = Math.log(Math.tan(Math.PI * (0.25 + bbox.latNorth / 360)))
+        val viewHeightHalf: Double = getScreenHeight() / 2.0
+        val zoomFactorPowered = (viewHeightHalf / (40.7436654315252 * (vy1 - vy0)))
+        val resolutionVertical = 360.0 / (zoomFactorPowered * 256)
+
+        val resolution: Double = (Math.max(resolutionHorizontal, resolutionVertical) * paddingFactor)
+        val zoom: Double = Math.log(360 / (resolution * 256))
+        val lon: Double = (bbox.lonEast + ((bbox.lonWest-bbox.lonEast)/2))
+        val lat = centerY
+
+        mapView.controller.setZoom(zoom)
+        mapView.controller.setCenter(GeoPoint(lat,lon))
 
     }
 
