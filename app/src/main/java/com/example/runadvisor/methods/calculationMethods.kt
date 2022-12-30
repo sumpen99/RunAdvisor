@@ -113,3 +113,30 @@ fun getGeoMiddle(p1:GeoPoint,p2:GeoPoint):GeoPoint{
     val clon = toDegrees(lon1 + atan2(by, cos(lat1) + bx))
     return GeoPoint(clat,clon)
 }
+
+
+/*val MIN_LATITUDE = -90.0
+val MAX_LATITUDE = 90.0
+val MIN_LONGITUDE = -180.0
+val MAX_LONGITUDE = 180.0
+val DP_TILE_SIZE = 256.0
+fun clamp(x:Double,minimum:Double,maximum:Double):Double{
+    return Math.max(minimum,Math.min(x,maximum))
+}
+
+fun getX(location:GeoPoint):Double{
+    val zoom = mapView.projection.zoomLevel
+    val lon = clamp(location.longitude,MIN_LONGITUDE,MAX_LONGITUDE)
+    return ((lon + 180.0) / 360.0 * Math.pow(2.0, zoom)) * DP_TILE_SIZE
+}
+
+fun getY(location:GeoPoint):Double{
+    val zoom = mapView.projection.zoomLevel
+    var lat = clamp(-location.latitude, MIN_LATITUDE, MAX_LATITUDE)
+    lat = lat * Math.PI/ 180.0
+
+    return ((1.0 - Math.log(Math.tan(lat) + 1.0 / Math.cos(lat)) / Math.PI) /
+            2.0 * Math.pow(2.0, zoom)) * DP_TILE_SIZE
+}*/
+
+

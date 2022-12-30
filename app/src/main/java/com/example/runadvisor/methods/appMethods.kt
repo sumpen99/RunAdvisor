@@ -20,6 +20,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
+import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -31,6 +32,7 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
 import com.example.runadvisor.activity.LoginActivity
+import com.example.runadvisor.widget.GpsBlinker
 import com.firebase.ui.storage.images.FirebaseImageLoader
 import com.google.firebase.storage.StorageReference
 import org.json.JSONArray
@@ -125,6 +127,20 @@ class AppGlide : AppGlideModule(){
         )
 
     }
+}
+
+/*
+*   ##########################################################################
+*                            ADD GPS BLINKING MARKER
+*   ##########################################################################
+*
+* */
+
+fun Fragment.getGpsBlinker(activity:Activity,viewGroup:ViewGroup): GpsBlinker {
+    val gpsBlinker = GpsBlinker(activity,null)
+    gpsBlinker.visibility = View.GONE
+    viewGroup.addView(gpsBlinker)
+    return gpsBlinker
 }
 
 /*
@@ -335,6 +351,14 @@ fun Activity.loadUserIconFromPhone(imagePath:String,imageView:ImageView){
 *
 * */
 
+fun Fragment.locationPermissionIsProvided():Boolean {
+    return (checkGpsProviderStatus() &&
+        ContextCompat.checkSelfPermission(requireContext(),
+            ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+        ContextCompat.checkSelfPermission(requireContext(),
+            ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED)
+}
+
 fun Fragment.getUserLocation():GeoPoint {
     val location: Location?
     if(checkGpsProviderStatus() &&
@@ -348,12 +372,18 @@ fun Fragment.getUserLocation():GeoPoint {
     return getCenterOfSweden()
 }
 
-fun Fragment.getLocationUpdates(locationListener:LocationListener){
+fun Fragment.getLocationUpdates(locationListener:LocationListener):Boolean{
     if(checkGpsProviderStatus() &&
         ContextCompat.checkSelfPermission(requireContext(),ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
         ContextCompat.checkSelfPermission(requireContext(),ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
         (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
+        return true
     }
+    return false
+}
+
+fun Fragment.cancelLocationUpdates(locationListener:LocationListener){
+    (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).removeUpdates(locationListener)
 }
 
 fun Fragment.checkGpsProviderStatus():Boolean{
@@ -375,7 +405,7 @@ fun Activity.getLocationUpdates(locationListener:LocationListener){
     if(checkGpsProviderStatus() &&
         ContextCompat.checkSelfPermission(this,ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
         ContextCompat.checkSelfPermission(this,ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
-        (getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
+        (getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5f,locationListener)
     }
 }
 

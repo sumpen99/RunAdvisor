@@ -1,20 +1,24 @@
 package com.example.runadvisor.fragment
-
 import android.content.Context
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.*
+import android.view.View.GONE
+import android.view.View.VISIBLE
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
+import com.example.runadvisor.widget.GpsBlinker
+import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -28,6 +32,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     protected lateinit var activityContext: Context
     protected lateinit var parentActivity: MainActivity
     protected lateinit var mapView: MapView
+    protected var progressBar: ProgressBar? = null
+    protected var gpsBlinker: GpsBlinker? = null
     private var mapData = MapData()
     private var _binding: FragmentMapBinding? = null
     protected val binding get() = _binding!!
@@ -45,12 +51,53 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         return view
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        addGpsBlinker()
+    }
+
     override fun longPressHelper(p: GeoPoint?): Boolean {
         return this.longPressHelper(p)
     }
 
     override fun singleTapConfirmedHelper(p: GeoPoint?): Boolean {
         return this.singleTapConfirmedHelper(p)
+    }
+
+    protected fun addProgressBar(){
+        val layout = parentActivity.findViewById<RelativeLayout>(R.id.mapBaseLayout)
+        progressBar = getProgressbar(parentActivity,layout)
+    }
+
+    private fun addGpsBlinker(){
+        val layout = parentActivity.findViewById<RelativeLayout>(R.id.mapBaseLayout)
+        gpsBlinker = getGpsBlinker(parentActivity,layout)
+        gpsBlinker!!.setAnimation()
+    }
+
+    protected fun activateGps(){
+        if(gpsBlinker!!.isNotActive()){
+            if(getLocationUpdates(this)){
+                updateGpsPosition(getUserLocation())
+                gpsBlinker!!.startBlinking()
+            }
+        }
+        else{ deActivateGps() }
+    }
+
+    protected fun deActivateGps(){
+       gpsBlinker!!.stopBlinking()
+       cancelLocationUpdates(this)
+    }
+
+    protected fun updateGpsPosition(location: IGeoPoint){
+        val p = mapView.projection.toPixels(location,null)
+        gpsBlinker!!.setPosition(p.x.toFloat(),p.y.toFloat())
+    }
+
+    protected fun showProgressbar(show:Boolean){
+        if(show){progressBar!!.visibility = VISIBLE}
+        else{progressBar!!.visibility = GONE}
     }
 
     private fun setActivityContext(){activityContext = requireContext()}
@@ -84,19 +131,24 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     * */
 
     override fun onLocationChanged(location: Location) {
-        mapView.controller.setCenter(GeoPoint(location.latitude,location.longitude))
+        val geoPoint = GeoPoint(location.latitude,location.longitude)
+        if(outsideMap(geoPoint)){mapView.controller.setCenter(geoPoint)}
+        updateGpsPosition(geoPoint)
         //printToTerminal("OnLocationChanged line 140 MapFragment Latitude: " + location.latitude + " , Longitude: " + location.longitude)
     }
 
     private fun setUserLocationIfAllowed(){
-        //var location = getLocation()
+        //var location = getUserLocation()
         val location = getCenterOfHome()
-        /*if(location == null){
-            location = getCenterOfHome()
-        }*/
         mapView.controller.setZoom(17)
         mapView.controller.setCenter(location)
 
+    }
+
+    private fun outsideMap(g:GeoPoint):Boolean{
+        val b = mapView.boundingBox
+        return ((g.longitude < b.lonWest || g.longitude > b.lonEast) ||
+           (g.latitude < b.latSouth || g.latitude > b.latNorth))
     }
 
     open fun resetLastPosition(){
@@ -145,6 +197,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     override fun onDestroyView() {
         super.onDestroyView()
+        deActivateGps()
         _binding = null
     }
 

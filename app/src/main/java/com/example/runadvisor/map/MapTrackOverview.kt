@@ -7,7 +7,7 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
 class MapTrackOverview(val context: Context,val map: MapView): MapTrack(context,map) {
-   val gestureListener = object: ItemizedIconOverlay.OnItemGestureListener<TrackOverviewMarker>{
+    val gestureListener = object: ItemizedIconOverlay.OnItemGestureListener<TrackOverviewMarker>{
         override fun onItemSingleTapUp(index:Int, item: TrackOverviewMarker):Boolean {
             item.hasTouch()
             return true

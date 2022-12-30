@@ -4,8 +4,6 @@ import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
 import android.widget.PopupMenu
-import android.widget.ProgressBar
-import android.widget.RelativeLayout
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.R
@@ -13,7 +11,6 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.map.MapTrackPath
 import com.example.runadvisor.methods.clearChildren
-import com.example.runadvisor.methods.getProgressbar
 import com.example.runadvisor.methods.showMessage
 import com.example.runadvisor.methods.toMap
 import com.example.runadvisor.struct.*
@@ -28,10 +25,9 @@ import kotlin.concurrent.thread
 class MapFragmentUpload
     :MapFragment() {
     private var urlCallInProgress:Boolean = false
-    private var progressBar: ProgressBar? = null
     private var trackMenu:TrackMenuBar?=null
     private var mapTrackPath: MapTrackPath? = null
-    private val URL_TIMER:Long = 1000
+    private val URL_TIMER:Long = 1500
     private var lastUrlCall:Long = 0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,16 +51,6 @@ class MapFragmentUpload
     private fun setMapTrackPath(){
         mapTrackPath = MapTrackPath(activityContext,mapView,::updateTrackLength)
         mapTrackPath!!.setCurrentOverlay()
-    }
-
-    private fun addProgressBar(){
-        val layout = parentActivity.findViewById<RelativeLayout>(R.id.mapBaseLayout)
-        progressBar = getProgressbar(parentActivity,layout)
-    }
-
-    private fun setProgressbar(show:Boolean){
-        if(show){progressBar!!.visibility = View.VISIBLE}
-        else{progressBar!!.visibility = View.GONE}
     }
 
     private fun setTrackPathMenu(){
@@ -136,14 +122,14 @@ class MapFragmentUpload
     private fun saveTrack(parameter:Any?){
         if(clearForUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
-                setProgressbar(true)
+                showProgressbar(true)
                 val serverResult = ServerDetails()
                 val addressInfo = AddressInfo()
                 setUrlCallInProgress(true)
                 setSearchTimer()
                 getAddress2(addressInfo,serverResult)
                 mapTrackPath!!.saveCurrentTrack(addressInfo.city,addressInfo.street)
-                setProgressbar(false)
+                showProgressbar(false)
                 setUrlCallInProgress(false)
             }
         }
@@ -169,8 +155,8 @@ class MapFragmentUpload
         withContext(Dispatchers.IO) {
             thread {
                 serverResult.serverResult = ServerResult.UPLOAD_OK
-                addressInfo.city = "<Insert City>"
-                addressInfo.street = "<Insert Street>"
+                addressInfo.city = "<City>"
+                addressInfo.street = "<Street>"
                 Thread.sleep(500)
             }.join()
         }
@@ -202,8 +188,8 @@ class MapFragmentUpload
                 }}.join()
         }
 
-        if(addressInfo.city.isEmpty()){addressInfo.city = "<Insert City>"}
-        if(addressInfo.street.isEmpty()){addressInfo.street = "<Insert Street>"}
+        if(addressInfo.city.isEmpty()){addressInfo.city = "<City>"}
+        if(addressInfo.street.isEmpty()){addressInfo.street = "<Street>"}
     }
 
     /*

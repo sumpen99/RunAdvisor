@@ -8,6 +8,7 @@ import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapTrackOverview
+import com.example.runadvisor.methods.getCenterOfHome
 import com.example.runadvisor.methods.getLocationUpdates
 
 class MapFragmentViewAll()
@@ -42,17 +43,13 @@ class MapFragmentViewAll()
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_base,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupGps-> enableGps()
+                    R.id.popupGps-> activateGps()
                     R.id.popupSearch-> printToTerminal("popupSearch")
                 }
                 true
             }
             popUpMenu.show()
         }
-    }
-
-    private fun enableGps(){
-        parentActivity.getLocationUpdates(this)
     }
 
     private fun loadRunItems(){
