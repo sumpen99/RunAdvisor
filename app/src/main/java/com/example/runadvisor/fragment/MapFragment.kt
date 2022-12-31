@@ -46,6 +46,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     private var _binding: FragmentMapBinding? = null
     protected val binding get() = _binding!!
 
+    protected val MIN_GEO_POINTS:Int = 5
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
         _binding = FragmentMapBinding.inflate(inflater,container,false)
@@ -93,6 +95,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         gpsBlinker.shouldStorePoints(true)
         gpsBlinker.clearCollectedPoints()
         gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
+        if(gpsBlinker.isNotActive()){activateGps()}
     }
 
     protected fun activateGps(){
@@ -116,6 +119,10 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     protected fun deActivateGps(){
        gpsBlinker.stopBlinking()
        cancelLocationUpdates(this)
+    }
+
+    protected fun getCollectedGpsPoints():List<GeoPoint>{
+        return gpsBlinker.getGeoPoints()
     }
 
     private fun updateGpsPosition(location: IGeoPoint){

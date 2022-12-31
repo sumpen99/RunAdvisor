@@ -14,8 +14,8 @@ import kotlin.math.sin
 
 
 class MapBuildTrack(val context: Context,
-                    val map:MapView,
-                    val callbackUpdateTrackLength:(args:String)->Unit): MapTrack(context,map) {
+                    val map:MapView): MapTrack(context,map) {
+    private lateinit var callbackUpdateTrackLength:(args:String)->Unit
     var points = ArrayList<GeoPoint>()
     var savedTracks = ArrayList<SavedTrack>()
     var trackLength:Double = 0.0
@@ -35,6 +35,10 @@ class MapBuildTrack(val context: Context,
 
     fun setCurrentOverlay(){
         currentOverlay = OverlayTrackPath(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
+    }
+
+    fun setCallbackUpdateTrackLength(callback:(args:String)->Unit){
+        callbackUpdateTrackLength = callback
     }
 
     private fun buildTrack(pointsToAdd:Int){
@@ -143,23 +147,35 @@ class MapBuildTrack(val context: Context,
     }
 
     fun saveCurrentTrack(city:String,street:String){
-        val centerGeoPoint = getCenterOfPoints(points)
-        if(centerGeoPoint!=null){
-            removeCurrentOverlay()
-            savedTracks.add(
-                SavedTrack(
-                    mapView.drawToBitmap(),
-                    ArrayList(points),
-                    centerGeoPoint,
-                    mapView.zoomLevel,
-                    city,
-                    street,
-                    trackLength.inKilometers(),
-                    getCurrentDate())
-            )
-            currentPoints = 0
-            points.clear()
-        }
+        val centerGeoPoint = points[0]
+        removeCurrentOverlay()
+        savedTracks.add(
+            SavedTrack(
+                mapView.drawToBitmap(),
+                ArrayList(points),
+                centerGeoPoint,
+                mapView.zoomLevel,
+                city,
+                street,
+                trackLength.inKilometers(),
+                getCurrentDate())
+        )
+        currentPoints = 0
+        points.clear()
+    }
+
+    fun saveGpsTrack(city:String,street:String,trackLen:String){
+        savedTracks.add(
+            SavedTrack(
+                mapView.drawToBitmap(),
+                ArrayList(polyLine!!.actualPoints),
+                polyLine!!.actualPoints[0],
+                mapView.zoomLevel,
+                city,
+                street,
+                trackLen,
+                getCurrentDate())
+        )
     }
 
     fun trackIsOnMap():Boolean{

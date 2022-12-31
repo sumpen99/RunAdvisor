@@ -114,6 +114,10 @@ class GpsBlinker(context:Context,
         geoPoints.clear()
     }
 
+    fun getGeoPoints():List<GeoPoint>{
+        return geoPoints
+    }
+
     fun collectPoints(geoPoint:GeoPoint){
         lastGeoPoint = geoPoint
         if(storePoints){

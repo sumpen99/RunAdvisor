@@ -71,7 +71,7 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
         //activity.downloadImage(itemsViewModel.downloadUrl,holder.cardImageView)
         holder.cityTextView.text = itemsViewModel.city
         holder.streetTextView.text = itemsViewModel.street
-        holder.trackLengthTextView.text = "${itemsViewModel.trackLength} km"
+        holder.trackLengthTextView.text = "${itemsViewModel.trackLength}"
         holder.distTextView.text = (itemsViewModel.range/1000.0).format(2) + " km"
         holder.zoom = itemsViewModel.zoom!!
         holder.centerPoint = GeoPoint(itemsViewModel.center!![0],itemsViewModel.center!![1])
