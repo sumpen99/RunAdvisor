@@ -278,7 +278,7 @@ class MainActivity : AppCompatActivity() {
 
     /*
     *   ##########################################################################
-    *               REMOVE DISPATCH FUNCTION
+    *                DISPATCH FUNCTION FOR MAPFRAGMENT
     *   ##########################################################################
     * */
 
@@ -288,21 +288,26 @@ class MainActivity : AppCompatActivity() {
         if(outsideNavMenu(event)){
             when(event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(event)
+                    //printToTerminal("ACTION_DOWN")
                 }
-                MotionEvent.ACTION_SCROLL->{
-                    printToTerminal("scrolling")
+                MotionEvent.ACTION_MOVE -> {
+                    (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(null)
+                    //printToTerminal("ACTION_MOVE")
+                    //(fragmentTracker.root as IFragment).callbackDispatchTouchEvent(null)
                 }
-                /*MotionEvent.ACTION_MOVE -> {
-                    (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(event)
-                }*/
-                /*MotionEvent.ACTION_MOVE -> {}
-                MotionEvent.ACTION_UP -> {}
-                MotionEvent.ACTION_POINTER_DOWN -> {}
-                MotionEvent.ACTION_POINTER_UP -> {}
-                MotionEvent.ACTION_CANCEL -> {}
-                MotionEvent.ACTION_CANCEL -> {}
-                */
+                MotionEvent.ACTION_UP -> {
+                    //printToTerminal("ACTION_UP")
+                }
+                MotionEvent.ACTION_POINTER_DOWN -> {
+                    //printToTerminal("ACTION_POINTER_DOWN")
+                }
+                MotionEvent.ACTION_POINTER_UP -> {
+                    //printToTerminal("ACTION_POINTER_UP")
+                }
+                 MotionEvent.ACTION_CANCEL -> {
+                    //printToTerminal("cancel")
+                }
+
             }
         }
         return true

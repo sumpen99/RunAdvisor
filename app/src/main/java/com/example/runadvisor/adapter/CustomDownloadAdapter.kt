@@ -49,7 +49,6 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
         val axis = 0
         val searchInfo = SearchInfo()
         searchForRunItems(serverData,runItem.compare(axis),axis,searchInfo)
-        printToTerminal(searchInfo.toString())
         if(searchInfo.found){
             var i = searchInfo.leftMin
             var foundIndex = -1
@@ -62,7 +61,6 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
             }
             if(foundIndex!=-1){removeCard(foundIndex)}
         }
-        printToTerminal(searchInfo.toString())
     }
 
     @SuppressLint("SetTextI18n")

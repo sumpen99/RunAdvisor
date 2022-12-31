@@ -6,7 +6,4 @@
     <item
         android:id="@+id/popupGpsPoints"
         android:title="Path By Gps" />
-    <item
-        android:id="@+id/popupExit"
-        android:title="Exit" />
 </menu>

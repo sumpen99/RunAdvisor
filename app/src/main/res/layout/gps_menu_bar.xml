@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/gpsBottomMenuView"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/bottomMapMenu"
+    android:orientation="horizontal"
+    android:background="@color/backgrounddark">
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <com.example.runadvisor.widget.CustomImageButton
+        android:id="@+id/startGpsBtn"
+        android:layout_gravity="center"
+        android:layout_width="@dimen/bottomMapMenuIcon"
+        android:layout_height="@dimen/bottomMapMenuIcon"
+        android:background="@color/backgrounddark"
+        android:src="@drawable/ic_start_gps_foreground">
+    </com.example.runadvisor.widget.CustomImageButton>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <com.example.runadvisor.widget.CustomImageButton
+        android:id="@+id/stopGpsBtn"
+        android:layout_gravity="center"
+        android:layout_width="@dimen/bottomMapMenuIcon"
+        android:layout_height="@dimen/bottomMapMenuIcon"
+        android:background="@color/backgrounddark"
+        android:src="@drawable/ic_stop_gps_foreground">
+    </com.example.runadvisor.widget.CustomImageButton>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <TextView
+        android:id="@+id/gpsCurrentKM"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:hint="(.... km)"
+        android:textSize="20sp" />
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <com.example.runadvisor.widget.CustomImageButton
+        android:id="@+id/gpsSavePointsBtn"
+        android:layout_width="@dimen/bottomMapMenuIcon"
+        android:layout_height="@dimen/bottomMapMenuIcon"
+        android:layout_gravity="center"
+        android:background="@color/backgrounddark"
+        android:src="@drawable/ic_save_track_foreground">
+    </com.example.runadvisor.widget.CustomImageButton>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <com.example.runadvisor.widget.CustomImageButton
+        android:id="@+id/gpsClearPointsBtn"
+        android:layout_width="@dimen/bottomMapMenuIcon"
+        android:layout_height="@dimen/bottomMapMenuIcon"
+        android:layout_gravity="center"
+        android:background="@color/backgrounddark"
+        android:src="@drawable/ic_exit_lasso_point_foreground">
+    </com.example.runadvisor.widget.CustomImageButton>
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

@@ -57,14 +57,6 @@ class MapTrackPath(val context: Context,
         points.add(GeoPoint(points[0].latitude,points[0].longitude))
     }
 
-    private fun getTrackLengthInKm():Double{
-        return trackLength/1000
-    }
-
-    private fun getStringTrackLength():String{
-        return getTrackLengthInKm().format(4)
-    }
-
     private fun addPolylineMarkers(){
         var i = 0
         currentOverlay = OverlayTrackPath(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
@@ -105,7 +97,7 @@ class MapTrackPath(val context: Context,
 
     fun getNewTrackLength(){
         trackLength = calculateTrackLength(points)
-        callbackUpdateTrackLength(getStringTrackLength())
+        callbackUpdateTrackLength(trackLength.inKilometers())
     }
 
     fun adjustLasso(numPoints:Int):Boolean{
@@ -162,7 +154,7 @@ class MapTrackPath(val context: Context,
                     mapView.zoomLevel,
                     city,
                     street,
-                    getStringTrackLength(),
+                    trackLength.inKilometers(),
                     getCurrentDate())
             )
             currentPoints = 0

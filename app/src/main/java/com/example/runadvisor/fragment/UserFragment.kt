@@ -68,7 +68,7 @@ class UserFragment():
 
     override fun receivedData(parameter: Any?){}
 
-    override fun callbackDispatchTouchEvent(event: MotionEvent){}
+    override fun callbackDispatchTouchEvent(parameter:Any?){}
 
     private fun setActivityContext() {
         activityContext = requireContext()

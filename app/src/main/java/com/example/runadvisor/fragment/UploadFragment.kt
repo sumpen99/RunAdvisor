@@ -70,7 +70,7 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
         }
     }
 
-    override fun callbackDispatchTouchEvent(event: MotionEvent){}
+    override fun callbackDispatchTouchEvent(parameter:Any?){}
 
     private fun setActivityContext() {
         activityContext = requireContext()

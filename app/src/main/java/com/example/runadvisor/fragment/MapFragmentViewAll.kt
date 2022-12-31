@@ -1,7 +1,6 @@
 package com.example.runadvisor.fragment
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.widget.PopupMenu
 import com.example.runadvisor.R
@@ -9,7 +8,7 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapTrackOverview
 
-class MapFragmentViewAll()
+class MapFragmentViewAll
     :MapFragment() {
     private lateinit var mapTrackOverview: MapTrackOverview
 
@@ -17,10 +16,8 @@ class MapFragmentViewAll()
         super.onViewCreated(view, savedInstanceState)
         setTrackOverviewMenu()
         setMapTrackOverview()
-        loadRunItems()
     }
 
-    override fun callbackDispatchTouchEvent(event: MotionEvent) {}
 
     override fun receivedData(parameter: Any?){}
 
@@ -50,10 +47,15 @@ class MapFragmentViewAll()
         }
     }
 
-    private fun loadRunItems(){
+    override fun setMapPosition() {
         if(parentActivity.runItemsIsNotNull()){
             mapTrackOverview.addOverviewMarkers(parentActivity.getRunItems())
-            zoomToArea(mapTrackOverview.bbox,1.0)
+            if(mapData.geoPoint == null){
+                zoomToArea(mapTrackOverview.bbox,1.0)
+            }
+            else{
+                resetLastPosition()
+            }
         }
     }
 
@@ -64,10 +66,10 @@ class MapFragmentViewAll()
     *
     * */
 
-    override fun onResume() {
+    /*override fun onResume() {
         super.onResume()
-        loadRunItems()
-    }
+        //loadRunItems()
+    }*/
 
     override fun onDestroyView() {
         super.onDestroyView()

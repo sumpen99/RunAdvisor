@@ -15,7 +15,6 @@ class MapFragmentViewItem():MapFragment() {
         drawTrackOnMap()
     }
 
-    override fun callbackDispatchTouchEvent(event: MotionEvent) {}
 
     override fun receivedData(parameter: Any?){
         viewHolder = parameter as CustomDownloadAdapter.ViewHolder

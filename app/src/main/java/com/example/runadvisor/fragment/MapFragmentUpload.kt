@@ -9,11 +9,14 @@ import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapTrackPath
 import com.example.runadvisor.methods.clearChildren
+import com.example.runadvisor.methods.locationPermissionIsProvided
 import com.example.runadvisor.methods.showMessage
 import com.example.runadvisor.methods.toMap
 import com.example.runadvisor.struct.*
+import com.example.runadvisor.widget.GpsMenuBar
 import com.example.runadvisor.widget.TrackMenuBar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,17 +29,17 @@ class MapFragmentUpload
     :MapFragment() {
     private var urlCallInProgress:Boolean = false
     private var trackMenu:TrackMenuBar?=null
+    private var gpsMenu: GpsMenuBar?=null
     private var mapTrackPath: MapTrackPath? = null
     private val URL_TIMER:Long = 1500
     private var lastUrlCall:Long = 0
+    private var lastMenu:Int = -1
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setTrackPathMenu()
         if(progressBar == null){addProgressBar()}
     }
-
-    override fun callbackDispatchTouchEvent(event: MotionEvent) {}
 
     override fun receivedData(parameter: Any?){}
 
@@ -59,9 +62,9 @@ class MapFragmentUpload
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_add_path,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupDrawPoints->addBottomMenu()
-                    R.id.popupGpsPoints->{}
-                    R.id.popupExit->exitBackToUpload()
+                    R.id.popupDrawPoints->addBottomMenu(0)
+                    R.id.popupGpsPoints->addBottomMenu(1)
+                    //R.id.popupExit->exitBackToUpload()
                 }
                 true
             }
@@ -69,11 +72,17 @@ class MapFragmentUpload
         }
     }
 
-    private fun addBottomMenu(){
-        if(binding.bottomMenuLayout.visibility == View.VISIBLE){return}
+    private fun addBottomMenu(menuType:Int){
+        if(binding.bottomMenuLayout.visibility == View.VISIBLE && menuType == lastMenu){return}
         binding.bottomMenuLayout.visibility = View.VISIBLE
         binding.bottomMenuLayout.clearChildren(0)
+        clearMapTrackPath(null)
+        if(menuType==0){addTrackMenu()}
+        else if(menuType==1){addGpsMenu()}
+        lastMenu = menuType
+    }
 
+    private fun addTrackMenu(){
         trackMenu = TrackMenuBar(parentActivity,null)
         binding.bottomMenuLayout.addView(trackMenu)
         trackMenu!!.setEventListener(
@@ -83,7 +92,17 @@ class MapFragmentUpload
             ::clearMapTrackPath)
     }
 
-    private fun exitBackToUpload(){
+    private fun addGpsMenu(){
+        gpsMenu = GpsMenuBar(parentActivity,null)
+        binding.bottomMenuLayout.addView(gpsMenu)
+        gpsMenu!!.setEventListener(
+            ::startGps,
+            ::stopGps,
+            ::saveTrack,
+            ::clearMapTrackPath)
+    }
+
+    private fun storeSavedTracks(){
         if(mapTrackPath!=null && mapTrackPath!!.savedTracks.isNotEmpty()){
             parentActivity.pushDataToFragment(
                 FragmentInstance.FRAGMENT_UPLOAD,
@@ -91,7 +110,7 @@ class MapFragmentUpload
             mapTrackPath!!.removeOverlayAndPolyLine()
         }
         removeBottomMenu()
-        parentActivity.navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
+        //parentActivity.navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
     }
 
     private fun removeBottomMenu(){
@@ -101,7 +120,30 @@ class MapFragmentUpload
 
     /*
     *   ##########################################################################
-    *               POPUP BOTTOM MENU FUNCTIONS
+    *               POPUP BOTTOM MENU GPS FUNCTIONS
+    *   ##########################################################################
+    * */
+
+    private fun startGps(parameter:Any?){
+        if(locationPermissionIsProvided()){
+            setGpsToStorePoints(true,::updateGpsLength)
+            //activateGps()
+            activateGpsRoundTrip()
+            takeMeAroundGoogle()
+        }
+        else{
+            showUserMessage("GpsPermission Is Not Granted")
+        }
+    }
+
+    private fun stopGps(parameter:Any?){
+        deActivateGps()
+        //collect points
+    }
+
+    /*
+    *   ##########################################################################
+    *               POPUP BOTTOM MENU TRACK FUNCTIONS
     *   ##########################################################################
     * */
 
@@ -143,6 +185,10 @@ class MapFragmentUpload
 
     private fun updateTrackLength(trackLength:String){
         trackMenu!!.setTrackLength(trackLength)
+    }
+
+    private fun updateGpsLength(trackLength:String){
+        gpsMenu!!.setTrackLength(trackLength)
     }
 
     /*
@@ -213,7 +259,12 @@ class MapFragmentUpload
     private fun clearForUpload():Boolean{
         return (mapTrackPath!=null &&
                 mapTrackPath!!.trackIsOnMap() &&
-                checkSearchTimer() && !urlCallInProgress
-                )
+                checkSearchTimer() &&
+                !urlCallInProgress)
+    }
+
+    override fun onDestroyView() {
+        storeSavedTracks()
+        super.onDestroyView()
     }
 }

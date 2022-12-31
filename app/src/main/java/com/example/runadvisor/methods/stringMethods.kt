@@ -16,6 +16,10 @@ fun fragmentInstanceToFragment(fragmentInstance:FragmentInstance): Fragment{
     }
 }
 
+fun Double.inKilometers():String{
+    return (this/1000).format(4) + " km"
+}
+
 fun Double.format(digits: Int) = "%.${digits}f".format(this)
 
 fun getImagePath():String{
