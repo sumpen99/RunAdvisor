@@ -52,6 +52,8 @@ class DataFragment():
         return false
     }
 
+    override fun needDispatch():Boolean{return false}
+
     override fun receivedData(parameter: Any?){}
 
     override fun callbackDispatchTouchEvent(parameter:Any?){}

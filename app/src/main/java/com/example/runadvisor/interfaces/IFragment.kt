@@ -6,4 +6,5 @@ interface IFragment {
     fun receivedData(parameter:Any?)
     fun getFragmentID(): FragmentInstance
     fun isRemovable():Boolean
+    fun needDispatch():Boolean
 }

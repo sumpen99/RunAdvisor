@@ -1,8 +1,7 @@
 package com.example.runadvisor.fragment
-import android.view.MotionEvent
 import android.view.View
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.map.MapTrackOverview
+import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.adapter.CustomDownloadAdapter
 
 class MapFragmentViewItem():MapFragment() {
@@ -36,11 +35,11 @@ class MapFragmentViewItem():MapFragment() {
     }
 
     private fun drawTrackOnMap(){
-        val mapTrackOverview = MapTrackOverview(activityContext,mapView)
-        mapTrackOverview.setCurrentOverlay()
-        mapTrackOverview.buildPolyline(viewHolder.trackPoints)
-        mapTrackOverview.addPolyLineToMap()
-        mapTrackOverview.invalidate()
+        val mapShowTrack = MapShowTrack(activityContext,mapView)
+        mapShowTrack.setCurrentOverlay()
+        mapShowTrack.buildPolyline(viewHolder.trackPoints)
+        mapShowTrack.addPolyLineToMap()
+        mapShowTrack.invalidate()
     }
 
 

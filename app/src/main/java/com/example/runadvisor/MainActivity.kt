@@ -284,8 +284,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         super.dispatchTouchEvent(event)
-        if(fragmentTracker.isEmpty()){return false}
-        if(outsideNavMenu(event)){
+        if(dispatchIsNeeded(event)){
             when(event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     //printToTerminal("ACTION_DOWN")
@@ -311,6 +310,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return true
+    }
+
+    private fun dispatchIsNeeded(event:MotionEvent):Boolean{
+        return  fragmentTracker.currentFragmentNeedDispatch() && outsideNavMenu(event)
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {

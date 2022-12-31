@@ -60,6 +60,8 @@ class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
         return false
     }
 
+    override fun needDispatch():Boolean{return false}
+
     override fun getFragmentID(): FragmentInstance {
         return FragmentInstance.FRAGMENT_UPLOAD
     }

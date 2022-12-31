@@ -1,7 +1,6 @@
 package com.example.runadvisor.fragment
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.MotionEvent
 import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
@@ -9,12 +8,9 @@ import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
-import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.map.MapTrackPath
-import com.example.runadvisor.methods.clearChildren
-import com.example.runadvisor.methods.locationPermissionIsProvided
-import com.example.runadvisor.methods.showMessage
-import com.example.runadvisor.methods.toMap
+import com.example.runadvisor.map.MapBuildTrack
+import com.example.runadvisor.map.MapGpsTrack
+import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
 import com.example.runadvisor.widget.GpsMenuBar
 import com.example.runadvisor.widget.TrackMenuBar
@@ -30,7 +26,8 @@ class MapFragmentUpload
     private var urlCallInProgress:Boolean = false
     private var trackMenu:TrackMenuBar?=null
     private var gpsMenu: GpsMenuBar?=null
-    private var mapTrackPath: MapTrackPath? = null
+    private lateinit var mapBuildTrack: MapBuildTrack
+    private lateinit var mapGpsTrack: MapGpsTrack
     private val URL_TIMER:Long = 1500
     private var lastUrlCall:Long = 0
     private var lastMenu:Int = -1
@@ -39,6 +36,8 @@ class MapFragmentUpload
         super.onViewCreated(view, savedInstanceState)
         setTrackPathMenu()
         if(progressBar == null){addProgressBar()}
+        //setMapBuildTrack()
+        //setMapGpsTrack()
     }
 
     override fun receivedData(parameter: Any?){}
@@ -51,9 +50,13 @@ class MapFragmentUpload
 
     private fun setUrlCallInProgress(value:Boolean){urlCallInProgress = value}
 
-    private fun setMapTrackPath(){
-        mapTrackPath = MapTrackPath(activityContext,mapView,::updateTrackLength)
-        mapTrackPath!!.setCurrentOverlay()
+    private fun setMapBuildTrack(){
+        mapBuildTrack = MapBuildTrack(activityContext,mapView,::updateBuildTrackLength)
+        mapBuildTrack.setCurrentOverlay()
+    }
+
+    private fun setMapGpsTrack(){
+        mapGpsTrack = MapGpsTrack(activityContext,mapView)
     }
 
     private fun setTrackPathMenu(){
@@ -74,9 +77,7 @@ class MapFragmentUpload
 
     private fun addBottomMenu(menuType:Int){
         if(binding.bottomMenuLayout.visibility == View.VISIBLE && menuType == lastMenu){return}
-        binding.bottomMenuLayout.visibility = View.VISIBLE
-        binding.bottomMenuLayout.clearChildren(0)
-        clearMapTrackPath(null)
+        makeBottomMenuVisible()
         if(menuType==0){addTrackMenu()}
         else if(menuType==1){addGpsMenu()}
         lastMenu = menuType
@@ -84,38 +85,54 @@ class MapFragmentUpload
 
     private fun addTrackMenu(){
         trackMenu = TrackMenuBar(parentActivity,null)
+        setMapBuildTrack()
         binding.bottomMenuLayout.addView(trackMenu)
         trackMenu!!.setEventListener(
-            ::adjustPointLasso,
-            ::adjustPointLasso,
-            ::saveTrack,
-            ::clearMapTrackPath)
+            ::addTrackPoints,
+            ::subTrackPoints,
+            ::saveBuildTrack,
+            ::clearBuildTrack)
     }
 
     private fun addGpsMenu(){
-        gpsMenu = GpsMenuBar(parentActivity,null)
-        binding.bottomMenuLayout.addView(gpsMenu)
-        gpsMenu!!.setEventListener(
-            ::startGps,
-            ::stopGps,
-            ::saveTrack,
-            ::clearMapTrackPath)
+        if(locationPermissionIsProvided()){
+            activateGps()
+            setMapGpsTrack()
+            gpsMenu = GpsMenuBar(parentActivity,null)
+            binding.bottomMenuLayout.addView(gpsMenu)
+            gpsMenu!!.setEventListener(
+                ::startGps,
+                ::stopGps,
+                ::saveGpsTrack,
+                ::clearGpsTrack)
+        }
+        else{
+            showUserMessage("GpsPermission Is Not Granted")
+            removeBottomMenu()
+        }
     }
 
     private fun storeSavedTracks(){
-        if(mapTrackPath!=null && mapTrackPath!!.savedTracks.isNotEmpty()){
+        if(mapBuildTrack.savedTracks.isNotEmpty()){
             parentActivity.pushDataToFragment(
                 FragmentInstance.FRAGMENT_UPLOAD,
-                mapTrackPath!!.savedTracks)
-            mapTrackPath!!.removeOverlayAndPolyLine()
+                mapBuildTrack.savedTracks)
+            mapBuildTrack.removeOverlayAndPolyLine()
         }
         removeBottomMenu()
         //parentActivity.navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
     }
 
+    private fun makeBottomMenuVisible(){
+        binding.bottomMenuLayout.visibility = View.VISIBLE
+        binding.bottomMenuLayout.clearChildren(0)
+        //clearMapTrackPath(null)
+    }
+
     private fun removeBottomMenu(){
         binding.bottomMenuLayout.visibility = View.GONE
         binding.bottomMenuLayout.clearChildren(0)
+        lastMenu = -1
     }
 
     /*
@@ -125,20 +142,23 @@ class MapFragmentUpload
     * */
 
     private fun startGps(parameter:Any?){
-        if(locationPermissionIsProvided()){
-            setGpsToStorePoints(true,::updateGpsLength)
-            //activateGps()
-            activateGpsRoundTrip()
-            takeMeAroundGoogle()
-        }
-        else{
-            showUserMessage("GpsPermission Is Not Granted")
-        }
+        setGpsToStorePoints(::updateGpsTrackLength)
+        takeMeAroundGoogle()
     }
 
     private fun stopGps(parameter:Any?){
         deActivateGps()
         //collect points
+    }
+
+    private fun saveGpsTrack(parameter:Any?){
+     }
+
+    private fun updateGpsTrackLength(trackLength:String){
+        gpsMenu!!.setTrackLength(trackLength)
+    }
+
+    private fun clearGpsTrack(parameter: Any?){
     }
 
     /*
@@ -147,21 +167,28 @@ class MapFragmentUpload
     *   ##########################################################################
     * */
 
-    private fun adjustPointLasso(parameter:Any?){
-        val numPoints:Int = parameter as Int
-        if(mapTrackPath == null){
-            if(numPoints <= 0){return}
-            setMapTrackPath()
-            mapTrackPath!!.setLasso(numPoints)
+    private fun addTrackPoints(parameter:Any?){
+        if(!mapBuildTrack.trackIsOnMap()){
+            mapBuildTrack.setTrack(1)
+            mapBuildTrack.addTrackOverlay()
+            return
         }
-        else{
-            if(!mapTrackPath!!.adjustLasso(numPoints)){return}
-            mapTrackPath!!.adjustPolyline()
-        }
-        mapTrackPath!!.addLassoOverlay()
+        else if(!mapBuildTrack.adjustTrack(1)){return}
+        updateMapBuildTrack()
     }
 
-    private fun saveTrack(parameter:Any?){
+    private fun subTrackPoints(parameter:Any?){
+        if(!mapBuildTrack.trackIsOnMap()){return}
+        if(!mapBuildTrack.adjustTrack(-1)){return}
+        updateMapBuildTrack()
+    }
+
+    private fun updateMapBuildTrack(){
+        mapBuildTrack.adjustPolyline()
+        mapBuildTrack.addTrackOverlay()
+    }
+
+    private fun saveBuildTrack(parameter:Any?){
         if(clearForUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
@@ -170,25 +197,19 @@ class MapFragmentUpload
                 setUrlCallInProgress(true)
                 setSearchTimer()
                 getAddress2(addressInfo,serverResult)
-                mapTrackPath!!.saveCurrentTrack(addressInfo.city,addressInfo.street)
+                mapBuildTrack.saveCurrentTrack(addressInfo.city,addressInfo.street)
                 showProgressbar(false)
                 setUrlCallInProgress(false)
             }
         }
     }
 
-    private fun clearMapTrackPath(parameter: Any?){
-        if(mapTrackPath!=null){
-            mapTrackPath!!.resetMapTrackPath()
-        }
+    private fun clearBuildTrack(parameter: Any?){
+        mapBuildTrack.resetMapTrackPath()
     }
 
-    private fun updateTrackLength(trackLength:String){
+    private fun updateBuildTrackLength(trackLength:String){
         trackMenu!!.setTrackLength(trackLength)
-    }
-
-    private fun updateGpsLength(trackLength:String){
-        gpsMenu!!.setTrackLength(trackLength)
     }
 
     /*
@@ -209,7 +230,7 @@ class MapFragmentUpload
     }
 
     private suspend fun getAddress(addressInfo: AddressInfo, serverResult: ServerDetails){
-        val geoPoint = mapTrackPath!!.points[0]
+        val geoPoint = mapBuildTrack!!.points[0]
         val requestString = "https://nominatim.openstreetmap.org/reverse?lat=" +
                 geoPoint.latitude.toString() + "&lon=" + geoPoint.longitude.toString() + "&zoom=18&format=jsonv2"
         withContext(Dispatchers.IO) {
@@ -257,8 +278,8 @@ class MapFragmentUpload
     }
 
     private fun clearForUpload():Boolean{
-        return (mapTrackPath!=null &&
-                mapTrackPath!!.trackIsOnMap() &&
+        return (mapBuildTrack!=null &&
+                mapBuildTrack!!.trackIsOnMap() &&
                 checkSearchTimer() &&
                 !urlCallInProgress)
     }

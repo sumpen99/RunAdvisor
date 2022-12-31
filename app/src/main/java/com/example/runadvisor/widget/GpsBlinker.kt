@@ -100,6 +100,7 @@ class GpsBlinker(context:Context,
         inflate(context, R.layout.gps_blinker,this)
     }
 
+
     fun setCallbackUpdateLength(callback:(args:String)->Unit){
         callbackUpdateLength = callback
     }

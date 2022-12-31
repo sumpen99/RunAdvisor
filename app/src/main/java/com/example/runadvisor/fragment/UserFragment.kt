@@ -58,6 +58,8 @@ class UserFragment():
         setEventListener(view)
     }
 
+    override fun needDispatch():Boolean{return false}
+
     override fun getFragmentID(): FragmentInstance {
         return FragmentInstance.FRAGMENT_USER
     }

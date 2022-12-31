@@ -38,10 +38,8 @@ abstract class MapTrack(val activityContext: Context,
     }
 
     fun removeCurrentOverlay(){
-        if(currentOverlay != null){
-            mapView.overlays.remove(currentOverlay)
-            invalidate()
-        }
+        mapView.overlays.remove(currentOverlay)
+        invalidate()
     }
 
     open fun removePolyline(){
@@ -50,12 +48,10 @@ abstract class MapTrack(val activityContext: Context,
     }
 
     fun removeOverlayAndPolyLine(){
-        if(currentOverlay != null){
-            mapView.overlays.remove(currentOverlay)
-            mapView.overlays.remove(polyLine)
-            polyLine = null
-            invalidate()
-        }
+        mapView.overlays.remove(currentOverlay)
+        mapView.overlays.remove(polyLine)
+        polyLine = null
+        invalidate()
     }
 
 }

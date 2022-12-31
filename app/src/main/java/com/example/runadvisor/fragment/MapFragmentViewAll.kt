@@ -6,11 +6,11 @@ import android.widget.PopupMenu
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
-import com.example.runadvisor.map.MapTrackOverview
+import com.example.runadvisor.map.MapShowTrack
 
 class MapFragmentViewAll
     :MapFragment() {
-    private lateinit var mapTrackOverview: MapTrackOverview
+    private lateinit var mapShowTrack: MapShowTrack
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -28,8 +28,8 @@ class MapFragmentViewAll
     }
 
     private fun setMapTrackOverview(){
-        mapTrackOverview = MapTrackOverview(activityContext,mapView)
-        mapTrackOverview.setCurrentOverlay()
+        mapShowTrack = MapShowTrack(activityContext,mapView)
+        mapShowTrack.setCurrentOverlay()
     }
 
     private fun setTrackOverviewMenu(){
@@ -49,9 +49,9 @@ class MapFragmentViewAll
 
     override fun setMapPosition() {
         if(parentActivity.runItemsIsNotNull()){
-            mapTrackOverview.addOverviewMarkers(parentActivity.getRunItems())
+            mapShowTrack.addOverviewMarkers(parentActivity.getRunItems())
             if(mapData.geoPoint == null){
-                zoomToArea(mapTrackOverview.bbox,1.0)
+                zoomToArea(mapShowTrack.bbox,1.0)
             }
             else{
                 resetLastPosition()
@@ -73,7 +73,7 @@ class MapFragmentViewAll
 
     override fun onDestroyView() {
         super.onDestroyView()
-        mapTrackOverview.removeOverlayAndPolyLine()
+        mapShowTrack.removeOverlayAndPolyLine()
     }
 
 }

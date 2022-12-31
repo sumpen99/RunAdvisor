@@ -5,7 +5,7 @@ import androidx.appcompat.content.res.AppCompatResources
 import com.example.runadvisor.marker.TrackOverviewMarker
 import com.example.runadvisor.methods.getDoubleToGeoPoint
 import com.example.runadvisor.methods.getDoubleToGeoPoints
-import com.example.runadvisor.map.MapTrackOverview
+import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
@@ -13,7 +13,7 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 class OverlayTrackOverview(private val activityContext: Context,
                            private val markers:MutableList<TrackOverviewMarker>,
                            private val pOnItemGestureListener: OnItemGestureListener<TrackOverviewMarker>,
-                           private val mapTrackOverview: MapTrackOverview
+                           private val mapTrackOverview: MapShowTrack
 ):
     ItemizedIconOverlay<TrackOverviewMarker>(activityContext,markers,pOnItemGestureListener) {
 

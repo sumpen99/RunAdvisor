@@ -1,6 +1,5 @@
 package com.example.runadvisor.map
 import android.content.Context
-import android.graphics.Bitmap
 import androidx.core.view.drawToBitmap
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.marker.TrackPathMarker
@@ -14,9 +13,9 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 
-class MapTrackPath(val context: Context,
-                   val map:MapView,
-                   val callbackUpdateTrackLength:(args:String)->Unit): MapTrack(context,map) {
+class MapBuildTrack(val context: Context,
+                    val map:MapView,
+                    val callbackUpdateTrackLength:(args:String)->Unit): MapTrack(context,map) {
     var points = ArrayList<GeoPoint>()
     var savedTracks = ArrayList<SavedTrack>()
     var trackLength:Double = 0.0
@@ -38,7 +37,8 @@ class MapTrackPath(val context: Context,
         currentOverlay = OverlayTrackPath(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
     }
 
-    private fun buildLasso(pointsToAdd:Int){
+    private fun buildTrack(pointsToAdd:Int){
+        resetMapTrackPath()
         val bbox = mapView.boundingBox
         currentPoints += INCREASE_POINTS*pointsToAdd
         currentPoints  = Math.max(currentPoints,INCREASE_POINTS)
@@ -55,6 +55,39 @@ class MapTrackPath(val context: Context,
             t+=step
         }
         points.add(GeoPoint(points[0].latitude,points[0].longitude))
+    }
+
+    fun adjustTrack(numPoints:Int):Boolean{
+        val temPoints = ArrayList<GeoPoint>()
+        var i = 0
+        if(numPoints<0){
+            if(currentPoints <= INCREASE_POINTS+1){return false}
+            while(i<points.size){
+                temPoints.add(points[i])
+                i+=2
+            }
+            points = temPoints
+        }
+        else{
+            if(currentPoints > MAX_POINTS){return false}
+            if(currentPoints == 0){buildTrack(1);return true}
+            i = 1
+            var newPoint:GeoPoint = GeoPoint(0.0,0.0)
+            var lastPoint:GeoPoint = points[0]
+            var currentPoint:GeoPoint = GeoPoint(0.0,0.0)
+            while(i<points.size){
+                currentPoint = points[i]
+                newPoint = getGeoMiddle(lastPoint,currentPoint)
+                temPoints.add(lastPoint)
+                temPoints.add(newPoint)
+                lastPoint = currentPoint
+                i++
+            }
+            temPoints.add(points[points.size-1])
+            points = temPoints
+        }
+        currentPoints = points.size
+        return true
     }
 
     private fun addPolylineMarkers(){
@@ -77,8 +110,8 @@ class MapTrackPath(val context: Context,
         buildPolyline(points)
     }
 
-    fun setLasso(pointsToAdd:Int){
-        buildLasso(pointsToAdd)
+    fun setTrack(pointsToAdd:Int){
+        buildTrack(pointsToAdd)
         buildPolyline(points)
     }
 
@@ -88,7 +121,7 @@ class MapTrackPath(val context: Context,
         polyLine!!.setPoints(points)
     }
 
-    fun addLassoOverlay(){
+    fun addTrackOverlay(){
         addPolyLineToMap()
         addPolylineMarkers()
         getNewTrackLength()
@@ -98,39 +131,6 @@ class MapTrackPath(val context: Context,
     fun getNewTrackLength(){
         trackLength = calculateTrackLength(points)
         callbackUpdateTrackLength(trackLength.inKilometers())
-    }
-
-    fun adjustLasso(numPoints:Int):Boolean{
-        val temPoints = ArrayList<GeoPoint>()
-        var i = 0
-        if(numPoints<0){
-            if(currentPoints <= INCREASE_POINTS+1){return false}
-            while(i<points.size){
-                temPoints.add(points[i])
-                i+=2
-            }
-            points = temPoints
-        }
-        else{
-            if(currentPoints > MAX_POINTS){return false}
-            if(currentPoints == 0){buildLasso(1);return true}
-            i = 1
-            var newPoint:GeoPoint = GeoPoint(0.0,0.0)
-            var lastPoint:GeoPoint = points[0]
-            var currentPoint:GeoPoint = GeoPoint(0.0,0.0)
-            while(i<points.size){
-                currentPoint = points[i]
-                newPoint = getGeoMiddle(lastPoint,currentPoint)
-                temPoints.add(lastPoint)
-                temPoints.add(newPoint)
-                lastPoint = currentPoint
-                i++
-            }
-            temPoints.add(points[points.size-1])
-            points = temPoints
-        }
-        currentPoints = points.size
-        return true
     }
 
     fun resetMapTrackPath(){
@@ -163,7 +163,7 @@ class MapTrackPath(val context: Context,
     }
 
     fun trackIsOnMap():Boolean{
-        return (points.size > 0 && currentOverlay != null && polyLine != null)
+        return (points.size > 0 && polyLine != null)
     }
 
 }

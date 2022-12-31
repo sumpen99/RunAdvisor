@@ -32,6 +32,13 @@ class FragmentTracker {
         root = null
     }
 
+    fun currentFragmentNeedDispatch():Boolean{
+        if(root!=null){
+            return (root as IFragment).needDispatch()
+        }
+        return false
+    }
+
     fun currentFragmentIsInstanceOf(fragmentInstance: FragmentInstance):Boolean{
         if(root!=null){
             return fragmentInstance == (root as IFragment).getFragmentID()

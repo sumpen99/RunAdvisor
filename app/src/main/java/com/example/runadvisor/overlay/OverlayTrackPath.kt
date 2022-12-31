@@ -4,7 +4,7 @@ import android.graphics.Point
 import android.view.MotionEvent
 import androidx.appcompat.content.res.AppCompatResources
 import com.example.runadvisor.marker.TrackPathMarker
-import com.example.runadvisor.map.MapTrackPath
+import com.example.runadvisor.map.MapBuildTrack
 import org.osmdroid.api.IMapView
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -13,7 +13,7 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 class OverlayTrackPath(private val activityContext:Context,
                        private val markers:MutableList<TrackPathMarker>,
                        private val pOnItemGestureListener:OnItemGestureListener<TrackPathMarker>,
-                       private val mapTrackPath: MapTrackPath
+                       private val mapTrackPath: MapBuildTrack
 ):
     ItemizedIconOverlay<TrackPathMarker>(activityContext,markers,pOnItemGestureListener) {
 

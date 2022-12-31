@@ -59,6 +59,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         return view
     }
 
+    override fun needDispatch():Boolean{return true}
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         addGpsBlinker()
@@ -87,8 +89,9 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         gpsBlinker.setAnimation()
     }
 
-    protected fun setGpsToStorePoints(value:Boolean,callbackUpdateTrackLength:(args:String)->Unit){
-        gpsBlinker.shouldStorePoints(value)
+    protected fun setGpsToStorePoints(callbackUpdateTrackLength:(args:String)->Unit){
+        gpsBlinker.shouldStorePoints(true)
+        gpsBlinker.clearCollectedPoints()
         gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
     }
 
@@ -96,10 +99,9 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         if(gpsBlinker.isNotActive()){
             if(getLocationUpdates(this)){
                 val geoPoint = getUserLocation()
-                printToTerminal(geoPoint.toString())
+                gpsBlinker.startBlinking()
                 mapView.controller.setCenter(geoPoint)
                 updateGpsPosition(getUserLocation())
-                gpsBlinker.startBlinking()
             }
         }
         else{
@@ -107,17 +109,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         }
     }
 
-    protected fun activateGpsRoundTrip(){
-        if(gpsBlinker.isNotActive()){
-            mapView.controller.setZoom(14.0)
-            val geoPoint = getUserLocation()
-            mapView.controller.setCenter(geoPoint)
-            updateGpsPosition(getUserLocation())
-            gpsBlinker.startBlinking()
-        }
-        else{
-            deActivateGps()
-        }
+    protected fun setZoom(zoom:Double){
+        mapView.controller.setZoom(zoom)
     }
 
     protected fun deActivateGps(){
@@ -132,6 +125,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     }
 
     protected fun takeMeAroundGoogle(){
+        setZoom(15.0)
+        gpsBlinker.resetPosition(mapView)
         viewLifecycleOwner.lifecycleScope.launch{
             withContext(Dispatchers.IO){
                 var i = 0

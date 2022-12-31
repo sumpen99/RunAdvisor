@@ -7,7 +7,7 @@ import org.osmdroid.util.BoundingBox
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
-class MapTrackOverview(val context: Context,val map: MapView): MapTrack(context,map) {
+class MapShowTrack(val context: Context, val map: MapView): MapTrack(context,map) {
 
     val bbox = BoundingBox()
     val gestureListener = object: ItemizedIconOverlay.OnItemGestureListener<TrackOverviewMarker>{
