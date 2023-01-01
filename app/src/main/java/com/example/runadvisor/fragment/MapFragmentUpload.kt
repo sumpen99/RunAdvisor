@@ -40,9 +40,12 @@ class MapFragmentUpload:MapFragment() {
 
     override fun isRemovable():Boolean{return true}
 
-    override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_MAP_TRACK_PATH
+    override fun hasParentFragment(): FragmentInstance?{
+        if(gpsBlinkerIsActive()){showUserMessage("Gps Is Running");return null}
+        return FragmentInstance.FRAGMENT_UPLOAD
     }
+
+    override fun getFragmentID(): FragmentInstance { return FragmentInstance.FRAGMENT_MAP_TRACK_PATH }
 
     private fun setUrlCallInProgress(value:Boolean){urlCallInProgress = value}
 

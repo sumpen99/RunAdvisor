@@ -15,13 +15,12 @@ class CustomImageButton : androidx.appcompat.widget.AppCompatImageButton {
         setOnTouchListener(object: View.OnTouchListener {
             override fun onTouch(v: View, event: MotionEvent): Boolean {
                 when (event.actionMasked) {
-                    MotionEvent.ACTION_DOWN -> {
-                        imageAlpha = 127
-                    }
+                    MotionEvent.ACTION_DOWN -> {imageAlpha = 127}
                     MotionEvent.ACTION_UP -> {
                         imageAlpha=255
                         callback(args)
                     }
+                    MotionEvent.ACTION_CANCEL -> {imageAlpha=255}
                 }
                 return true
             }

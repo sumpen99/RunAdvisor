@@ -39,6 +39,13 @@ class FragmentTracker {
         return false
     }
 
+    fun currentFragmentHasParent():FragmentInstance?{
+        if(root!=null){
+            return (root as IFragment).hasParentFragment()
+        }
+        return null
+    }
+
     fun currentFragmentIsInstanceOf(fragmentInstance: FragmentInstance):Boolean{
         if(root!=null){
             return fragmentInstance == (root as IFragment).getFragmentID()

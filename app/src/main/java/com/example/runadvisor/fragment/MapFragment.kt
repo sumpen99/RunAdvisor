@@ -15,6 +15,7 @@ import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.databinding.FragmentMapBinding
+import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
@@ -80,6 +81,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         return this.singleTapConfirmedHelper(p)
     }
 
+    override fun hasParentFragment(): FragmentInstance?{ return null }
+
     protected fun addProgressBar(){
         val layout = parentActivity.findViewById<RelativeLayout>(R.id.mapBaseLayout)
         progressBar = getProgressbar(parentActivity,layout)
@@ -121,7 +124,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         mapData.gpsWasActive = gpsBlinker.isActive()
     }
 
-    private fun setZoom(zoom:Double){
+    protected fun setZoom(zoom:Double){
         mapView.controller.setZoom(zoom)
     }
 

@@ -56,15 +56,13 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         if(progressBar == null){addProgressBar()}
     }
 
-    override fun isRemovable():Boolean{
-        return false
-    }
+    override fun isRemovable():Boolean{ return false }
+
+    override fun hasParentFragment(): FragmentInstance?{ return null}
 
     override fun needDispatch():Boolean{return false}
 
-    override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_UPLOAD
-    }
+    override fun getFragmentID(): FragmentInstance { return FragmentInstance.FRAGMENT_UPLOAD }
 
     override fun receivedData(parameter: Any?){
         if(parameter!=null){
@@ -74,13 +72,9 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
 
     override fun callbackDispatchTouchEvent(parameter:Any?){}
 
-    private fun setActivityContext() {
-        activityContext = requireContext()
-    }
+    private fun setActivityContext() { activityContext = requireContext() }
 
-    private fun setParentActivity() {
-        parentActivity = requireActivity() as MainActivity
-    }
+    private fun setParentActivity() { parentActivity = requireActivity() as MainActivity }
 
     private fun setRecyclerView(){
         recyclerView = binding.trackRecyclerview

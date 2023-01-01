@@ -23,7 +23,7 @@ fun printActivityResult(requestCode: Int, resultCode: Int, data: Intent?){
 }
 
 fun printBoundingBox(bbox:BoundingBox){
-    printToTerminal("LatNort: ${bbox.latNorth} LonWest: ${bbox.lonWest} LatSouth: ${bbox.latSouth} LonEast: ${bbox.lonEast}")
+    printToTerminal("LatNorth: ${bbox.latNorth} LonWest: ${bbox.lonWest} LatSouth: ${bbox.latSouth} LonEast: ${bbox.lonEast}")
 }
 
 fun printToTerminal(msg:String){

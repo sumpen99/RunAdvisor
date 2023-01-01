@@ -5,17 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.runadvisor.R
 import com.example.runadvisor.MainActivity
+import com.example.runadvisor.R
 import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.methods.*
-import kotlin.collections.ArrayList
+import com.example.runadvisor.io.printToTerminal
+import com.example.runadvisor.methods.uncheckCheckBoxes
 
 
 class DataFragment:
@@ -41,13 +42,11 @@ class DataFragment:
         return dataView!!
     }
 
-    override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_DATA
-    }
+    override fun getFragmentID(): FragmentInstance { return FragmentInstance.FRAGMENT_DATA }
 
-    override fun isRemovable():Boolean{
-        return false
-    }
+    override fun isRemovable():Boolean{ return false }
+
+    override fun hasParentFragment():FragmentInstance?{ return null }
 
     override fun needDispatch():Boolean{return false}
 
@@ -65,13 +64,9 @@ class DataFragment:
         sortOnCity.setOnClickListener{sortDataSet(1,sortOnCity.isChecked,SortOperation.SORT_CITY)}
     }
 
-    private fun setActivityContext() {
-        activityContext = requireContext()
-    }
+    private fun setActivityContext() { activityContext = requireContext() }
 
-    private fun setParentActivity() {
-        parentActivity = requireActivity() as MainActivity
-    }
+    private fun setParentActivity() { parentActivity = requireActivity() as MainActivity }
 
     private fun setRecyclerView(){
         recyclerView = binding.dataRecyclerview

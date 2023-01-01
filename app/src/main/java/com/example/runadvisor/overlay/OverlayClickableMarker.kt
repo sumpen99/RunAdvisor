@@ -10,10 +10,10 @@ import com.example.runadvisor.struct.RunItem
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
-class OverlayTrackOverview(private val activityContext: Context,
-                           private val markers:MutableList<TrackOverviewMarker>,
-                           private val pOnItemGestureListener: OnItemGestureListener<TrackOverviewMarker>,
-                           private val mapTrackOverview: MapShowTrack
+class OverlayClickableMarker(private val activityContext: Context,
+                             private val markers:MutableList<TrackOverviewMarker>,
+                             private val pOnItemGestureListener: OnItemGestureListener<TrackOverviewMarker>,
+                             private val mapTrackOverview: MapShowTrack
 ):
     ItemizedIconOverlay<TrackOverviewMarker>(activityContext,markers,pOnItemGestureListener) {
 

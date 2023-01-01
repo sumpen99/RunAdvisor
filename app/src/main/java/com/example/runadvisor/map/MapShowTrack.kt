@@ -1,6 +1,6 @@
 package com.example.runadvisor.map
 import android.content.Context
-import com.example.runadvisor.overlay.OverlayTrackOverview
+import com.example.runadvisor.overlay.OverlayClickableMarker
 import com.example.runadvisor.marker.TrackOverviewMarker
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.util.BoundingBox
@@ -22,7 +22,7 @@ class MapShowTrack(val context: Context, val map: MapView): MapTrack(context,map
     }
 
     fun setCurrentOverlay(){
-        currentOverlay = OverlayTrackOverview(activityContext,ArrayList<TrackOverviewMarker>(),gestureListener,this)
+        currentOverlay = OverlayClickableMarker(activityContext,ArrayList<TrackOverviewMarker>(),gestureListener,this)
     }
 
     fun addOverviewMarkers(runItems:List<RunItem>?){
@@ -41,7 +41,7 @@ class MapShowTrack(val context: Context, val map: MapView): MapTrack(context,map
 
             lonEast = Math.max(lonEast,item.center!![1])
             lonWest = Math.min(lonWest,item.center!![1])
-            (currentOverlay as OverlayTrackOverview).addCustomItem(item,i,)
+            (currentOverlay as OverlayClickableMarker).addCustomItem(item,i,)
             i++
         }
         addMarkersToMap()

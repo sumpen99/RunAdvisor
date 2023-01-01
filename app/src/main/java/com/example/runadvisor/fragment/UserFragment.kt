@@ -19,8 +19,7 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.MessageToUser
-import com.example.runadvisor.adapter.CustomUserAdapter
-import com.google.firebase.storage.StorageReference
+
 
 class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private lateinit var activityContext: Context
@@ -57,25 +56,19 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
 
     override fun needDispatch():Boolean{return false}
 
-    override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_USER
-    }
+    override fun getFragmentID(): FragmentInstance { return FragmentInstance.FRAGMENT_USER }
 
-    override fun isRemovable():Boolean{
-        return false
-    }
+    override fun isRemovable():Boolean{ return false }
+
+    override fun hasParentFragment(): FragmentInstance?{ return null}
 
     override fun receivedData(parameter: Any?){}
 
     override fun callbackDispatchTouchEvent(parameter:Any?){}
 
-    private fun setActivityContext() {
-        activityContext = requireContext()
-    }
+    private fun setActivityContext() { activityContext = requireContext() }
 
-    private fun setParentActivity() {
-        parentActivity = requireActivity() as MainActivity
-    }
+    private fun setParentActivity() { parentActivity = requireActivity() as MainActivity }
 
     private fun setRecyclerView(){
         recyclerView = binding.userRecyclerview

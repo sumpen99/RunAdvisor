@@ -5,6 +5,7 @@ interface IFragment {
     fun callbackDispatchTouchEvent(parameter:Any?)
     fun receivedData(parameter:Any?)
     fun getFragmentID(): FragmentInstance
+    fun hasParentFragment(): FragmentInstance?
     fun isRemovable():Boolean
     fun needDispatch():Boolean
 }

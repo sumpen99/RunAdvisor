@@ -10,10 +10,10 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
-class OverlayTrackPath(private val activityContext:Context,
-                       private val markers:MutableList<TrackPathMarker>,
-                       private val pOnItemGestureListener:OnItemGestureListener<TrackPathMarker>,
-                       private val mapTrackPath: MapBuildTrack
+class OverlayMovableMarker(private val activityContext:Context,
+                           private val markers:MutableList<TrackPathMarker>,
+                           private val pOnItemGestureListener:OnItemGestureListener<TrackPathMarker>,
+                           private val mapTrackPath: MapBuildTrack
 ):
     ItemizedIconOverlay<TrackPathMarker>(activityContext,markers,pOnItemGestureListener) {
 

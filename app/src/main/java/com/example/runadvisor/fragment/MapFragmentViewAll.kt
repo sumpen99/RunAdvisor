@@ -3,6 +3,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
+import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
@@ -22,9 +23,9 @@ class MapFragmentViewAll:MapFragment() {
 
     override fun isRemovable():Boolean{return false}
 
-    override fun getFragmentID(): FragmentInstance {
-        return FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW
-    }
+    override fun getFragmentID(): FragmentInstance { return FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW }
+
+    override fun hasParentFragment(): FragmentInstance?{ return null}
 
     private fun setMapTrackOverview(){
         mapShowTrack = MapShowTrack(activityContext,mapView)
@@ -37,13 +38,19 @@ class MapFragmentViewAll:MapFragment() {
             popUpMenu.menuInflater.inflate(R.menu.popup_menu_base,popUpMenu.menu)
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
-                    R.id.popupGps-> activateGps()
+                    R.id.popupGps-> moveToGpsPosition()
                     R.id.popupSearch-> printToTerminal("popupSearch")
                 }
                 true
             }
             popUpMenu.show()
         }
+    }
+
+    private fun moveToGpsPosition(){
+        if(!gpsBlinkerIsActive()){setZoom(20.0)}
+        activateGps()
+
     }
 
     override fun setMapPosition() {

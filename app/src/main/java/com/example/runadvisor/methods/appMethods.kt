@@ -479,6 +479,12 @@ fun ViewGroup.clearChildren(childrenToNotRemove:Int){
 
 fun Activity.moveToActivity(intent:Intent){
     startActivity(intent)
+    finish()
+}
+
+fun Activity.moveToActivityAndFinish(intent:Intent){
+    startActivity(intent)
+    finish()
 }
 
 fun Fragment.signOutUser(){

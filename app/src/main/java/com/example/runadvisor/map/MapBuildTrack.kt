@@ -4,7 +4,7 @@ import androidx.core.view.drawToBitmap
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.marker.TrackPathMarker
-import com.example.runadvisor.overlay.OverlayTrackPath
+import com.example.runadvisor.overlay.OverlayMovableMarker
 import com.example.runadvisor.struct.SavedTrack
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -35,7 +35,7 @@ class MapBuildTrack(val context: Context,
     }
 
     fun setCurrentOverlay(){
-        currentOverlay = OverlayTrackPath(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
+        currentOverlay = OverlayMovableMarker(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
     }
 
     fun setCallbackUpdateTrackLength(callback:(args:String)->Unit){
@@ -99,12 +99,12 @@ class MapBuildTrack(val context: Context,
 
     private fun addPolylineMarkers(){
         var i = 0
-        currentOverlay = OverlayTrackPath(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
+        currentOverlay = OverlayMovableMarker(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
         while(i<points.size){
-            (currentOverlay as OverlayTrackPath).addCustomItem("","",points[i],i)
+            (currentOverlay as OverlayMovableMarker).addCustomItem("","",points[i],i)
             i++
         }
-        mapView.overlays.add((currentOverlay as OverlayTrackPath))
+        mapView.overlays.add((currentOverlay as OverlayMovableMarker))
     }
 
     private fun resetTrackLength(){

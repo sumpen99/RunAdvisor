@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -28,6 +29,7 @@ import org.osmdroid.util.GeoPoint
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
+    private lateinit var onBackPressedCallback:OnBackPressedCallback
     lateinit var firestoreViewModel: FirestoreViewModel
     private lateinit var customPublicAdapter: CustomDownloadAdapter
     private lateinit var customUserAdapter: CustomUserAdapter
@@ -81,10 +83,12 @@ class MainActivity : AppCompatActivity() {
             setViewModel()
             setDataBinding()
             setUpNavMenu()
+            setOnBackNavigation()
             setEventListener()
             setPublicAdapter()
             setUserAdapter()
             setObservable()
+
         }
     }
 
@@ -99,6 +103,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUserAdapter(){
         customUserAdapter = CustomUserAdapter(this)
+    }
+
+    private fun setOnBackNavigation(){
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed(){navigateOnBackPressed()}
+        }
+        onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
     }
 
     private fun setUpNavMenu(){
@@ -116,7 +127,6 @@ class MainActivity : AppCompatActivity() {
                 R.id.navMap->navigateFragment(FragmentInstance.FRAGMENT_MAP_TRACK_OVERVIEW)
                 R.id.navUpload->navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
                 R.id.navUser->navigateFragment(FragmentInstance.FRAGMENT_USER)
-                //R.id.navData->moveToActivity(Intent(this, HomeActivity::class.java))
             }
             true
         }
@@ -159,7 +169,7 @@ class MainActivity : AppCompatActivity() {
 
     /*
     *   ##########################################################################
-    *               NAVIGATE BETWEEN ACTIVITY AND FRAGMENTS
+    *               NAVIGATE BETWEEN FRAGMENTS
     *   ##########################################################################
     * */
 
@@ -180,6 +190,11 @@ class MainActivity : AppCompatActivity() {
         fragmentTracker.push(frag)
 
         applyTransaction(frag)
+    }
+
+    private fun navigateOnBackPressed(){
+        val frag = fragmentTracker.currentFragmentHasParent()
+        if(frag!=null){navigateFragment(frag,null)}
     }
 
     private fun navigateOnResume(){
@@ -278,7 +293,7 @@ class MainActivity : AppCompatActivity() {
 
     /*
     *   ##########################################################################
-    *                DISPATCH FUNCTION FOR MAPFRAGMENT
+    *                DISPATCH FUNCTION NEEDED FOR MAPFRAGMENT (MAPVIEW)
     *   ##########################################################################
     * */
 
@@ -303,7 +318,7 @@ class MainActivity : AppCompatActivity() {
                 MotionEvent.ACTION_POINTER_UP -> {
                     //printToTerminal("ACTION_POINTER_UP")
                 }
-                 MotionEvent.ACTION_CANCEL -> {
+                MotionEvent.ACTION_CANCEL -> {
                     //printToTerminal("cancel")
                 }
 
