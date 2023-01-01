@@ -2,7 +2,7 @@ package com.example.runadvisor.overlay
 import android.content.Context
 import android.graphics.Point
 import androidx.appcompat.content.res.AppCompatResources
-import com.example.runadvisor.marker.TrackOverviewMarker
+import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.methods.getDoubleToGeoPoint
 import com.example.runadvisor.methods.getDoubleToGeoPoints
 import com.example.runadvisor.map.MapShowTrack
@@ -11,16 +11,16 @@ import org.osmdroid.api.IMapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
 class OverlayClickableMarker(private val activityContext: Context,
-                             private val markers:MutableList<TrackOverviewMarker>,
-                             private val pOnItemGestureListener: OnItemGestureListener<TrackOverviewMarker>,
+                             private val markers:MutableList<MarkerClickable>,
+                             private val pOnItemGestureListener: OnItemGestureListener<MarkerClickable>,
                              private val mapTrackOverview: MapShowTrack
 ):
-    ItemizedIconOverlay<TrackOverviewMarker>(activityContext,markers,pOnItemGestureListener) {
+    ItemizedIconOverlay<MarkerClickable>(activityContext,markers,pOnItemGestureListener) {
 
-    var markerHasTouch: TrackOverviewMarker? = null
+    var markerHasTouch: MarkerClickable? = null
     private val drawableDefault = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default)
 
-    private fun callbackMarkerWithTouch(marker: TrackOverviewMarker){
+    private fun callbackMarkerWithTouch(marker: MarkerClickable){
         mapTrackOverview.removePolyline()
         if(markerHasTouch != null && marker.index == markerHasTouch!!.index){
             markerHasTouch = null
@@ -34,7 +34,7 @@ class OverlayClickableMarker(private val activityContext: Context,
     }
 
     fun addCustomItem(runItem:RunItem, index:Int){
-        val marker = TrackOverviewMarker(
+        val marker = MarkerClickable(
             runItem.city!!,
             runItem.street!!,
             getDoubleToGeoPoint(runItem.center!!),
@@ -45,11 +45,11 @@ class OverlayClickableMarker(private val activityContext: Context,
         super.addItem(marker)
     }
 
-    override fun addItems(items: MutableList<TrackOverviewMarker>?): Boolean {
+    override fun addItems(items: MutableList<MarkerClickable>?): Boolean {
         return super.addItems(items)
     }
 
-    override fun createItem(i: Int): TrackOverviewMarker {
+    override fun createItem(i: Int): MarkerClickable {
         return markers[i]
     }
 

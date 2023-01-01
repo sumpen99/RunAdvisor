@@ -482,16 +482,11 @@ fun Activity.moveToActivity(intent:Intent){
     finish()
 }
 
-fun Activity.moveToActivityAndFinish(intent:Intent){
-    startActivity(intent)
-    finish()
-}
-
 fun Fragment.signOutUser(){
     val intent = Intent(requireContext(),LoginActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
-    startActivity(intent)
-
+    requireActivity().moveToActivity(intent)
+    //startActivity(intent)
 }
 
 /*

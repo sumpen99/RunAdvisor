@@ -3,7 +3,7 @@ import android.content.Context
 import android.graphics.Point
 import android.view.MotionEvent
 import androidx.appcompat.content.res.AppCompatResources
-import com.example.runadvisor.marker.TrackPathMarker
+import com.example.runadvisor.marker.MarkerMovable
 import com.example.runadvisor.map.MapBuildTrack
 import org.osmdroid.api.IMapView
 import org.osmdroid.util.GeoPoint
@@ -11,17 +11,17 @@ import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 
 class OverlayMovableMarker(private val activityContext:Context,
-                           private val markers:MutableList<TrackPathMarker>,
-                           private val pOnItemGestureListener:OnItemGestureListener<TrackPathMarker>,
+                           private val markers:MutableList<MarkerMovable>,
+                           private val pOnItemGestureListener:OnItemGestureListener<MarkerMovable>,
                            private val mapTrackPath: MapBuildTrack
 ):
-    ItemizedIconOverlay<TrackPathMarker>(activityContext,markers,pOnItemGestureListener) {
+    ItemizedIconOverlay<MarkerMovable>(activityContext,markers,pOnItemGestureListener) {
 
-    var markerHasTouch: TrackPathMarker? = null
+    var markerHasTouch: MarkerMovable? = null
     private val drawableDefault = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default)
     private val drawableSelected = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.center)
 
-    private fun setMarkerWithTouch(marker: TrackPathMarker){
+    private fun setMarkerWithTouch(marker: MarkerMovable){
         markerHasTouch = marker
         mapTrackPath.invalidate()
     }
@@ -35,16 +35,16 @@ class OverlayMovableMarker(private val activityContext:Context,
     }
 
     fun addCustomItem(title:String,snippet:String,geoPoint:GeoPoint,index:Int){
-        val marker = TrackPathMarker(title,snippet,index,geoPoint,::setMarkerWithTouch,drawableDefault,drawableSelected)
+        val marker = MarkerMovable(title,snippet,index,geoPoint,::setMarkerWithTouch,drawableDefault,drawableSelected)
         marker.setMarker(drawableDefault)
         super.addItem(marker)
     }
 
-    override fun addItems(items: MutableList<TrackPathMarker>?): Boolean {
+    override fun addItems(items: MutableList<MarkerMovable>?): Boolean {
         return super.addItems(items)
     }
 
-    override fun createItem(i: Int): TrackPathMarker {
+    override fun createItem(i: Int): MarkerMovable {
         return markers[i]
     }
 

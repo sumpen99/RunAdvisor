@@ -3,7 +3,7 @@ import android.content.Context
 import androidx.core.view.drawToBitmap
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.marker.TrackPathMarker
+import com.example.runadvisor.marker.MarkerMovable
 import com.example.runadvisor.overlay.OverlayMovableMarker
 import com.example.runadvisor.struct.SavedTrack
 import org.osmdroid.util.GeoPoint
@@ -23,19 +23,19 @@ class MapBuildTrack(val context: Context,
     val INCREASE_POINTS = 10
     val MAX_POINTS = 1280
     var currentPoints = 0
-    val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<TrackPathMarker>{
-        override fun onItemSingleTapUp(index:Int, item: TrackPathMarker):Boolean {
+    val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<MarkerMovable>{
+        override fun onItemSingleTapUp(index:Int, item: MarkerMovable):Boolean {
             //item.hasTouch()
             return true
         }
-        override fun onItemLongPress(index:Int, item: TrackPathMarker):Boolean {
+        override fun onItemLongPress(index:Int, item: MarkerMovable):Boolean {
             item.hasTouch()
             return true
         }
     }
 
     fun setCurrentOverlay(){
-        currentOverlay = OverlayMovableMarker(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
+        currentOverlay = OverlayMovableMarker(activityContext,ArrayList<MarkerMovable>(),gestureListener,this)
     }
 
     fun setCallbackUpdateTrackLength(callback:(args:String)->Unit){
@@ -99,7 +99,7 @@ class MapBuildTrack(val context: Context,
 
     private fun addPolylineMarkers(){
         var i = 0
-        currentOverlay = OverlayMovableMarker(activityContext,ArrayList<TrackPathMarker>(),gestureListener,this)
+        currentOverlay = OverlayMovableMarker(activityContext,ArrayList<MarkerMovable>(),gestureListener,this)
         while(i<points.size){
             (currentOverlay as OverlayMovableMarker).addCustomItem("","",points[i],i)
             i++

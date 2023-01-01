@@ -33,6 +33,8 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private val PICK_IMAGE = 1
     private var fileUri: Uri? = null
     private var filePath:String? = null
+    private var userNameTag:String = ""
+    private var userIconTag:String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +46,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
         setActivityContext()
         setRecyclerView()
         setInfoToUser()
+        setUserTag()
         loadImageFromPhone()
         loadUserName()
         return userView!!
@@ -70,6 +73,11 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
 
     private fun setParentActivity() { parentActivity = requireActivity() as MainActivity }
 
+    private fun setUserTag(){
+        userNameTag = parentActivity.getUserNameTag()
+        userIconTag = parentActivity.getUserIconTag()
+    }
+
     private fun setRecyclerView(){
         recyclerView = binding.userRecyclerview
         recyclerView.layoutManager = GridLayoutManager(activityContext,2)
@@ -87,19 +95,21 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private fun setEventListener(view: View?){
         val userPicBtn = binding.userImageView
         val userSignOutBtn = binding.userSignOutBtn
-        val userNameTestView = binding.userNameTextView
-        userNameTestView.hideKeyboard()
+        val userNameTextView = binding.userNameTextView
+        //userNameTestView.hideKeyboard()
         userSignOutBtn.setOnClickListener{messageToUser.showMessage()}
         userPicBtn.setCallback(null,::setProfilePicture)
         requireView().setOnTouchListener { v, event ->
             when(event.actionMasked){
-                MotionEvent.ACTION_DOWN -> {userNameTestView.hideKeyboard()}
+                MotionEvent.ACTION_DOWN -> {userNameTextView.hideKeyboard()}
             }
             true
         }
     }
 
     private fun signOut(parameters:Any?){
+        parentActivity.cancelObservableUserData()
+        parentActivity.cancelObservablePublicData()
         signOutUser()
     }
 
@@ -109,11 +119,11 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
 
     private fun setUserName(){
         if(binding.userNameTextView.text.isEmpty()){return}
-        parentActivity.writeToSharedPreference(getString(R.string.user_name),binding.userNameTextView.text.toString())
+        parentActivity.writeToSharedPreference(userNameTag,binding.userNameTextView.text.toString())
     }
 
     private fun loadUserName(){
-        binding.userNameTextView.hint = parentActivity.retrieveFromSharedPreference(getString(R.string.user_name),"UserName").toString()
+        binding.userNameTextView.hint = parentActivity.retrieveFromSharedPreference(userNameTag,"UserName").toString()
     }
 
     /*
@@ -123,7 +133,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     * */
 
     private fun loadImageFromPhone(){
-        val imgPath = parentActivity.retrieveFromSharedPreference(getString(R.string.user_icon))
+        val imgPath = parentActivity.retrieveFromSharedPreference(userIconTag)
         if(imgPath!=null){
             parentActivity.loadUserIconFromPhone(imgPath,binding.userImageView)
         }
@@ -140,7 +150,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
             filePath = parentActivity.getFilePathFromIntent(data)
             fileUri = data.data!!
             parentActivity.loadUserIconFromPhone(fileUri.toString(),binding.userImageView)
-            parentActivity.writeToSharedPreference(getString(R.string.user_icon),fileUri.toString())
+            parentActivity.writeToSharedPreference(userIconTag,fileUri.toString())
         }
     }
 

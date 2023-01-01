@@ -152,6 +152,14 @@ class MainActivity : AppCompatActivity() {
         return AXIS
     }
 
+    fun getUserIconTag():String{
+        return Firebase.auth.currentUser!!.uid + getString(R.string.user_icon)
+    }
+
+    fun getUserNameTag():String{
+        return Firebase.auth.currentUser!!.uid + getString(R.string.user_name)
+    }
+
     fun setSearchAxis(axis:Int){
         AXIS = axis
     }
@@ -193,6 +201,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateOnBackPressed(){
+        printToTerminal("nav back")
         val frag = fragmentTracker.currentFragmentHasParent()
         if(frag!=null){navigateFragment(frag,null)}
     }
@@ -237,7 +246,7 @@ class MainActivity : AppCompatActivity() {
         firestoreViewModel.getPublicRunItems(::removePublicRunItemFromAdapter).observe(this,publicObserver)
     }
 
-    private fun cancelObservablePublicData(){
+    fun cancelObservablePublicData(){
         firestoreViewModel.getPublicRunItems(::removePublicRunItemFromAdapter).removeObserver(publicObserver)
     }
 
@@ -245,7 +254,7 @@ class MainActivity : AppCompatActivity() {
         firestoreViewModel.getUserRunItems().observe(this,userObserver)
     }
 
-    private fun cancelObservableUserData(){
+    fun cancelObservableUserData(){
         firestoreViewModel.getUserRunItems().removeObserver(userObserver)
     }
 

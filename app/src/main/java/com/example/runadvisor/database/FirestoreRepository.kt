@@ -1,13 +1,12 @@
 package com.example.runadvisor.database
 import android.net.Uri
-import android.widget.ImageView
+import com.example.runadvisor.R
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.struct.UserItem
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.ktx.Firebase

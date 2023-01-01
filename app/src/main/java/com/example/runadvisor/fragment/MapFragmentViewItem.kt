@@ -1,10 +1,8 @@
 package com.example.runadvisor.fragment
 import android.view.View
-import androidx.fragment.app.Fragment
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.adapter.CustomDownloadAdapter
-import com.example.runadvisor.io.printToTerminal
 
 class MapFragmentViewItem:MapFragment() {
     lateinit var viewHolder: CustomDownloadAdapter.ViewHolder

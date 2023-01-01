@@ -1,7 +1,7 @@
 package com.example.runadvisor.map
 import android.content.Context
 import com.example.runadvisor.overlay.OverlayClickableMarker
-import com.example.runadvisor.marker.TrackOverviewMarker
+import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.views.MapView
@@ -10,19 +10,19 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 class MapShowTrack(val context: Context, val map: MapView): MapTrack(context,map) {
 
     val bbox = BoundingBox()
-    val gestureListener = object: ItemizedIconOverlay.OnItemGestureListener<TrackOverviewMarker>{
-        override fun onItemSingleTapUp(index:Int, item: TrackOverviewMarker):Boolean {
+    val gestureListener = object: ItemizedIconOverlay.OnItemGestureListener<MarkerClickable>{
+        override fun onItemSingleTapUp(index:Int, item: MarkerClickable):Boolean {
             item.hasTouch()
             return true
         }
-        override fun onItemLongPress(index:Int, item: TrackOverviewMarker):Boolean {
+        override fun onItemLongPress(index:Int, item: MarkerClickable):Boolean {
             //item.hasTouch()
             return true
         }
     }
 
     fun setCurrentOverlay(){
-        currentOverlay = OverlayClickableMarker(activityContext,ArrayList<TrackOverviewMarker>(),gestureListener,this)
+        currentOverlay = OverlayClickableMarker(activityContext,ArrayList<MarkerClickable>(),gestureListener,this)
     }
 
     fun addOverviewMarkers(runItems:List<RunItem>?){

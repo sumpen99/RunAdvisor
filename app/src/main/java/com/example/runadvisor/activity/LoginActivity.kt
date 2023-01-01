@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
@@ -23,11 +24,20 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var passwordField:EditText
     private lateinit var logInBtn:Button
     private lateinit var signUpBtn:Button
+    private lateinit var onBackPressedCallback:OnBackPressedCallback
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
         setEventListener(findViewById(R.id.mainLoginView))
+        setOnBackNavigation()
+    }
+
+    private fun setOnBackNavigation(){
+        onBackPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed(){}
+        }
+        onBackPressedDispatcher.addCallback(this,onBackPressedCallback)
     }
 
     @SuppressLint("ClickableViewAccessibility")
