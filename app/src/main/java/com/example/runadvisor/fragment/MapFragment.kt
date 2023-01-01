@@ -91,69 +91,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         gpsBlinker.setAnimation()
     }
 
-    protected fun setGpsToStorePoints(callbackUpdateTrackLength:(args:String)->Unit){
-        gpsBlinker.shouldStorePoints(true)
-        gpsBlinker.clearCollectedPoints()
-        gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
-        if(gpsBlinker.isNotActive()){activateGps()}
-    }
-
-    protected fun activateGps(){
-        if(gpsBlinker.isNotActive()){
-            if(getLocationUpdates(this)){
-                val geoPoint = getUserLocation()
-                gpsBlinker.startBlinking()
-                mapView.controller.setCenter(geoPoint)
-                updateGpsPosition(getUserLocation())
-            }
-        }
-        else{
-            deActivateGps()
-        }
-    }
-
-    protected fun setZoom(zoom:Double){
-        mapView.controller.setZoom(zoom)
-    }
-
-    protected fun deActivateGps(){
-       gpsBlinker.stopBlinking()
-       cancelLocationUpdates(this)
-    }
-
-    protected fun getCollectedGpsPoints():List<GeoPoint>{
-        return gpsBlinker.getGeoPoints()
-    }
-
-    private fun updateGpsPosition(location: IGeoPoint){
-        val p = mapView.projection.toPixels(location,null)
-        gpsBlinker.setPosition(p.x.toFloat(),p.y.toFloat())
-        gpsBlinker.collectPoints(location as GeoPoint)
-    }
-
-    protected fun takeMeAroundGoogle(){
-        setZoom(15.0)
-        gpsBlinker.resetPosition(mapView)
-        viewLifecycleOwner.lifecycleScope.launch{
-            withContext(Dispatchers.IO){
-                var i = 0
-                while(i<gpsBlinker.roundTripInCalifornia.size){
-                    val loc = gpsBlinker.roundTripInCalifornia[i]
-                    thread{
-                        Thread.sleep(500)
-                        Thread.currentThread().apply{
-                            parentActivity.runOnUiThread(java.lang.Runnable{
-                                if(outsideMap(loc)){mapView.controller.setCenter(loc)}
-                                updateGpsPosition(loc)
-                            })
-                        }
-                        i++
-                    }.join()
-               }
-            }
-        }
-    }
-
     protected fun showProgressbar(show:Boolean){
         if(show){progressBar!!.visibility = VISIBLE}
         else{progressBar!!.visibility = GONE}
@@ -184,9 +121,108 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         mapData.gpsWasActive = gpsBlinker.isActive()
     }
 
+    private fun setZoom(zoom:Double){
+        mapView.controller.setZoom(zoom)
+    }
+
     /*
     *   ##########################################################################
-    *               GPS SPECIFIC FUNCTIONS
+    *               GPS BLINKER
+    *   ##########################################################################
+    * */
+
+    protected fun activateGps(){
+        if(gpsBlinker.isNotActive()){
+            if(getLocationUpdates(this)){
+                val geoPoint = getUserLocation()
+                gpsBlinker.startBlinking()
+                mapView.controller.setCenter(geoPoint)
+                updateGpsPosition(getUserLocation())
+            }
+        }
+        else{
+            deActivateGps()
+        }
+    }
+
+    // TODO REMOVE THIS FUNCTION
+    protected fun activateRoundTripGps(){
+        if(gpsBlinker.isNotActive()){
+            val geoPoint = getUserLocation()
+            gpsBlinker.startBlinking()
+            mapView.controller.setCenter(geoPoint)
+            updateGpsPosition(getUserLocation())
+        }
+        else{
+            deActivateGps()
+        }
+    }
+
+    protected fun deActivateGps(){
+        gpsBlinker.stopBlinking()
+        cancelLocationUpdates(this)
+    }
+
+    protected fun resetGpsBlinker(){
+        gpsBlinker.resetAndClear()
+    }
+
+    protected fun gpsBlinkerIsActive():Boolean{
+        return gpsBlinker.isActive()
+    }
+
+    protected fun gpsBlinkerIsCollecting():Boolean{
+        return gpsBlinker.isCollecting()
+    }
+
+    protected fun setGpsToStorePoints(callbackUpdateTrackLength:(args:String)->Unit){
+        gpsBlinker.shouldStorePoints(true)
+        gpsBlinker.clearCollectedPoints()
+        gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
+        // TODO UNCOMMENT THIS BEFORE if(gpsBlinker.isNotActive()){activateGps()}
+        if(gpsBlinker.isNotActive()){activateRoundTripGps()}
+    }
+
+    protected fun getCollectedGpsPoints():List<GeoPoint>{
+        return gpsBlinker.getGeoPoints()
+    }
+
+    protected fun getGpsMeasuredLength():Double{
+        return gpsBlinker.getMeasuredLength()
+    }
+
+    private fun updateGpsPosition(location: IGeoPoint){
+        val p = mapView.projection.toPixels(location,null)
+        gpsBlinker.setPosition(p.x.toFloat(),p.y.toFloat())
+        gpsBlinker.collectPoints(location as GeoPoint)
+    }
+
+    protected fun takeMeAroundGoogle(){
+        setZoom(15.0)
+        gpsBlinker.resetPosition(mapView)
+        viewLifecycleOwner.lifecycleScope.launch{
+            withContext(Dispatchers.IO){
+                var i = 0
+                while(i<gpsBlinker.roundTripInCalifornia.size){
+                    val loc = gpsBlinker.roundTripInCalifornia[i]
+                    thread{
+                        Thread.sleep(500)
+                        Thread.currentThread().apply{
+                            parentActivity.runOnUiThread(java.lang.Runnable{
+                                if(outsideMap(loc)){mapView.controller.setCenter(loc)}
+                                updateGpsPosition(loc)
+                            })
+                        }
+                        i++
+                    }.join()
+                }
+            }
+        }
+    }
+
+    /*
+    *   ##########################################################################
+    *               GPS FUNCTIONS
     *   ##########################################################################
     * */
 
@@ -194,11 +230,10 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         val geoPoint = GeoPoint(location.latitude,location.longitude)
         if(outsideMap(geoPoint)){mapView.controller.setCenter(geoPoint)}
         updateGpsPosition(geoPoint)
-        //printToTerminal("OnLocationChanged line 140 MapFragment Latitude: " + location.latitude + " , Longitude: " + location.longitude)
     }
 
     private fun setUserLocationIfAllowed(){
-        var location = getUserLocation()
+        val location = getUserLocation()
         mapView.controller.setZoom(17.0)
         mapView.controller.setCenter(location)
 
@@ -212,7 +247,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
         val centerY: Double = toDegrees(Math.atan(Math.sinh(ryc)))
 
-        val resolutionHorizontal: Double = (bbox.lonEast/bbox.lonWest) / getScreenWidth()
+        val resolutionHorizontal: Double = (bbox.lonWest/bbox.lonEast) / getScreenWidth()
 
         val vy0: Double = Math.log(Math.tan(Math.PI * (0.25 + centerY / 360)))
         val vy1: Double = Math.log(Math.tan(Math.PI * (0.25 + bbox.latNorth / 360)))
@@ -222,7 +257,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
         val resolution: Double = (Math.max(resolutionHorizontal, resolutionVertical) * paddingFactor)
         val zoom: Double = Math.log(360 / (resolution * 256))
-        val lon: Double = (bbox.lonWest + ((bbox.lonWest-bbox.lonEast)/2))
+        val lon: Double = (bbox.lonEast + ((bbox.lonWest-bbox.lonEast)/2))
         val lat = centerY
 
         mapView.controller.setZoom(zoom)

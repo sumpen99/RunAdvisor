@@ -4,7 +4,7 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.adapter.CustomDownloadAdapter
 
-class MapFragmentViewItem():MapFragment() {
+class MapFragmentViewItem:MapFragment() {
     lateinit var viewHolder: CustomDownloadAdapter.ViewHolder
 
     override fun onResume() {

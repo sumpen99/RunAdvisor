@@ -22,12 +22,10 @@ import com.example.runadvisor.struct.MessageToUser
 import com.example.runadvisor.adapter.CustomUserAdapter
 import com.google.firebase.storage.StorageReference
 
-class UserFragment():
-    Fragment(R.layout.fragment_user), IFragment {
+class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView: RecyclerView
-    private lateinit var customUserAdapter: CustomUserAdapter
     private lateinit var messageToUser: MessageToUser
     private var userView: View? = null
     private var _binding: FragmentUserBinding? = null
@@ -45,7 +43,6 @@ class UserFragment():
         userView = binding.root
         setParentActivity()
         setActivityContext()
-        //setAdapter()
         setRecyclerView()
         setInfoToUser()
         loadImageFromPhone()
@@ -80,17 +77,10 @@ class UserFragment():
         parentActivity = requireActivity() as MainActivity
     }
 
-    private fun setAdapter(){
-        customUserAdapter = CustomUserAdapter(parentActivity)
-        //recyclerView.adapter = customAdapter
-    }
-
     private fun setRecyclerView(){
         recyclerView = binding.userRecyclerview
         recyclerView.layoutManager = GridLayoutManager(activityContext,2)
         recyclerView.adapter = parentActivity.getUserAdapter()
-        //recyclerView.adapter = parentActivity.getUserAdapter()
-        //recyclerView!!.adapter!!.notifyDataSetChanged()
     }
 
     private fun setInfoToUser(){
@@ -133,38 +123,11 @@ class UserFragment():
         binding.userNameTextView.hint = parentActivity.retrieveFromSharedPreference(getString(R.string.user_name),"UserName").toString()
     }
 
-
-    /*
-    *   ##########################################################################
-    *                               LOAD DATA
-    *   ##########################################################################
-    * */
-
-    /*private fun loadData(){
-        var i = 0
-        val userItems = parentActivity.getUserItems()
-        while(i<userItems.size){
-            val userItem = userItems[i++]
-            val runItem = parentActivity.firestoreViewModel.getRunItem(userItem.docId)
-            if(runItem!=null){
-                printToTerminal(runItem.docID.toString())
-                customUserAdapter.addUserItem(runItem)
-            }
-            else{
-                printToTerminal("runitem is null")
-            }
-        }
-    }*/
-
     /*
     *   ##########################################################################
     *                               LOAD IMAGES
     *   ##########################################################################
     * */
-
-    private fun loadImageFromStorage(storeRef: StorageReference){
-        //parentActivity.loadImageFromStorage(storeRef,binding.imageView)
-    }
 
     private fun loadImageFromPhone(){
         val imgPath = parentActivity.retrieveFromSharedPreference(getString(R.string.user_icon))

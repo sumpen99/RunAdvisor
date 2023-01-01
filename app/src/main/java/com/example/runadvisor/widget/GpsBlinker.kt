@@ -15,7 +15,7 @@ class GpsBlinker(context:Context,
                  defStyleAttr:Int=0):LinearLayout(context, attrs,defStyleAttr){
     private lateinit var imgView:ImageView
     private lateinit var frameAnimation:AnimationDrawable
-    private lateinit var callbackUpdateLength:(args:String)->Unit
+    private var callbackUpdateLength:(args:String)->Unit = ::templateFunctionString
     private var geoPoints = ArrayList<GeoPoint>()
     private var lastGeoPoint:GeoPoint? = null
     private var measuredLength:Double = 0.0
@@ -114,8 +114,17 @@ class GpsBlinker(context:Context,
         geoPoints.clear()
     }
 
+    fun resetAndClear(){
+        clearCollectedPoints()
+        callbackUpdateLength(measuredLength.inKilometers())
+    }
+
     fun getGeoPoints():List<GeoPoint>{
         return geoPoints
+    }
+
+    fun getMeasuredLength():Double{
+        return measuredLength
     }
 
     fun collectPoints(geoPoint:GeoPoint){
@@ -163,5 +172,9 @@ class GpsBlinker(context:Context,
 
     fun isActive():Boolean{
         return active
+    }
+
+    fun isCollecting():Boolean{
+        return storePoints
     }
 }

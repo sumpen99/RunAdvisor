@@ -15,16 +15,14 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
-import com.example.runadvisor.adapter.CustomDownloadAdapter
 import kotlin.collections.ArrayList
 
 
-class DataFragment():
+class DataFragment:
     Fragment(R.layout.fragment_data), IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView:RecyclerView
-    private lateinit var customAdapter: CustomDownloadAdapter
     private var checkBoxes = ArrayList<CheckBox>()
     private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
@@ -39,7 +37,6 @@ class DataFragment():
         setParentActivity()
         setActivityContext()
         setRecyclerView()
-        setAdapter()
         setEventListener()
         return dataView!!
     }
@@ -80,14 +77,7 @@ class DataFragment():
         recyclerView = binding.dataRecyclerview
         recyclerView.layoutManager = LinearLayoutManager(activityContext)
         recyclerView.adapter = parentActivity.getPublicAdapter()
-        //recyclerView!!.adapter!!.notifyDataSetChanged()
     }
-
-    private fun setAdapter(){
-        //customAdapter = CustomDataAdapter(parentActivity)
-        //recyclerView.adapter = customAdapter
-    }
-
 
     /*
     *   ##########################################################################

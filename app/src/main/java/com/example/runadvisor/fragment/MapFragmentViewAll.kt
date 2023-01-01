@@ -8,8 +8,7 @@ import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapShowTrack
 
-class MapFragmentViewAll
-    :MapFragment() {
+class MapFragmentViewAll:MapFragment() {
     private lateinit var mapShowTrack: MapShowTrack
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,7 +50,7 @@ class MapFragmentViewAll
         if(parentActivity.runItemsIsNotNull()){
             mapShowTrack.addOverviewMarkers(parentActivity.getRunItems())
             if(mapData.geoPoint == null){
-                zoomToArea(mapShowTrack.bbox,1.0)
+                zoomToArea(mapShowTrack.bbox,3.0)
             }
             else{
                 resetLastPosition()

@@ -38,7 +38,7 @@ class GpsMenuBar(
 
     @SuppressLint("SetTextI18n")
     fun setTrackLength(trackLength:String){
-        trackLengthTextView.text = trackLength
+        trackLengthTextView.text = "$trackLength km"
     }
 
 }

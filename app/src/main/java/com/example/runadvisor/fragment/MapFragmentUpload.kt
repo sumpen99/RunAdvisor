@@ -20,8 +20,7 @@ import org.json.JSONObject
 import java.net.URL
 import kotlin.concurrent.thread
 
-class MapFragmentUpload
-    :MapFragment() {
+class MapFragmentUpload:MapFragment() {
     private var urlCallInProgress:Boolean = false
     private var trackMenu:TrackMenuBar?=null
     private var gpsMenu: GpsMenuBar?=null
@@ -71,12 +70,14 @@ class MapFragmentUpload
     private fun addBottomMenu(menuType:Int){
         if(binding.bottomMenuLayout.visibility == View.VISIBLE && menuType == lastMenu){return}
         makeBottomMenuVisible()
+        clearPreviousTrack()
         if(menuType==0){addTrackMenu()}
         else if(menuType==1){addGpsMenu()}
         lastMenu = menuType
     }
 
     private fun addTrackMenu(){
+        clearGpsTrack(null)
         trackMenu = TrackMenuBar(parentActivity,null)
         mapBuildTrack.setCallbackUpdateTrackLength(::updateBuildTrackLength)
         binding.bottomMenuLayout.addView(trackMenu)
@@ -112,13 +113,17 @@ class MapFragmentUpload
             mapBuildTrack.removeOverlayAndPolyLine()
         }
         removeBottomMenu()
-        //parentActivity.navigateFragment(FragmentInstance.FRAGMENT_UPLOAD)
+        clearGpsTrack(null)
     }
 
     private fun makeBottomMenuVisible(){
         binding.bottomMenuLayout.visibility = View.VISIBLE
         binding.bottomMenuLayout.clearChildren(0)
-        //clearMapTrackPath(null)
+    }
+
+    private fun clearPreviousTrack(){
+        clearBuildTrack(null)
+        clearGpsTrack(null)
     }
 
     private fun removeBottomMenu(){
@@ -134,12 +139,14 @@ class MapFragmentUpload
     * */
 
     private fun startGps(parameter:Any?){
-        mapBuildTrack.removePolyline()
+        if(gpsBlinkerIsCollecting()){showUserMessage("Gps Is Running");return}
+        clearGpsTrack(null)
         setGpsToStorePoints(::updateGpsTrackLength)
         takeMeAroundGoogle()
     }
 
     private fun stopGps(parameter:Any?){
+        if(!gpsBlinkerIsActive()){showUserMessage("Gps Is Not Running");return}
         deActivateGps()
         val geoPoints = getCollectedGpsPoints()
         if(geoPoints.size > MIN_GEO_POINTS){
@@ -147,20 +154,19 @@ class MapFragmentUpload
             mapBuildTrack.addPolyLineToMap()
             mapBuildTrack.invalidate()
         }
-        //collect points
     }
 
     private fun saveGpsTrack(parameter:Any?){
-        if(clearForGpsUpload()){
+        if(gpsBlinkerIsActive()){showUserMessage("Stop Gps To Store");return}
+        if(allSetForGpsUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
                 val serverResult = ServerDetails()
                 val addressInfo = AddressInfo()
-                val trackLength = parameter as String
                 setUrlCallInProgress(true)
                 setSearchTimer()
                 getAddress2(addressInfo,serverResult)
-                mapBuildTrack.saveGpsTrack(addressInfo.city,addressInfo.street,trackLength)
+                mapBuildTrack.saveGpsTrack(addressInfo.city,addressInfo.street,getGpsMeasuredLength().inKilometers())
                 showProgressbar(false)
                 setUrlCallInProgress(false)
             }
@@ -172,6 +178,10 @@ class MapFragmentUpload
     }
 
     private fun clearGpsTrack(parameter: Any?){
+        deActivateGps()
+        resetGpsBlinker()
+        mapBuildTrack.resetMapGpsPath()
+
     }
 
     /*
@@ -186,13 +196,13 @@ class MapFragmentUpload
             mapBuildTrack.addTrackOverlay()
             return
         }
-        else if(!mapBuildTrack.adjustTrack(1)){return}
+        else if(!mapBuildTrack.expandTrack()){return}
         updateMapBuildTrack()
     }
 
     private fun subTrackPoints(parameter:Any?){
         if(!mapBuildTrack.trackIsOnMap()){return}
-        if(!mapBuildTrack.adjustTrack(-1)){return}
+        if(!mapBuildTrack.decreaseTrack()){return}
         updateMapBuildTrack()
     }
 
@@ -202,7 +212,7 @@ class MapFragmentUpload
     }
 
     private fun saveBuildTrack(parameter:Any?){
-        if(clearForBuildUpload()){
+        if(allSetForBuildUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
                 val serverResult = ServerDetails()
@@ -217,12 +227,30 @@ class MapFragmentUpload
         }
     }
 
+    private fun updateBuildTrackLength(trackLength:String){
+        trackMenu!!.setTrackLength(trackLength)
+    }
+
     private fun clearBuildTrack(parameter: Any?){
         mapBuildTrack.resetMapTrackPath()
     }
 
-    private fun updateBuildTrackLength(trackLength:String){
-        trackMenu!!.setTrackLength(trackLength)
+    /*
+    *   ##########################################################################
+    *               CHECK BEFORE SAVE
+    *   ##########################################################################
+    * */
+
+    private fun allSetForBuildUpload():Boolean{
+        return (mapBuildTrack.trackIsOnMap() && mapBuildTrack.pointsIsNotEmpty() && allSetForUpload())
+    }
+
+    private fun allSetForGpsUpload():Boolean{
+        return (mapBuildTrack.trackIsOnMap() &&  allSetForUpload())
+    }
+
+    private fun allSetForUpload():Boolean{
+        return (checkSearchTimer() && !urlCallInProgress)
     }
 
     /*
@@ -288,19 +316,6 @@ class MapFragmentUpload
 
     private fun setSearchTimer(){
         lastUrlCall = System.currentTimeMillis()
-    }
-
-    private fun clearForBuildUpload():Boolean{
-        return (mapBuildTrack.trackIsOnMap() && clearForUpload())
-    }
-
-    private fun clearForGpsUpload():Boolean{
-        return clearForUpload()
-    }
-
-    private fun clearForUpload():Boolean{
-        return (checkSearchTimer() &&
-                !urlCallInProgress)
     }
 
     override fun onDestroyView() {

@@ -23,7 +23,7 @@ import com.example.runadvisor.adapter.CustomUploadAdapter
 import kotlinx.coroutines.launch
 import kotlin.collections.ArrayList
 
-class UploadFragment():Fragment(R.layout.fragment_upload),IFragment {
+class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView: RecyclerView
