@@ -146,7 +146,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     }
 
     // TODO REMOVE THIS FUNCTION
-    protected fun activateRoundTripGps(){
+    private fun activateRoundTripGps(){
         if(gpsBlinker.isNotActive()){
             val geoPoint = getUserLocation()
             gpsBlinker.startBlinking()

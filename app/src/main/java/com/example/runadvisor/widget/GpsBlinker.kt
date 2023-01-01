@@ -23,6 +23,7 @@ class GpsBlinker(context:Context,
     private var storePoints:Boolean = false
     private val offsetY:Int = convertDpToPixel(25)
     private val offsetX:Int = convertDpToPixel(25)
+    private val MAX_STORAGE_LENGTH:Double = 42000.0
 
     var roundTripInCalifornia = listOf<GeoPoint>(
         GeoPoint(37.421998,-122.084000),
@@ -134,7 +135,7 @@ class GpsBlinker(context:Context,
                 measuredLength+= latLonToMeter(geoPoint,geoPoints[geoPoints.size-1])
                 callbackUpdateLength(measuredLength.inKilometers())
             }
-            geoPoints.add(geoPoint)
+            if(measuredLength <= MAX_STORAGE_LENGTH){geoPoints.add(geoPoint)}
         }
     }
 

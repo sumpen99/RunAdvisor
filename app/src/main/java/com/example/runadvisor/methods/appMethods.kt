@@ -20,7 +20,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
-import androidx.annotation.RequiresPermission
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -32,7 +31,6 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
 import com.example.runadvisor.activity.LoginActivity
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.widget.GpsBlinker
 import com.firebase.ui.storage.images.FirebaseImageLoader
 import com.google.firebase.storage.StorageReference

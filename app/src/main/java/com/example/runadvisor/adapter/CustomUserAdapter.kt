@@ -9,15 +9,24 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.methods.downloadImageFromStorage
+import com.example.runadvisor.struct.MessageToUser
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.widget.CustomImageButton
 
 class CustomUserAdapter(private val activity: MainActivity): RecyclerView.Adapter<CustomUserAdapter.ViewHolder>() {
+    private lateinit var messageToUser: MessageToUser
     val userData = ArrayList<RunItem>()
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.user_track_card, parent, false)
+        setInfoToUser()
         return ViewHolder(view)
+    }
+
+    private fun setInfoToUser(){
+        messageToUser = MessageToUser(activity,null)
+        messageToUser.setMessage("All data will be removed")
+        messageToUser.setTwoButtons()
     }
 
     fun removeCard(pos:Int){
@@ -56,7 +65,12 @@ class CustomUserAdapter(private val activity: MainActivity): RecyclerView.Adapte
         val dateTextView: TextView = itemView.findViewById(R.id.userTrackDateText)
 
         init{
-            removeCardBtn.setCallback(null,::removeSelf)
+            removeCardBtn.setCallback(null,::askBeforeRemove)
+        }
+
+        private fun askBeforeRemove(parameter:Any?){
+            messageToUser.setPositiveCallback(::removeSelf)
+            messageToUser.showMessage()
         }
 
         private fun removeSelf(parameter:Any?){
