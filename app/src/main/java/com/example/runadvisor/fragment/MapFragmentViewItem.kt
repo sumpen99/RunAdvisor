@@ -3,6 +3,7 @@ import android.view.View
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.adapter.CustomDownloadAdapter
+import com.example.runadvisor.methods.templateFunctionMarker
 
 class MapFragmentViewItem:MapFragment() {
     lateinit var viewHolder: CustomDownloadAdapter.ViewHolder
@@ -24,14 +25,13 @@ class MapFragmentViewItem:MapFragment() {
     override fun hasParentFragment(): FragmentInstance?{ return FragmentInstance.FRAGMENT_DATA}
 
     private fun setViewHolderPos() {
-        mapView.controller.setZoom(viewHolder.zoom)
-        mapView.controller.setCenter(viewHolder.centerPoint)
+        zoomToPosition(viewHolder.centerPoint,viewHolder.zoom)
     }
 
     private fun removePopUpButton(){ binding.popupBtn.visibility = View.GONE }
 
     private fun drawTrackOnMap(){
-        val mapShowTrack = MapShowTrack(activityContext,mapView)
+        val mapShowTrack = MapShowTrack(activityContext,mapView,::templateFunctionMarker)
         mapShowTrack.setCurrentOverlay()
         mapShowTrack.buildPolyline(viewHolder.trackPoints)
         mapShowTrack.addPolyLineToMap()

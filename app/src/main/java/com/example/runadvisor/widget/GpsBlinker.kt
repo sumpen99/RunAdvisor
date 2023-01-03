@@ -118,6 +118,7 @@ class GpsBlinker(context:Context,
     fun resetAndClear(){
         clearCollectedPoints()
         callbackUpdateLength(measuredLength.inKilometers())
+        storePoints = false
     }
 
     fun getGeoPoints():List<GeoPoint>{

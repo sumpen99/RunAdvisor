@@ -2,6 +2,7 @@ package com.example.runadvisor.methods
 import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -31,6 +32,7 @@ import com.bumptech.glide.module.AppGlideModule
 import com.bumptech.glide.request.transition.DrawableCrossFadeFactory
 import com.example.runadvisor.R
 import com.example.runadvisor.activity.LoginActivity
+import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.widget.GpsBlinker
 import com.firebase.ui.storage.images.FirebaseImageLoader
 import com.google.firebase.storage.StorageReference
@@ -41,8 +43,12 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 
-private val REQUEST_PERMISSIONS_REQUEST_CODE = 1
-private val LOCATION_PERMISSION_CODE = 2
+
+val ALL_PERMISSIONS_CHECKED = 2
+val PERMISSION_NOT_OK = 0
+val PERMISSION_OK = 1
+val DATA_PERMISSIONS_CODE = 98
+val LOCATION_PERMISSION_CODE = 99
 
 /*
 *   ##########################################################################
@@ -57,6 +63,10 @@ fun getScreenWidth() : Int{
 
 fun getScreenHeight() : Int{
     return Resources.getSystem().displayMetrics.heightPixels
+}
+
+fun getZoomBase():Double{
+    return 7.0
 }
 
 @SuppressLint("InternalInsetResource")
@@ -98,11 +108,54 @@ fun Activity.verifyStoragePermission():Boolean{
 }
 
 fun Activity.askForLocationPermission(){
-    ActivityCompat.requestPermissions(this,arrayOf(ACCESS_FINE_LOCATION),LOCATION_PERMISSION_CODE)
+    if(ActivityCompat.shouldShowRequestPermissionRationale(this,ACCESS_FINE_LOCATION)){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("User Location")
+        builder.setMessage("Application requires users`s location for better user experience")
+        builder.setPositiveButton("OK"
+            ){ p0, p1 ->
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(ACCESS_FINE_LOCATION),
+                    LOCATION_PERMISSION_CODE
+                )
+            }
+        builder.create()
+        builder.show().setCanceledOnTouchOutside(false)
+    }
+    else {
+        ActivityCompat.requestPermissions(this,
+            arrayOf(ACCESS_FINE_LOCATION),
+            LOCATION_PERMISSION_CODE)
+    }
+    //ActivityCompat.requestPermissions(this,arrayOf(ACCESS_FINE_LOCATION),LOCATION_PERMISSION_CODE)
 }
 
 fun Activity.askForStoragePermissions(){
-    ActivityCompat.requestPermissions(this,arrayOf(READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE),REQUEST_PERMISSIONS_REQUEST_CODE)
+    if(ActivityCompat.shouldShowRequestPermissionRationale(this,READ_EXTERNAL_STORAGE) ||
+        ActivityCompat.shouldShowRequestPermissionRationale(this,WRITE_EXTERNAL_STORAGE)){
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("User Storage")
+        builder.setMessage("Application requires storage read/write permission to upload images")
+        builder.setPositiveButton("OK"
+            ){ p0, p1 ->
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE),
+                    DATA_PERMISSIONS_CODE
+                )
+            }
+        builder.create()
+        builder.show().setCanceledOnTouchOutside(false)
+    }
+    else {
+        ActivityCompat.requestPermissions(this,
+            arrayOf(READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE),
+            DATA_PERMISSIONS_CODE)
+    }
+
+
+    //ActivityCompat.requestPermissions(this,arrayOf(READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE),DATA_PERMISSIONS_CODE)
 }
 
 /*
@@ -151,6 +204,25 @@ fun Fragment.getGpsBlinker(activity:Activity,viewGroup:ViewGroup): GpsBlinker {
 
 fun Fragment.getProgressbar(activity:Activity,viewGroup:ViewGroup):ProgressBar{
     val progressBar = ProgressBar(activity,null,android.R.attr.progressBarStyleHorizontal)
+    progressBar.visibility = View.GONE
+    progressBar.isIndeterminate = true
+
+    val params = RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams.MATCH_PARENT,
+        RelativeLayout.LayoutParams.MATCH_PARENT
+    )
+
+    val rl = RelativeLayout(activity)
+
+    rl.gravity = Gravity.CENTER
+    rl.addView(progressBar)
+
+    viewGroup.addView(rl, params)
+    return progressBar
+}
+
+fun Fragment.getRoundProgressbar(activity:Activity,viewGroup:ViewGroup):ProgressBar{
+    val progressBar = ProgressBar(activity,null,android.R.attr.progressBarStyleLarge)
     /*progressBar.layoutParams = LinearLayout.LayoutParams(
         ViewGroup.LayoutParams.WRAP_CONTENT,
         ViewGroup.LayoutParams.WRAP_CONTENT)*/
@@ -526,3 +598,4 @@ fun View.hideKeyboard() {
 fun templateFunctionAny(parameter:Any?):Unit{}
 fun templateFunctionInt(parameter:Int):Unit{}
 fun templateFunctionString(parameter:String):Unit{}
+fun templateFunctionMarker(parameter:MarkerClickable):Unit{}

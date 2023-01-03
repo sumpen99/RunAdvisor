@@ -10,18 +10,18 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.runadvisor.R
 import com.example.runadvisor.MainActivity
+import com.example.runadvisor.R
+import com.example.runadvisor.adapter.CustomUploadAdapter
 import com.example.runadvisor.databinding.FragmentUploadBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
-import java.util.*
-import com.example.runadvisor.adapter.CustomUploadAdapter
 import kotlinx.coroutines.launch
-import kotlin.collections.ArrayList
+import java.util.*
+
 
 class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var activityContext: Context

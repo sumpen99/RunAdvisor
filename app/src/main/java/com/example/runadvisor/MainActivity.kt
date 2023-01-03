@@ -1,10 +1,11 @@
 package com.example.runadvisor
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
@@ -27,6 +28,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import org.osmdroid.util.GeoPoint
 
+
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
     private lateinit var onBackPressedCallback:OnBackPressedCallback
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
     private var AXIS = 0
+    private var PERMISSION_RESULT = 0
 
     private var publicObserver = Observer<List<RunItem>?>{ it->
         if(it!=null){
@@ -75,19 +78,20 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        printToTerminal("creating home")
-        verifyPermissions()
+        printToTerminal("App Test 1: creating home -> $PERMISSION_RESULT")
         if(isUserActive()){
+            printToTerminal("user is active")
             setContentView(R.layout.activity_main)
-            setUserGeoLocation()
-            setViewModel()
             setDataBinding()
-            setUpNavMenu()
-            setOnBackNavigation()
-            setEventListener()
-            setPublicAdapter()
-            setUserAdapter()
-            setObservable()
+            verifyPermissions()
+            //setUserGeoLocation()
+            //setViewModel()
+            //setUpNavMenu()
+            //setOnBackNavigation()
+            //setEventListener()
+            //setPublicAdapter()
+            //setUserAdapter()
+            //setObservable()
 
         }
     }
@@ -171,9 +175,62 @@ class MainActivity : AppCompatActivity() {
     * */
 
     private fun verifyPermissions(){
-        if(!verifyStoragePermission()){askForStoragePermissions()}
         if(!verifyLocationPermission()){askForLocationPermission()}
+        else{PERMISSION_RESULT+=1}
+        if(!verifyStoragePermission()){askForStoragePermissions()}
+        else{PERMISSION_RESULT+=1}
+        onAllPermissionCheck()
     }
+
+    override fun onRequestPermissionsResult(requestCode: Int,permissions: Array<out String>,grantResults: IntArray){
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        var i = 0
+        printToTerminal("$requestCode")
+        when(requestCode) {
+            LOCATION_PERMISSION_CODE -> {
+                if(grantResults.isNotEmpty()){
+                    for(result:Int in grantResults){
+                        printToTerminal("${permissions[i++]} $result")
+                        /*if(result!=PackageManager.PERMISSION_GRANTED){
+                            // not good
+                        }*/
+                    }
+                }
+                else{
+                    printToTerminal("LOCATION_PERMISSION_CODE Is Empty")
+                }
+            }
+            DATA_PERMISSIONS_CODE -> {
+                if(grantResults.isNotEmpty()){
+                    for(result:Int in grantResults){
+                        printToTerminal("${permissions[i++]} $result")
+                        /*if(result!=PackageManager.PERMISSION_GRANTED){
+                            // not good
+                        }*/
+                    }
+                }
+                else{
+                    printToTerminal("DATA_PERMISSIONS_CODE Is Empty")
+                }
+            }
+        }
+        PERMISSION_RESULT+=1
+        onAllPermissionCheck()
+    }
+
+    private fun onAllPermissionCheck(){
+        printToTerminal("onAllPermissionCheck -> $PERMISSION_RESULT")
+        if(PERMISSION_RESULT == ALL_PERMISSIONS_CHECKED ){
+            setUpNavMenu()
+            setOnBackNavigation()
+            setEventListener()
+            setUserGeoLocation()
+            setViewModel()
+            setPublicAdapter()
+            setUserAdapter()
+            setObservable()
+        }
+     }
 
     /*
     *   ##########################################################################
@@ -201,19 +258,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun navigateOnBackPressed(){
-        printToTerminal("nav back")
         val frag = fragmentTracker.currentFragmentHasParent()
         if(frag!=null){navigateFragment(frag,null)}
     }
 
     private fun navigateOnResume(){
-        if(Firebase.auth.currentUser!=null){
-            if(fragmentTracker.isNotEmpty()){applyTransaction(fragmentTracker.root!!)}
-            else{navigateFragment(FragmentInstance.FRAGMENT_DATA)}
-        }
-        else{
-            moveToActivity(Intent(this,LoginActivity::class.java))
-        }
+        if(Firebase.auth.currentUser==null){moveToActivity(Intent(this,LoginActivity::class.java));return}
+        else if(PERMISSION_RESULT < ALL_PERMISSIONS_CHECKED){return}
+
+        if(fragmentTracker.isNotEmpty()){applyTransaction(fragmentTracker.root!!)}
+        else{navigateFragment(FragmentInstance.FRAGMENT_DATA)}
     }
 
     private fun applyTransaction(frag: Fragment){
@@ -246,7 +300,7 @@ class MainActivity : AppCompatActivity() {
         firestoreViewModel.getPublicRunItems(::removePublicRunItemFromAdapter).observe(this,publicObserver)
     }
 
-    fun cancelObservablePublicData(){
+    private fun cancelObservablePublicData(){
         firestoreViewModel.getPublicRunItems(::removePublicRunItemFromAdapter).removeObserver(publicObserver)
     }
 
@@ -254,7 +308,7 @@ class MainActivity : AppCompatActivity() {
         firestoreViewModel.getUserRunItems().observe(this,userObserver)
     }
 
-    fun cancelObservableUserData(){
+    private fun cancelObservableUserData(){
         firestoreViewModel.getUserRunItems().removeObserver(userObserver)
     }
 
@@ -263,7 +317,7 @@ class MainActivity : AppCompatActivity() {
         setObservableUserData()
     }
 
-    private fun cancelObservable(){
+    fun cancelObservable(){
         cancelObservablePublicData()
         cancelObservableUserData()
     }
@@ -340,29 +394,19 @@ class MainActivity : AppCompatActivity() {
         return  fragmentTracker.currentFragmentNeedDispatch() && outsideNavMenu(event)
     }
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        printToTerminal("onRestoreInstanceState")
-    }
-
     override fun onResume() {
         super.onResume()
-        //isUserActive()
-        //setObservable()
-        //checkObservers()
         navigateOnResume()
         printToTerminal("resume")
     }
 
     override fun onPause() {
         super.onPause()
-        //cancelObservable()
         printToTerminal("paus")
     }
 
     override fun onStop() {
         super.onStop()
-        //cancelObservable()
         printToTerminal("stop")
     }
 

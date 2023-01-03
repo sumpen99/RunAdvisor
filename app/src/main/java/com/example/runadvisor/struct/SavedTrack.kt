@@ -6,7 +6,7 @@ class SavedTrack(
     val bitmap:Bitmap,
     val geoPoints:ArrayList<GeoPoint>,
     val center:GeoPoint,
-    val zoom:Int,
+    val zoom:Double,
     var city:String,
     var street:String,
     val trackLength:String,

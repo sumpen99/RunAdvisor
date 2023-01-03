@@ -13,6 +13,14 @@ abstract class MapTrack(val activityContext: Context,
     var polyLine: Polyline? = null
     lateinit var currentOverlay:Overlay
 
+    open fun setZoomLevel(zoom:Double){
+        mapView.controller.setZoom(zoom)
+    }
+
+    open fun setPosition(zoom:Double){
+        mapView.controller.setZoom(zoom)
+    }
+
     open fun buildPolyline(points:List<GeoPoint>){
         polyLine = Polyline(mapView,false)
         polyLine!!.setPoints(points)

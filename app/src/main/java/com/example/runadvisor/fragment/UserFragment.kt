@@ -108,8 +108,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     }
 
     private fun signOut(parameters:Any?){
-        parentActivity.cancelObservableUserData()
-        parentActivity.cancelObservablePublicData()
+        parentActivity.cancelObservable()
         signOutUser()
     }
 

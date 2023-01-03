@@ -49,24 +49,19 @@ class LoginActivity : AppCompatActivity() {
         logInBtn = findViewById(R.id.logInBtn)
         signUpBtn = findViewById(R.id.signUpBtn)
 
-        logInBtn.setOnClickListener{LogIn()}
+        logInBtn.setOnClickListener{logIn()}
         signUpBtn.setOnClickListener{signUp()}
 
         view.setOnTouchListener { v, event ->
             when(event.actionMasked){
                 MotionEvent.ACTION_DOWN -> {emailField.hideKeyboard();passwordField.hideKeyboard()}
-                //MotionEvent.ACTION_POINTER_DOWN -> {}
-                //MotionEvent.ACTION_MOVE -> {}
-                //MotionEvent.ACTION_UP -> {}
-                //MotionEvent.ACTION_POINTER_UP -> {}
-                //MotionEvent.ACTION_CANCEL -> {}
             }
             true
         }
 
     }
 
-    private fun LogIn(){
+    private fun logIn(){
         if( illegalUserInput()){return}
         auth.signInWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener(this) { task ->
@@ -75,7 +70,7 @@ class LoginActivity : AppCompatActivity() {
             }
     }
 
-    fun signUp() {
+    private fun signUp() {
         if( illegalUserInput()){return}
         auth.createUserWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener { task ->

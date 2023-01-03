@@ -140,6 +140,14 @@ class MapBuildTrack(val context: Context,
         callbackUpdateTrackLength(trackLength.inKilometers())
     }
 
+    fun getTrackLengthInKilometers():String{
+        return trackLength.inKilometers()
+    }
+
+    fun getTrackFirstPoint():GeoPoint{
+        return polyLine!!.actualPoints[0]
+    }
+
     fun resetMapTrackPath(){
         removeOverlayAndPolyLine()
         resetTrackLength()
@@ -153,15 +161,32 @@ class MapBuildTrack(val context: Context,
         removeOverlayAndPolyLine()
     }
 
-    fun saveCurrentTrack(city:String,street:String){
-        val centerGeoPoint = points[0]
+    fun saveCurrentTrack(city:String,street:String,trackLen:String,centerGeoPoint:GeoPoint){
+        removeCurrentOverlay()
+        savedTracks.add(
+            SavedTrack(
+                mapView.drawToBitmap(),
+                ArrayList(polyLine!!.actualPoints),
+                centerGeoPoint,
+                mapView.projection.zoomLevel,
+                city,
+                street,
+                trackLen,
+                getCurrentDate())
+        )
+        currentPoints = 0
+        points.clear()
+    }
+
+    /*fun saveCurrentTrack(city:String,street:String,centerGeoPoint:GeoPoint){
+        //val centerGeoPoint = points[0]
         removeCurrentOverlay()
         savedTracks.add(
             SavedTrack(
                 mapView.drawToBitmap(),
                 ArrayList(points),
                 centerGeoPoint,
-                mapView.zoomLevel,
+                mapView.projection.zoomLevel,
                 city,
                 street,
                 trackLength.inKilometers(),
@@ -169,24 +194,25 @@ class MapBuildTrack(val context: Context,
         )
         currentPoints = 0
         points.clear()
-    }
+    }*/
 
-    fun saveGpsTrack(city:String,street:String,trackLen:String){
+    /*fun saveGpsTrack(city:String,street:String,trackLen:String,centerGeoPoint:GeoPoint){
+        //polyLine!!.actualPoints[0]
         savedTracks.add(
             SavedTrack(
                 mapView.drawToBitmap(),
                 ArrayList(polyLine!!.actualPoints),
-                polyLine!!.actualPoints[0],
-                mapView.zoomLevel,
+                centerGeoPoint,
+                mapView.projection.zoomLevel,
                 city,
                 street,
                 trackLen,
                 getCurrentDate())
         )
-    }
+    }*/
 
     fun trackIsOnMap():Boolean{
-        return (polyLine != null)
+        return (polyLine != null && polyLine!!.actualPoints.isNotEmpty())
     }
 
     fun pointsIsNotEmpty():Boolean{

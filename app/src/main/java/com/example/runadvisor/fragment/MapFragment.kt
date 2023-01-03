@@ -16,7 +16,6 @@ import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
@@ -85,7 +84,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     protected fun addProgressBar(){
         val layout = parentActivity.findViewById<RelativeLayout>(R.id.mapBaseLayout)
-        progressBar = getProgressbar(parentActivity,layout)
+        progressBar = getRoundProgressbar(parentActivity,layout)
     }
 
     private fun addGpsBlinker(){
@@ -128,6 +127,10 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         mapView.controller.setZoom(zoom)
     }
 
+    protected fun setGeoPosition(geoPoint:GeoPoint){
+        mapView.controller.setCenter(geoPoint)
+    }
+
     /*
     *   ##########################################################################
     *               GPS BLINKER
@@ -135,16 +138,11 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     * */
 
     protected fun activateGps(){
-        if(gpsBlinker.isNotActive()){
-            if(getLocationUpdates(this)){
-                val geoPoint = getUserLocation()
-                gpsBlinker.startBlinking()
-                mapView.controller.setCenter(geoPoint)
-                updateGpsPosition(getUserLocation())
-            }
-        }
-        else{
-            deActivateGps()
+        if(getLocationUpdates(this)){
+            val geoPoint = getUserLocation()
+            gpsBlinker.startBlinking()
+            zoomToPosition(geoPoint,20.0)
+            updateGpsPosition(getUserLocation())
         }
     }
 
@@ -168,6 +166,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     protected fun resetGpsBlinker(){
         gpsBlinker.resetAndClear()
+        deActivateGps()
     }
 
     protected fun gpsBlinkerIsActive():Boolean{
@@ -237,9 +236,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     private fun setUserLocationIfAllowed(){
         val location = getUserLocation()
-        mapView.controller.setZoom(17.0)
-        mapView.controller.setCenter(location)
-
+        zoomToPosition(location,getZoomBase())
     }
 
     protected fun zoomToArea(bbox:BoundingBox,paddingFactor:Double=1.0){
@@ -263,9 +260,12 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         val lon: Double = (bbox.lonEast + ((bbox.lonWest-bbox.lonEast)/2))
         val lat = centerY
 
-        mapView.controller.setZoom(zoom)
-        mapView.controller.setCenter(GeoPoint(lat,lon))
+        zoomToPosition(GeoPoint(lat,lon),zoom)
+    }
 
+    protected fun zoomToPosition(geoPoint:GeoPoint,zoom:Double){
+        mapView.controller.setZoom(zoom)
+        mapView.controller.setCenter(geoPoint)
     }
 
     private fun outsideMap(g:GeoPoint):Boolean{
@@ -319,6 +319,7 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         super.onPause()
         mapView.onPause()
         setMapData()
+        deActivateGps()
     }
 
     override fun onDestroyView() {

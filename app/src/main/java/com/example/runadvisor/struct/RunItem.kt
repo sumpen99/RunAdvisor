@@ -7,7 +7,7 @@ data class RunItem(
     var downloadUrl:String?=null,
     var coordinates:ArrayList<Double>? = null,
     var center:ArrayList<Double>? = null,
-    var zoom:Int? = null,
+    var zoom:Double? = null,
     var docID:String? = null,
     var range:Int = 0,
     var date:String?=null,
@@ -21,7 +21,7 @@ data class RunItem(
                        downloadUrl:String?,
                        coordinates:ArrayList<Double>?,
                        center:ArrayList<Double>?,
-                       zoom:Int?,
+                       zoom:Double?,
                        docId:String?,
                        range:Int,
                        date:String?){

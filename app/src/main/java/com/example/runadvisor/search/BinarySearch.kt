@@ -8,7 +8,7 @@ fun insertBetweenClosest(runList:ArrayList<RunItem>,items:List<RunItem>,axis:Int
         val item = items[i]
         val index = findClosestIndex(runList,item,axis)
         if(runList[index].compare(axis)<=item.compare(axis)){runList.add(index+1,item)}
-        else{runList.add(Math.max(index-1,0),item)}
+        else{runList.add(index,item)}
         i++
     }
 }

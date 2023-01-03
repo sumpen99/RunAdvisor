@@ -8,6 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
+import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapBuildTrack
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
@@ -17,6 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import org.osmdroid.util.GeoPoint
 import java.net.URL
 import kotlin.concurrent.thread
 
@@ -142,14 +144,14 @@ class MapFragmentUpload:MapFragment() {
     * */
 
     private fun startGps(parameter:Any?){
-        if(gpsBlinkerIsCollecting()){showUserMessage("Gps Is Running");return}
         clearGpsTrack(null)
         setGpsToStorePoints(::updateGpsTrackLength)
+        // TODO UNCOMMENT LINE 183 MAPFRAGMENT
         takeMeAroundGoogle()
     }
 
     private fun stopGps(parameter:Any?){
-        if(!gpsBlinkerIsActive()){showUserMessage("Gps Is Not Running");return}
+        if(!gpsBlinkerIsActive()){return}
         deActivateGps()
         val geoPoints = getCollectedGpsPoints()
         if(geoPoints.size > MIN_GEO_POINTS){
@@ -157,21 +159,29 @@ class MapFragmentUpload:MapFragment() {
             mapBuildTrack.addPolyLineToMap()
             mapBuildTrack.invalidate()
         }
+        else{
+            showUserMessage("Not Enough Movement...")
+            clearGpsTrack(null)
+        }
     }
 
     private fun saveGpsTrack(parameter:Any?){
-        if(gpsBlinkerIsActive()){showUserMessage("Stop Gps To Store");return}
-        if(allSetForGpsUpload()){
+        if(gpsBlinkerIsActive()){showUserMessage("Stop Gps To View Track Before Saving");return}
+        if(allSetForUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
                 val serverResult = ServerDetails()
                 val addressInfo = AddressInfo()
+                val trackLen = getGpsMeasuredLength().inKilometers()
+                val geoPoint = mapBuildTrack.getTrackFirstPoint()
                 setUrlCallInProgress(true)
                 setSearchTimer()
-                getAddress2(addressInfo,serverResult)
-                mapBuildTrack.saveGpsTrack(addressInfo.city,addressInfo.street,getGpsMeasuredLength().inKilometers())
+                getAddress(addressInfo,serverResult,geoPoint)
+                mapBuildTrack.saveCurrentTrack(addressInfo.city,addressInfo.street,trackLen,geoPoint)
                 showProgressbar(false)
                 setUrlCallInProgress(false)
+                showUserMessage("Track Saved Successfully!")
+                clearGpsTrack(null)
             }
         }
     }
@@ -215,17 +225,21 @@ class MapFragmentUpload:MapFragment() {
     }
 
     private fun saveBuildTrack(parameter:Any?){
-        if(allSetForBuildUpload()){
+        if(allSetForUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
                 val serverResult = ServerDetails()
                 val addressInfo = AddressInfo()
+                val geoPoint = mapBuildTrack.getTrackFirstPoint()
+                val trackLen = mapBuildTrack.getTrackLengthInKilometers()
                 setUrlCallInProgress(true)
                 setSearchTimer()
-                getAddress2(addressInfo,serverResult)
-                mapBuildTrack.saveCurrentTrack(addressInfo.city,addressInfo.street)
+                getAddress(addressInfo,serverResult,geoPoint)
+                mapBuildTrack.saveCurrentTrack(addressInfo.city,addressInfo.street,trackLen,geoPoint)
                 showProgressbar(false)
                 setUrlCallInProgress(false)
+                showUserMessage("Track Saved Successfully!")
+                clearBuildTrack(null)
             }
         }
     }
@@ -244,16 +258,8 @@ class MapFragmentUpload:MapFragment() {
     *   ##########################################################################
     * */
 
-    private fun allSetForBuildUpload():Boolean{
-        return (mapBuildTrack.trackIsOnMap() && mapBuildTrack.pointsIsNotEmpty() && allSetForUpload())
-    }
-
-    private fun allSetForGpsUpload():Boolean{
-        return (mapBuildTrack.trackIsOnMap() &&  allSetForUpload())
-    }
-
     private fun allSetForUpload():Boolean{
-        return (checkSearchTimer() && !urlCallInProgress)
+        return (mapBuildTrack.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress)
     }
 
     /*
@@ -266,15 +272,14 @@ class MapFragmentUpload:MapFragment() {
         withContext(Dispatchers.IO) {
             thread {
                 serverResult.serverResult = ServerResult.UPLOAD_OK
-                addressInfo.city = "<City>"
-                addressInfo.street = "<Street>"
+                addressInfo.city = "City"
+                addressInfo.street = "Street"
                 Thread.sleep(500)
             }.join()
         }
     }
 
-    private suspend fun getAddress(addressInfo: AddressInfo, serverResult: ServerDetails){
-        val geoPoint = mapBuildTrack!!.points[0]
+    private suspend fun getAddress(addressInfo: AddressInfo, serverResult: ServerDetails,geoPoint:GeoPoint){
         val requestString = "https://nominatim.openstreetmap.org/reverse?lat=" +
                 geoPoint.latitude.toString() + "&lon=" + geoPoint.longitude.toString() + "&zoom=18&format=jsonv2"
         withContext(Dispatchers.IO) {
@@ -284,6 +289,7 @@ class MapFragmentUpload:MapFragment() {
                 catch (err: Exception){
                     serverResult.serverResult = ServerResult.UPLOAD_ERROR
                     serverResult.msg = err.message.toString()
+                    printToTerminal(err.message.toString())
                     return@thread
                 }
                 try{
@@ -296,11 +302,12 @@ class MapFragmentUpload:MapFragment() {
                 catch(err:Exception){
                     serverResult.serverResult = ServerResult.UPLOAD_ERROR
                     serverResult.msg = err.message.toString()
+                    printToTerminal(err.message.toString())
                 }}.join()
         }
 
-        if(addressInfo.city.isEmpty()){addressInfo.city = "<City>"}
-        if(addressInfo.street.isEmpty()){addressInfo.street = "<Street>"}
+        if(addressInfo.city.isEmpty()){addressInfo.city = "City"}
+        if(addressInfo.street.isEmpty()){addressInfo.street = "Street"}
     }
 
     /*

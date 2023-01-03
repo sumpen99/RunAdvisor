@@ -7,13 +7,9 @@ class MarkerClickable(
     snippet:String,
     var geoPoint:GeoPoint,
     var trackPoints:List<GeoPoint>,
-    val callbackSelectedMarker:(MarkerClickable)->Unit,
+    var zoom:Double,
     val index:Int,):
     OverlayItem(title,snippet,geoPoint){
 
-
-    fun hasTouch(){
-        callbackSelectedMarker(this)
-    }
 
 }

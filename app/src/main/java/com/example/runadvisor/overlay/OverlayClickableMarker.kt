@@ -13,25 +13,10 @@ import org.osmdroid.views.overlay.ItemizedIconOverlay
 class OverlayClickableMarker(private val activityContext: Context,
                              private val markers:MutableList<MarkerClickable>,
                              private val pOnItemGestureListener: OnItemGestureListener<MarkerClickable>,
-                             private val mapTrackOverview: MapShowTrack
 ):
     ItemizedIconOverlay<MarkerClickable>(activityContext,markers,pOnItemGestureListener) {
 
-    var markerHasTouch: MarkerClickable? = null
     private val drawableDefault = AppCompatResources.getDrawable(activityContext,org.osmdroid.wms.R.drawable.marker_default)
-
-    private fun callbackMarkerWithTouch(marker: MarkerClickable){
-        mapTrackOverview.removePolyline()
-        if(markerHasTouch != null && marker.index == markerHasTouch!!.index){
-            markerHasTouch = null
-        }
-        else{
-            markerHasTouch = marker
-            mapTrackOverview.buildPolyline(marker.trackPoints)
-            mapTrackOverview.addPolyLineToMap()
-            mapTrackOverview.invalidate()
-        }
-    }
 
     fun addCustomItem(runItem:RunItem, index:Int){
         val marker = MarkerClickable(
@@ -39,7 +24,7 @@ class OverlayClickableMarker(private val activityContext: Context,
             runItem.street!!,
             getDoubleToGeoPoint(runItem.center!!),
             getDoubleToGeoPoints(runItem.coordinates!!),
-            ::callbackMarkerWithTouch,
+            runItem.zoom!!,
             index,)
         marker.setMarker(drawableDefault)
         super.addItem(marker)

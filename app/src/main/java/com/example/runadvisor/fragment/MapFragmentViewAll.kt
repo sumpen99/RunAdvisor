@@ -8,10 +8,13 @@ import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapShowTrack
+import com.example.runadvisor.marker.MarkerClickable
+import com.example.runadvisor.methods.locationPermissionIsProvided
+import com.example.runadvisor.widget.GpsMenuBar
 
 class MapFragmentViewAll:MapFragment() {
     private lateinit var mapShowTrack: MapShowTrack
-
+    private var markerHasTouch: MarkerClickable? = null
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setTrackOverviewMenu()
@@ -28,8 +31,21 @@ class MapFragmentViewAll:MapFragment() {
     override fun hasParentFragment(): FragmentInstance?{ return null}
 
     private fun setMapTrackOverview(){
-        mapShowTrack = MapShowTrack(activityContext,mapView)
+        mapShowTrack = MapShowTrack(activityContext,mapView,::markerHasTouch)
         mapShowTrack.setCurrentOverlay()
+    }
+
+    private fun markerHasTouch(marker:MarkerClickable){
+        mapShowTrack.removePolyline()
+        if(markerHasTouch != null && marker.index == markerHasTouch!!.index){
+            markerHasTouch = null
+        }
+        else{
+            markerHasTouch = marker
+            mapShowTrack.buildPolyline(marker.trackPoints)
+            mapShowTrack.addPolyLineToMap()
+            zoomToPosition(marker.geoPoint,marker.zoom)
+        }
     }
 
     private fun setTrackOverviewMenu(){
@@ -48,8 +64,11 @@ class MapFragmentViewAll:MapFragment() {
     }
 
     private fun moveToGpsPosition(){
-        if(!gpsBlinkerIsActive()){setZoom(20.0)}
-        activateGps()
+        if(locationPermissionIsProvided()){
+            if(!gpsBlinkerIsActive()){activateGps()}
+            else{deActivateGps()}
+        }
+        else{showUserMessage("GpsPermission Is Not Granted")}
 
     }
 

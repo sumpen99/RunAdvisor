@@ -34,8 +34,6 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
             serverData.addAll(runItems)
         }
         else{insertBetweenClosest(serverData,runItems,activity.getSearchAxis())}
-        //val pos = serverData.size
-        //notifyItemRangeChanged(pos,runItems.size)
         notifyDataSetChanged()
     }
 
@@ -68,7 +66,6 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
         if(serverData.isEmpty()){return}
         val itemsViewModel = serverData[position]
         activity.downloadImageFromStorage(activity.getImageStorageRef(itemsViewModel.downloadUrl),holder.cardImageView)
-        //activity.downloadImage(itemsViewModel.downloadUrl,holder.cardImageView)
         holder.cityTextView.text = itemsViewModel.city
         holder.streetTextView.text = itemsViewModel.street
         holder.trackLengthTextView.text = "${itemsViewModel.trackLength} km"
@@ -93,7 +90,7 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
         val showTrackOnMapBtn: CustomImageButton = itemView.findViewById(R.id.showTrackOnMap)
         var trackPoints:ArrayList<GeoPoint> = ArrayList()
         var centerPoint:GeoPoint = GeoPoint(0.0,0.0)
-        var zoom:Int = 18
+        var zoom:Double = 18.0
         init{
             showTrackOnMapBtn.setCallback(null,::launchMap)
         }
