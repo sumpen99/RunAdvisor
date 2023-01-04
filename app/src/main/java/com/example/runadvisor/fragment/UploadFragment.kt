@@ -28,7 +28,6 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView: RecyclerView
     private lateinit var customAdapter: CustomUploadAdapter
-    private lateinit var messageToUser: MessageToUser
     private var uploadView:View? = null
     private var progressBar:ProgressBar? = null
     private var _binding: FragmentUploadBinding? = null
@@ -47,7 +46,6 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         setEventListener()
         setRecyclerView()
         setAdapter()
-        setInfoToUser()
         return uploadView!!
     }
 
@@ -101,15 +99,6 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         else{progressBar!!.visibility = GONE}
     }
 
-    private fun setInfoToUser(){
-        messageToUser = MessageToUser(parentActivity,null)
-    }
-
-    private fun showUserMessage(msg:String){
-        messageToUser.setMessage(msg)
-        messageToUser.showMessage()
-    }
-
     /*
     *   ##########################################################################
     *                                RECYCLEVIEW
@@ -127,8 +116,8 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
             }
         }
         clearAllItemsFromRecycleView()
-        if(msg.isEmpty()){showUserMessage("Upload Successful!")}
-        else{showUserMessage(msg)}
+        if(msg.isEmpty()){parentActivity.showUserMessage("Upload Successful!")}
+        else{parentActivity.showUserMessage(msg)}
     }
 
     /*
@@ -198,7 +187,7 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     private fun uploadIsPossible():Boolean{
         if(customAdapter.itemCount == 0 || progressBar!!.visibility == VISIBLE){return false}
         if(!parentActivity.verifyStoragePermission()){
-            showUserMessage("Storage Permission Not Granted\nUpload Failed")
+            parentActivity.showUserMessage("Storage Permission Not Granted\nUpload Failed")
             return false
         }
         return true

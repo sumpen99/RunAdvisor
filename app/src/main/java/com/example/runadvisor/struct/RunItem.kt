@@ -1,5 +1,7 @@
 package com.example.runadvisor.struct
 
+import com.example.runadvisor.enums.SortOperation
+
 data class RunItem(
     var city:String?=null,
     var street:String?=null,
@@ -37,7 +39,7 @@ data class RunItem(
             this.date = date
         }
 
-    fun compare(axis:Int):Int{
-            return if (axis == 0) range else city!!.get(0).code
+    fun compare(sortOperation:SortOperation):Int{
+            return if (sortOperation == SortOperation.SORT_RANGE) range else city!!.get(0).code
     }
 }

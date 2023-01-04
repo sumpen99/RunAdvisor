@@ -36,7 +36,6 @@ import kotlin.concurrent.thread
 
 abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
     private lateinit var locationManager: LocationManager
-    private lateinit var messageToUser: MessageToUser
     private lateinit var gpsBlinker: GpsBlinker
     protected lateinit var activityContext: Context
     protected lateinit var parentActivity: MainActivity
@@ -45,8 +44,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     protected var mapData = MapData()
     private var _binding: FragmentMapBinding? = null
     protected val binding get() = _binding!!
-
-    protected val MIN_GEO_POINTS:Int = 5
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
@@ -57,7 +54,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         setLocationManager()
         setMapView()
         setUserAgent()
-        setInfoToUser()
         return view
     }
 
@@ -105,10 +101,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     private fun setLocationManager(){locationManager = activityContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager}
 
     private fun setUserAgent(){Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID}
-
-    private fun setInfoToUser(){
-        messageToUser = MessageToUser(parentActivity,null)
-    }
 
     private fun setMapView(){
         mapView = binding.map
@@ -181,8 +173,10 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         gpsBlinker.shouldStorePoints(true)
         gpsBlinker.clearCollectedPoints()
         gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
-        // TODO UNCOMMENT THIS BEFORE if(gpsBlinker.isNotActive()){activateGps()}
-        if(gpsBlinker.isNotActive()){activateRoundTripGps()}
+
+        if(gpsBlinker.isNotActive()){activateGps()}
+
+        //if(gpsBlinker.isNotActive()){activateRoundTripGps()}
     }
 
     protected fun getCollectedGpsPoints():List<GeoPoint>{
@@ -289,17 +283,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         val proj = mapView.projection
         //printToTerminal("X:$x Y:$y")
         return GeoPoint(proj.fromPixels(x.toInt(),y.toInt()))
-    }
-
-    /*
-    *   ##########################################################################
-    *               SHOW MESSAGE TO USER
-    *   ##########################################################################
-    * */
-
-    protected fun showUserMessage(msg:String){
-        messageToUser.setMessage(msg)
-        messageToUser.showMessage()
     }
 
     /*

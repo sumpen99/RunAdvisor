@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,12 +14,10 @@ import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.uncheckCheckBoxes
 
 
-class DataFragment:
-    Fragment(R.layout.fragment_data), IFragment {
+class DataFragment:Fragment(R.layout.fragment_data), IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView:RecyclerView
@@ -28,6 +25,8 @@ class DataFragment:
     private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
+    private val SORT_TIME_OUT = 2000
+    private var lastSort:Long = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,7 +60,7 @@ class DataFragment:
         checkBoxes.add(sortOnRange)
         checkBoxes.add(sortOnCity)
         sortOnRange.setOnClickListener{sortDataSet(0,sortOnRange.isChecked,SortOperation.SORT_RANGE)}
-        sortOnCity.setOnClickListener{sortDataSet(1,sortOnCity.isChecked,SortOperation.SORT_CITY)}
+        sortOnCity.setOnClickListener{sortDataSet(1,sortOnCity.isChecked, SortOperation.SORT_CITY)}
     }
 
     private fun setActivityContext() { activityContext = requireContext() }
@@ -82,8 +81,22 @@ class DataFragment:
 
     private fun sortDataSet(pos:Int,isChecked:Boolean,op: SortOperation){
         if(!isChecked){return}
+        if(!sortTimeOutHasPassed()){
+            checkBoxes[pos].isChecked = !checkBoxes[pos].isChecked
+            parentActivity.showUserMessage("Sort Time Out")
+            return
+        }
         uncheckCheckBoxes(pos,checkBoxes)
+        parentActivity.setSearchAxis(op)
+        setLastSortTime()
+    }
 
+    private fun setLastSortTime(){
+        lastSort = System.currentTimeMillis()
+    }
+
+    private fun sortTimeOutHasPassed():Boolean{
+        return System.currentTimeMillis()-lastSort > SORT_TIME_OUT
     }
 
     /*

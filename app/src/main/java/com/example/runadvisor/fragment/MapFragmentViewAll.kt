@@ -68,7 +68,7 @@ class MapFragmentViewAll:MapFragment() {
             if(!gpsBlinkerIsActive()){activateGps()}
             else{deActivateGps()}
         }
-        else{showUserMessage("GpsPermission Is Not Granted")}
+        else{parentActivity.showUserMessage("GpsPermission Is Not Granted")}
 
     }
 

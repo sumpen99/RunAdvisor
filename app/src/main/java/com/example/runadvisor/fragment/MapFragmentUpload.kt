@@ -30,6 +30,8 @@ class MapFragmentUpload:MapFragment() {
     private val URL_TIMER:Long = 1500
     private var lastUrlCall:Long = 0
     private var lastMenu:Int = -1
+    protected val MIN_GEO_POINTS:Int = 200
+    protected val MIN_TRACK_LENGTH:Int = MIN_GEO_POINTS*5
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -43,7 +45,7 @@ class MapFragmentUpload:MapFragment() {
     override fun isRemovable():Boolean{return true}
 
     override fun hasParentFragment(): FragmentInstance?{
-        if(gpsBlinkerIsActive()){showUserMessage("Gps Is Running");return null}
+        if(gpsBlinkerIsActive()){parentActivity.showUserMessage("Gps Is Running");return null}
         return FragmentInstance.FRAGMENT_UPLOAD
     }
 
@@ -105,7 +107,7 @@ class MapFragmentUpload:MapFragment() {
                 ::clearGpsTrack)
         }
         else{
-            showUserMessage("GpsPermission Is Not Granted")
+            parentActivity.showUserMessage("GpsPermission Is Not Granted")
             removeBottomMenu()
         }
     }
@@ -146,8 +148,8 @@ class MapFragmentUpload:MapFragment() {
     private fun startGps(parameter:Any?){
         clearGpsTrack(null)
         setGpsToStorePoints(::updateGpsTrackLength)
-        // TODO UNCOMMENT LINE 183 MAPFRAGMENT
-        takeMeAroundGoogle()
+
+        //takeMeAroundGoogle()
     }
 
     private fun stopGps(parameter:Any?){
@@ -160,13 +162,13 @@ class MapFragmentUpload:MapFragment() {
             mapBuildTrack.invalidate()
         }
         else{
-            showUserMessage("Not Enough Movement...")
+            dismissSaveOnLowTrackLength()
             clearGpsTrack(null)
         }
     }
 
     private fun saveGpsTrack(parameter:Any?){
-        if(gpsBlinkerIsActive()){showUserMessage("Stop Gps To View Track Before Saving");return}
+        if(gpsBlinkerIsActive()){parentActivity.showUserMessage("Stop Gps To View Track Before Saving");return}
         if(allSetForUpload()){
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
@@ -180,7 +182,7 @@ class MapFragmentUpload:MapFragment() {
                 mapBuildTrack.saveCurrentTrack(addressInfo.city,addressInfo.street,trackLen,geoPoint)
                 showProgressbar(false)
                 setUrlCallInProgress(false)
-                showUserMessage("Track Saved Successfully!")
+                parentActivity.showUserMessage("Track Saved Successfully!")
                 clearGpsTrack(null)
             }
         }
@@ -226,6 +228,7 @@ class MapFragmentUpload:MapFragment() {
 
     private fun saveBuildTrack(parameter:Any?){
         if(allSetForUpload()){
+            if(mapBuildTrack.trackLength<MIN_TRACK_LENGTH ){dismissSaveOnLowTrackLength();return;}
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
                 val serverResult = ServerDetails()
@@ -238,7 +241,7 @@ class MapFragmentUpload:MapFragment() {
                 mapBuildTrack.saveCurrentTrack(addressInfo.city,addressInfo.street,trackLen,geoPoint)
                 showProgressbar(false)
                 setUrlCallInProgress(false)
-                showUserMessage("Track Saved Successfully!")
+                parentActivity.showUserMessage("Track Saved Successfully!")
                 clearBuildTrack(null)
             }
         }
@@ -259,7 +262,13 @@ class MapFragmentUpload:MapFragment() {
     * */
 
     private fun allSetForUpload():Boolean{
-        return (mapBuildTrack.trackIsOnMap() && checkSearchTimer() && !urlCallInProgress)
+        return (mapBuildTrack.trackIsOnMap()
+                && checkSearchTimer() &&
+                !urlCallInProgress)
+    }
+
+    private fun dismissSaveOnLowTrackLength(){
+        parentActivity.showUserMessage("Tracklength less then 1000m does not fill the criteria for upload")
     }
 
     /*
@@ -289,7 +298,6 @@ class MapFragmentUpload:MapFragment() {
                 catch (err: Exception){
                     serverResult.serverResult = ServerResult.UPLOAD_ERROR
                     serverResult.msg = err.message.toString()
-                    printToTerminal(err.message.toString())
                     return@thread
                 }
                 try{
@@ -302,7 +310,6 @@ class MapFragmentUpload:MapFragment() {
                 catch(err:Exception){
                     serverResult.serverResult = ServerResult.UPLOAD_ERROR
                     serverResult.msg = err.message.toString()
-                    printToTerminal(err.message.toString())
                 }}.join()
         }
 

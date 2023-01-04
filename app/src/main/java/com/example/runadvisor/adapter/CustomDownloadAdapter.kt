@@ -21,11 +21,20 @@ import org.osmdroid.util.GeoPoint
 
 class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Adapter<CustomDownloadAdapter.ViewHolder>() {
     val serverData = ArrayList<RunItem>()
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.download_track_card, parent, false)
 
         return ViewHolder(view)
+    }
+
+    fun sortRunItems(){
+        if(itemCount>1){
+            qSortRunItems(serverData,0,serverData.size-1,activity.getSearchAxis())
+            notifyDataSetChanged()
+        }
     }
 
     fun addRunItems(runItems:List<RunItem>){
@@ -38,13 +47,13 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
     }
 
     private fun removeCard(pos:Int){
-        if(pos>=itemCount){return}
+        if(pos>=itemCount || pos < 0){return}
         serverData.removeAt(pos)
         notifyItemRemoved(pos)
     }
 
     fun removeRunItem(runItem:RunItem){
-        val axis = 0
+        val axis = activity.getSearchAxis()
         val searchInfo = SearchInfo()
         searchForRunItems(serverData,runItem.compare(axis),axis,searchInfo)
         if(searchInfo.found){

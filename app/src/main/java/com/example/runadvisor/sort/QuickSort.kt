@@ -1,26 +1,27 @@
 package com.example.runadvisor.sort
 
+import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.struct.RunItem
 
-fun qSortRunItems(runItems:List<RunItem>,low:Int,high:Int,axis:Int){
-    sortRunItemList(runItems,low,high,axis)
+fun qSortRunItems(runItems:List<RunItem>,low:Int,high:Int,sortOp:SortOperation){
+    sortRunItemList(runItems,low,high,sortOp)
 }
 
-private fun sortRunItemList(runItemList:List<RunItem>,low:Int,high:Int,axis:Int){
+private fun sortRunItemList(runItemList:List<RunItem>,low:Int,high:Int,sortOp:SortOperation){
     if(low<high){
-        val q = partitionRunItemList(runItemList,low,high,axis)
-        sortRunItemList(runItemList,low,q,axis)
-        sortRunItemList(runItemList,q+1,high,axis)
+        val q = partitionRunItemList(runItemList,low,high,sortOp)
+        sortRunItemList(runItemList,low,q,sortOp)
+        sortRunItemList(runItemList,q+1,high,sortOp)
     }
 }
 
-private fun partitionRunItemList(runItemList:List<RunItem>,low:Int,high:Int,axis:Int):Int{
-    val pivot = runItemList[low].compare(axis)
+private fun partitionRunItemList(runItemList:List<RunItem>,low:Int,high:Int,sortOp:SortOperation):Int{
+    val pivot = runItemList[low].compare(sortOp)
     var i = low-1
     var j = high+1
     while(true){
-        while(++i < high && runItemList[i].compare(axis) < pivot);
-        while(--j > low && runItemList[j].compare(axis) > pivot);
+        while(++i < high && runItemList[i].compare(sortOp) < pivot);
+        while(--j > low && runItemList[j].compare(sortOp) > pivot);
         if(i < j){swapRunItem(runItemList[i],runItemList[j]);}
         else{return j;}
     }

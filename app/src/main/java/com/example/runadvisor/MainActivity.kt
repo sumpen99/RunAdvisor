@@ -1,6 +1,5 @@
 package com.example.runadvisor
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -15,10 +14,12 @@ import com.example.runadvisor.adapter.CustomUserAdapter
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityMainBinding
 import com.example.runadvisor.enums.FragmentInstance
+import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.FragmentTracker
+import com.example.runadvisor.struct.MessageToUser
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.struct.UserItem
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -28,7 +29,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
 import org.osmdroid.util.GeoPoint
 
-
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
     private lateinit var onBackPressedCallback:OnBackPressedCallback
@@ -36,10 +36,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var customPublicAdapter: CustomDownloadAdapter
     private lateinit var customUserAdapter: CustomUserAdapter
     private lateinit var userGeo:GeoPoint
+    private lateinit var messageToUser: MessageToUser
     private var fragmentTracker = FragmentTracker()
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
-    private var AXIS = 0
+    private var sortOperation = SortOperation.SORT_RANGE
     private var PERMISSION_RESULT = 0
 
     private var publicObserver = Observer<List<RunItem>?>{ it->
@@ -78,9 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        printToTerminal("App Test 1: creating home -> $PERMISSION_RESULT")
         if(isUserActive()){
-            printToTerminal("user is active")
             setContentView(R.layout.activity_main)
             setDataBinding()
             verifyPermissions()
@@ -144,6 +143,10 @@ class MainActivity : AppCompatActivity() {
         userGeo = getUserLocation()
     }
 
+    private fun setInfoToUser(){
+        messageToUser = MessageToUser(this,null)
+    }
+
     fun getPublicAdapter(): CustomDownloadAdapter {
         return customPublicAdapter
     }
@@ -152,8 +155,8 @@ class MainActivity : AppCompatActivity() {
         return customUserAdapter
     }
 
-    fun getSearchAxis():Int{
-        return AXIS
+    fun getSearchAxis():SortOperation{
+        return sortOperation
     }
 
     fun getUserIconTag():String{
@@ -164,8 +167,20 @@ class MainActivity : AppCompatActivity() {
         return Firebase.auth.currentUser!!.uid + getString(R.string.user_name)
     }
 
-    fun setSearchAxis(axis:Int){
-        AXIS = axis
+    fun setSearchAxis(op:SortOperation){
+        sortOperation = op
+        customPublicAdapter.sortRunItems()
+    }
+
+    /*
+    *   ##########################################################################
+    *               SHOW USER MESSAGE
+    *   ##########################################################################
+    * */
+
+    fun showUserMessage(msg:String){
+        messageToUser.setMessage(msg)
+        messageToUser.showMessage()
     }
 
     /*
@@ -185,33 +200,30 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int,permissions: Array<out String>,grantResults: IntArray){
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         var i = 0
-        printToTerminal("$requestCode")
         when(requestCode) {
             LOCATION_PERMISSION_CODE -> {
-                if(grantResults.isNotEmpty()){
+                /*if(grantResults.isNotEmpty()){
                     for(result:Int in grantResults){
-                        printToTerminal("${permissions[i++]} $result")
-                        /*if(result!=PackageManager.PERMISSION_GRANTED){
+                        if(result!=PackageManager.PERMISSION_GRANTED){
                             // not good
-                        }*/
+                        }
                     }
                 }
                 else{
-                    printToTerminal("LOCATION_PERMISSION_CODE Is Empty")
-                }
+                    //probably not good
+                }*/
             }
             DATA_PERMISSIONS_CODE -> {
-                if(grantResults.isNotEmpty()){
+                /*if(grantResults.isNotEmpty()){
                     for(result:Int in grantResults){
-                        printToTerminal("${permissions[i++]} $result")
-                        /*if(result!=PackageManager.PERMISSION_GRANTED){
+                        if(result!=PackageManager.PERMISSION_GRANTED){
                             // not good
-                        }*/
+                        }
                     }
                 }
                 else{
-                    printToTerminal("DATA_PERMISSIONS_CODE Is Empty")
-                }
+                    //probably not good
+                }*/
             }
         }
         PERMISSION_RESULT+=1
@@ -219,9 +231,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun onAllPermissionCheck(){
-        printToTerminal("onAllPermissionCheck -> $PERMISSION_RESULT")
         if(PERMISSION_RESULT == ALL_PERMISSIONS_CHECKED ){
             setUpNavMenu()
+            setInfoToUser()
             setOnBackNavigation()
             setEventListener()
             setUserGeoLocation()
@@ -397,22 +409,18 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         navigateOnResume()
-        printToTerminal("resume")
     }
 
     override fun onPause() {
         super.onPause()
-        printToTerminal("paus")
     }
 
     override fun onStop() {
         super.onStop()
-        printToTerminal("stop")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        printToTerminal("destroy")
     }
 
 }
