@@ -157,9 +157,11 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
         if(imageUri==null){return}
         val docId = UUID.randomUUID().toString()
         val userItem = UserItem(docId,downloadUrl)
+        val city = savedTrack.city.ifEmpty{ "Undefined" }
+        val street = savedTrack.street.ifEmpty{ "Undefined" }
         val runItem = RunItem(
-            savedTrack.city,
-            savedTrack.street,
+            city,
+            street,
             savedTrack.trackLength,
             downloadUrl,
             getGeoPointsToDouble(savedTrack.geoPoints),

@@ -293,19 +293,29 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     * */
 
     override fun onResume() {
+        //printToTerminal("onResume")
         super.onResume()
         mapView.onResume()
+        //printToTerminal(gpsBlinker.isActive().toString())
         setMapPosition()
     }
 
     override fun onPause() {
+        //printToTerminal("onPause")
         super.onPause()
         mapView.onPause()
         setMapData()
-        deActivateGps()
+        //deActivateGps()
+    }
+
+    override fun onStop() {
+        //printToTerminal("onStop")
+        super.onStop()
+
     }
 
     override fun onDestroyView() {
+        //printToTerminal("destroy main map")
         super.onDestroyView()
         deActivateGps()
         _binding = null

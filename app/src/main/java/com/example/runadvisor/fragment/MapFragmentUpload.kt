@@ -42,7 +42,9 @@ class MapFragmentUpload:MapFragment() {
 
     override fun receivedData(parameter: Any?){}
 
-    override fun isRemovable():Boolean{return true}
+    override fun isRemovable():Boolean{
+        return !gpsBlinkerIsActive()
+    }
 
     override fun hasParentFragment(): FragmentInstance?{
         if(gpsBlinkerIsActive()){parentActivity.showUserMessage("Gps Is Running");return null}
@@ -337,6 +339,7 @@ class MapFragmentUpload:MapFragment() {
 
     override fun onDestroyView() {
         storeSavedTracks()
+        printToTerminal("destroy upload map")
         super.onDestroyView()
     }
 }
