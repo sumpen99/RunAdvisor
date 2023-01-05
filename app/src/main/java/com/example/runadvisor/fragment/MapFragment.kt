@@ -14,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
+import com.example.runadvisor.background.LocationService
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
@@ -132,22 +133,9 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     protected fun activateGps(){
         if(getLocationUpdates(this)){
             val geoPoint = getUserLocation()
+            zoomToPosition(geoPoint,18.0)
+            updateGpsPosition(geoPoint)
             gpsBlinker.startBlinking()
-            zoomToPosition(geoPoint,20.0)
-            updateGpsPosition(getUserLocation())
-        }
-    }
-
-    // TODO REMOVE THIS FUNCTION
-    private fun activateRoundTripGps(){
-        if(gpsBlinker.isNotActive()){
-            val geoPoint = getUserLocation()
-            gpsBlinker.startBlinking()
-            mapView.controller.setCenter(geoPoint)
-            updateGpsPosition(getUserLocation())
-        }
-        else{
-            deActivateGps()
         }
     }
 
@@ -158,7 +146,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     protected fun resetGpsBlinker(){
         gpsBlinker.resetAndClear()
-        deActivateGps()
     }
 
     protected fun gpsBlinkerIsActive():Boolean{
@@ -173,10 +160,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         gpsBlinker.shouldStorePoints(true)
         gpsBlinker.clearCollectedPoints()
         gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
-
-        if(gpsBlinker.isNotActive()){activateGps()}
-
-        //if(gpsBlinker.isNotActive()){activateRoundTripGps()}
     }
 
     protected fun getCollectedGpsPoints():List<GeoPoint>{
@@ -191,29 +174,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         val p = mapView.projection.toPixels(location,null)
         gpsBlinker.setPosition(p.x.toFloat(),p.y.toFloat())
         gpsBlinker.collectPoints(location as GeoPoint)
-    }
-
-    protected fun takeMeAroundGoogle(){
-        setZoom(15.0)
-        gpsBlinker.resetPosition(mapView)
-        viewLifecycleOwner.lifecycleScope.launch{
-            withContext(Dispatchers.IO){
-                var i = 0
-                while(i<gpsBlinker.roundTripInCalifornia.size){
-                    val loc = gpsBlinker.roundTripInCalifornia[i]
-                    thread{
-                        Thread.sleep(500)
-                        Thread.currentThread().apply{
-                            parentActivity.runOnUiThread(java.lang.Runnable{
-                                if(outsideMap(loc)){mapView.controller.setCenter(loc)}
-                                updateGpsPosition(loc)
-                            })
-                        }
-                        i++
-                    }.join()
-                }
-            }
-        }
     }
 
     /*
@@ -293,15 +253,12 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     * */
 
     override fun onResume() {
-        //printToTerminal("onResume")
         super.onResume()
         mapView.onResume()
-        //printToTerminal(gpsBlinker.isActive().toString())
         setMapPosition()
     }
 
     override fun onPause() {
-        //printToTerminal("onPause")
         super.onPause()
         mapView.onPause()
         setMapData()
@@ -309,13 +266,11 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
     }
 
     override fun onStop() {
-        //printToTerminal("onStop")
         super.onStop()
 
     }
 
     override fun onDestroyView() {
-        //printToTerminal("destroy main map")
         super.onDestroyView()
         deActivateGps()
         _binding = null

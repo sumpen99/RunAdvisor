@@ -416,6 +416,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onStop() {
+        printToTerminal("on stop main")
         super.onStop()
     }
 

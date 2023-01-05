@@ -26,18 +26,19 @@ class MapFragmentUpload:MapFragment() {
     private var urlCallInProgress:Boolean = false
     private var trackMenu:TrackMenuBar?=null
     private var gpsMenu: GpsMenuBar?=null
+    private lateinit var askForGpsReset: MessageToUser
     private lateinit var mapBuildTrack: MapBuildTrack
     private val URL_TIMER:Long = 1500
     private var lastUrlCall:Long = 0
     private var lastMenu:Int = -1
-    protected val MIN_GEO_POINTS:Int = 200
-    protected val MIN_TRACK_LENGTH:Int = MIN_GEO_POINTS*5
+    private val MIN_TRACK_LENGTH:Double = 1000.0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setTrackPathMenu()
         if(progressBar == null){addProgressBar()}
         initMapBuildTrack()
+        setAskForGpsResetMessage()
     }
 
     override fun receivedData(parameter: Any?){}
@@ -52,6 +53,13 @@ class MapFragmentUpload:MapFragment() {
     }
 
     override fun getFragmentID(): FragmentInstance { return FragmentInstance.FRAGMENT_MAP_TRACK_PATH }
+
+    private fun setAskForGpsResetMessage(){
+        askForGpsReset = MessageToUser(parentActivity,null)
+        askForGpsReset.setMessage("Do You Want To Start Over?")
+        askForGpsReset.setTwoButtons()
+        askForGpsReset.setPositiveCallback(::startGps)
+    }
 
     private fun setUrlCallInProgress(value:Boolean){urlCallInProgress = value}
 
@@ -99,11 +107,11 @@ class MapFragmentUpload:MapFragment() {
 
     private fun addGpsMenu(){
         if(locationPermissionIsProvided()){
-            activateGps()
+            startGps(null)
             gpsMenu = GpsMenuBar(parentActivity,null)
             binding.bottomMenuLayout.addView(gpsMenu)
             gpsMenu!!.setEventListener(
-                ::startGps,
+                ::askUserForReset,
                 ::stopGps,
                 ::saveGpsTrack,
                 ::clearGpsTrack)
@@ -147,31 +155,35 @@ class MapFragmentUpload:MapFragment() {
     *   ##########################################################################
     * */
 
-    private fun startGps(parameter:Any?){
-        clearGpsTrack(null)
-        setGpsToStorePoints(::updateGpsTrackLength)
+    private fun askUserForReset(parameter:Any?){
+        if(gpsBlinkerIsActive()){askForGpsReset.showMessage()}
+        else{startGps(null)}
+    }
 
-        //takeMeAroundGoogle()
+    private fun startGps(parameter:Any?){
+        if(gpsBlinkerIsActive()){clearGpsTrack(null)}
+        setGpsToStorePoints(::updateGpsTrackLength)
+        activateGps()
     }
 
     private fun stopGps(parameter:Any?){
         if(!gpsBlinkerIsActive()){return}
-        deActivateGps()
         val geoPoints = getCollectedGpsPoints()
-        if(geoPoints.size > MIN_GEO_POINTS){
+        if(geoPoints.isNotEmpty()){
             mapBuildTrack.buildPolyline(geoPoints)
             mapBuildTrack.addPolyLineToMap()
-            mapBuildTrack.invalidate()
+            mapBuildTrack.getBoundaryBox(geoPoints)
+            printToTerminal(mapBuildTrack.bbox.toString())
+            zoomToArea(mapBuildTrack.bbox,1.0)
+            //mapBuildTrack.invalidate()
         }
-        else{
-            dismissSaveOnLowTrackLength()
-            clearGpsTrack(null)
-        }
+        deActivateGps()
     }
 
     private fun saveGpsTrack(parameter:Any?){
         if(gpsBlinkerIsActive()){parentActivity.showUserMessage("Stop Gps To View Track Before Saving");return}
         if(allSetForUpload()){
+            if(getGpsMeasuredLength() < MIN_TRACK_LENGTH){dismissSaveOnLowTrackLength();return}
             viewLifecycleOwner.lifecycleScope.launch{
                 showProgressbar(true)
                 val serverResult = ServerDetails()
@@ -195,8 +207,8 @@ class MapFragmentUpload:MapFragment() {
     }
 
     private fun clearGpsTrack(parameter: Any?){
-        deActivateGps()
         resetGpsBlinker()
+        deActivateGps()
         mapBuildTrack.resetMapGpsPath()
 
     }
@@ -270,7 +282,7 @@ class MapFragmentUpload:MapFragment() {
     }
 
     private fun dismissSaveOnLowTrackLength(){
-        parentActivity.showUserMessage("Tracklength less then 1000m does not fill the criteria for upload")
+        parentActivity.showUserMessage("Track shorter then 1000m does not fill the criteria for upload")
     }
 
     /*

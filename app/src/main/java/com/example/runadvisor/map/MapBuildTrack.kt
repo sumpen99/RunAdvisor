@@ -4,6 +4,7 @@ import androidx.core.view.drawToBitmap
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.marker.MarkerMovable
+import com.example.runadvisor.overlay.OverlayClickableMarker
 import com.example.runadvisor.overlay.OverlayMovableMarker
 import com.example.runadvisor.struct.SavedTrack
 import org.osmdroid.util.GeoPoint
@@ -40,6 +41,30 @@ class MapBuildTrack(val context: Context,
 
     fun setCallbackUpdateTrackLength(callback:(args:String)->Unit){
         callbackUpdateTrackLength = callback
+    }
+
+    fun getBoundaryBox(geoPoints:List<GeoPoint>){
+        setBbox()
+        var i = 0
+        while(i<geoPoints.size){
+            val item = getGeoPointToDouble(geoPoints[i])
+            if(item[0] < bbox.latSouth) {
+                bbox.latSouth = item[0]
+            }
+
+            if(item[0] > bbox.latNorth) {
+                bbox.latNorth = item[0]
+            }
+
+            if(item[1] < bbox.lonWest) {
+                bbox.lonWest = item[1]
+            }
+
+            if(item[1] > bbox.lonEast) {
+                bbox.lonEast = item[1]
+            }
+            i++
+        }
     }
 
     private fun buildTrack(pointsToAdd:Int){
@@ -177,39 +202,6 @@ class MapBuildTrack(val context: Context,
         currentPoints = 0
         points.clear()
     }
-
-    /*fun saveCurrentTrack(city:String,street:String,centerGeoPoint:GeoPoint){
-        //val centerGeoPoint = points[0]
-        removeCurrentOverlay()
-        savedTracks.add(
-            SavedTrack(
-                mapView.drawToBitmap(),
-                ArrayList(points),
-                centerGeoPoint,
-                mapView.projection.zoomLevel,
-                city,
-                street,
-                trackLength.inKilometers(),
-                getCurrentDate())
-        )
-        currentPoints = 0
-        points.clear()
-    }*/
-
-    /*fun saveGpsTrack(city:String,street:String,trackLen:String,centerGeoPoint:GeoPoint){
-        //polyLine!!.actualPoints[0]
-        savedTracks.add(
-            SavedTrack(
-                mapView.drawToBitmap(),
-                ArrayList(polyLine!!.actualPoints),
-                centerGeoPoint,
-                mapView.projection.zoomLevel,
-                city,
-                street,
-                trackLen,
-                getCurrentDate())
-        )
-    }*/
 
     fun trackIsOnMap():Boolean{
         return (polyLine != null && polyLine!!.actualPoints.isNotEmpty())

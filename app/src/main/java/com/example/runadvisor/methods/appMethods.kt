@@ -99,7 +99,8 @@ fun convertDpToPixel(value : Int):Int{
 * */
 
 fun Activity.verifyLocationPermission():Boolean{
-    return (ActivityCompat.checkSelfPermission(this,ACCESS_FINE_LOCATION) == PERMISSION_GRANTED)
+    return (ActivityCompat.checkSelfPermission(this,ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
+            ActivityCompat.checkSelfPermission(this,ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED)
 }
 
 fun Activity.verifyStoragePermission():Boolean{
@@ -108,7 +109,8 @@ fun Activity.verifyStoragePermission():Boolean{
 }
 
 fun Activity.askForLocationPermission(){
-    if(ActivityCompat.shouldShowRequestPermissionRationale(this,ACCESS_FINE_LOCATION)){
+    if(ActivityCompat.shouldShowRequestPermissionRationale(this,ACCESS_FINE_LOCATION) ||
+        ActivityCompat.shouldShowRequestPermissionRationale(this,ACCESS_COARSE_LOCATION)){
         val builder = AlertDialog.Builder(this)
         builder.setTitle("User Location")
         builder.setMessage("Application requires users`s location for better user experience")
@@ -116,7 +118,7 @@ fun Activity.askForLocationPermission(){
             ){ p0, p1 ->
                 ActivityCompat.requestPermissions(
                     this,
-                    arrayOf(ACCESS_FINE_LOCATION),
+                    arrayOf(ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION),
                     LOCATION_PERMISSION_CODE
                 )
             }
@@ -125,7 +127,7 @@ fun Activity.askForLocationPermission(){
     }
     else {
         ActivityCompat.requestPermissions(this,
-            arrayOf(ACCESS_FINE_LOCATION),
+            arrayOf(ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION),
             LOCATION_PERMISSION_CODE)
     }
     //ActivityCompat.requestPermissions(this,arrayOf(ACCESS_FINE_LOCATION),LOCATION_PERMISSION_CODE)
@@ -153,9 +155,6 @@ fun Activity.askForStoragePermissions(){
             arrayOf(READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE),
             DATA_PERMISSIONS_CODE)
     }
-
-
-    //ActivityCompat.requestPermissions(this,arrayOf(READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE),DATA_PERMISSIONS_CODE)
 }
 
 /*
@@ -447,7 +446,7 @@ fun Fragment.getLocationUpdates(locationListener:LocationListener):Boolean{
     if(checkGpsProviderStatus() &&
         ContextCompat.checkSelfPermission(requireContext(),ACCESS_FINE_LOCATION) == PERMISSION_GRANTED &&
         ContextCompat.checkSelfPermission(requireContext(),ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED){
-        (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 5f,locationListener)
+        (requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager).requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 5f,locationListener)
         return true
     }
     return false
