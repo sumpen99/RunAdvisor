@@ -1,10 +1,8 @@
 package com.example.runadvisor.map
 import android.content.Context
 import androidx.core.view.drawToBitmap
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.marker.MarkerMovable
-import com.example.runadvisor.overlay.OverlayClickableMarker
 import com.example.runadvisor.overlay.OverlayMovableMarker
 import com.example.runadvisor.struct.SavedTrack
 import org.osmdroid.util.GeoPoint
@@ -21,8 +19,6 @@ class MapBuildTrack(val context: Context,
     var points = ArrayList<GeoPoint>()
     var savedTracks = ArrayList<SavedTrack>()
     var trackLength:Double = 0.0
-    val INCREASE_POINTS = 10
-    val MAX_POINTS = 1280
     var currentPoints = 0
     val gestureListener = object:ItemizedIconOverlay.OnItemGestureListener<MarkerMovable>{
         override fun onItemSingleTapUp(index:Int, item: MarkerMovable):Boolean {
@@ -88,7 +84,7 @@ class MapBuildTrack(val context: Context,
     }
 
     fun decreaseTrack():Boolean{
-        if(currentPoints <= INCREASE_POINTS+1){printToTerminal("current points lesser");return false}
+        if(currentPoints <= INCREASE_POINTS+1){return false}
         val temPoints = ArrayList<GeoPoint>()
         var i = 0
         while(i<points.size){

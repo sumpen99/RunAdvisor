@@ -14,6 +14,7 @@ import com.example.runadvisor.databinding.FragmentDataBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
+import com.example.runadvisor.methods.checkCheckBox
 import com.example.runadvisor.methods.uncheckCheckBoxes
 
 
@@ -25,8 +26,6 @@ class DataFragment:Fragment(R.layout.fragment_data), IFragment {
     private var dataView:View? = null
     private var _binding: FragmentDataBinding? = null
     private val binding get() = _binding!!
-    private val SORT_TIME_OUT = 2000
-    private var lastSort:Long = 0L
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,23 +79,19 @@ class DataFragment:Fragment(R.layout.fragment_data), IFragment {
     * */
 
     private fun sortDataSet(pos:Int,isChecked:Boolean,op: SortOperation){
-        if(!isChecked){return}
-        if(!sortTimeOutHasPassed()){
-            checkBoxes[pos].isChecked = !checkBoxes[pos].isChecked
-            parentActivity.showUserMessage("Sort Time Out")
-            return
-        }
+        if(!isChecked){checkCheckBox(pos,checkBoxes);return}
+        if(sortIsNotPossible(pos)){return}
         uncheckCheckBoxes(pos,checkBoxes)
         parentActivity.setSearchAxis(op)
-        setLastSortTime()
+        parentActivity.sortPublicData()
     }
 
-    private fun setLastSortTime(){
-        lastSort = System.currentTimeMillis()
-    }
-
-    private fun sortTimeOutHasPassed():Boolean{
-        return System.currentTimeMillis()-lastSort > SORT_TIME_OUT
+    private fun sortIsNotPossible(pos:Int):Boolean{
+        if(parentActivity.isSortInProgress() || parentActivity.isAdapterOccupied()){
+            checkBoxes[pos].isChecked = !checkBoxes[pos].isChecked
+            return true
+        }
+        return false
     }
 
     /*

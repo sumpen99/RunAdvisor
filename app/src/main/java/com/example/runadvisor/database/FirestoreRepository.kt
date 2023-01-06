@@ -1,6 +1,5 @@
 package com.example.runadvisor.database
 import android.net.Uri
-import com.example.runadvisor.R
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.struct.UserItem
@@ -27,57 +26,57 @@ class FirestoreRepository{
     }
 
     fun saveUserRunItem(userItem: UserItem): Task<Void> {
-        val documentReference = firestoreDB.collection(getUserCollection())
+        val documentReference = firestoreDB.collection(USER_COLLECTION)
             .document(user!!.email.toString())
-            .collection(getItemCollection())
+            .collection(ITEM_COLLECTION)
             .document(userItem.docId!!)
         return documentReference.set(userItem)
     }
 
     fun savePublicRunItem(runItem: RunItem): Task<Void> {
-        return firestoreDB.collection(getItemCollection())
+        return firestoreDB.collection(ITEM_COLLECTION)
             .document(runItem.docID!!)
             .set(runItem)
     }
 
     fun saveImage(imageUri: Uri, downloadUrl:String):UploadTask{
-        val path = "${getImagePath()}${downloadUrl}"
+        val path = "$IMAGE_PATH${downloadUrl}"
         val storageRef = firestoreStorage.child(path)
         return storageRef.putFile(imageUri)
     }
 
     fun getSavedUserRunItems(): CollectionReference {
-        val path = "${getUserCollection()}/${user!!.email.toString()}/${getItemCollection()}"
+        val path = "$USER_COLLECTION/${user!!.email.toString()}/$ITEM_COLLECTION"
         return firestoreDB.collection(path)
     }
 
     fun getSavedPublicRunItems(): CollectionReference {
-        return firestoreDB.collection(getItemCollection())
+        return firestoreDB.collection(ITEM_COLLECTION)
     }
 
     fun getSavedPublicRunItem(docId:String?): Query{
-        val eventsRef: CollectionReference = firestoreDB.collection(getItemCollection())
+        val eventsRef: CollectionReference = firestoreDB.collection(ITEM_COLLECTION)
         val docIdQuery: Query = eventsRef.whereEqualTo("docID", docId)
         return docIdQuery
         //return firestoreDB.collection(getItemCollection()).document(docId!!)
     }
 
     fun getImageStorageReference(downloadUrl:String?):StorageReference{
-        val path = "${getImagePath()}${downloadUrl}"
+        val path = "$IMAGE_PATH${downloadUrl}"
         return firestoreStorage.child(path)
     }
 
     fun deleteUserRunItem(docId: String): Task<Void> {
-        val path = "${getUserCollection()}/${user!!.email.toString()}/${getItemCollection()}"
+        val path = "$USER_COLLECTION/${user!!.email.toString()}/$ITEM_COLLECTION"
         return firestoreDB.collection(path).document(docId).delete()
     }
 
     fun deletePublicRunItem(docId: String): Task<Void> {
-        return firestoreDB.collection(getItemCollection()).document(docId).delete()
+        return firestoreDB.collection(ITEM_COLLECTION).document(docId).delete()
     }
 
     fun deleteImage(downloadUrl:String): Task<Void> {
-        val path = "${getImagePath()}${downloadUrl}"
+        val path = "$IMAGE_PATH${downloadUrl}"
         val storageRef = firestoreStorage.child(path)
         return storageRef.delete()
     }

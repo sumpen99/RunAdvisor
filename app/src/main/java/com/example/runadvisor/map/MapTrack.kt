@@ -1,8 +1,10 @@
 package com.example.runadvisor.map
 import android.content.Context
 import android.graphics.Color
-import com.example.runadvisor.overlay.OverlayClickableMarker
-import com.example.runadvisor.struct.RunItem
+import com.example.runadvisor.methods.MAX_LATITUDE
+import com.example.runadvisor.methods.MAX_LONGITUDE
+import com.example.runadvisor.methods.MIN_LATITUDE
+import com.example.runadvisor.methods.MIN_LONGITUDE
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
@@ -33,7 +35,7 @@ abstract class MapTrack(val activityContext: Context,
     }
 
     open fun setBbox(){
-        setBbox(90.0,-90.0,180.0,-180.0)
+        setBbox(MIN_LATITUDE, MAX_LATITUDE, MIN_LONGITUDE, MAX_LONGITUDE)
     }
 
     open fun buildPolyline(points:List<GeoPoint>){

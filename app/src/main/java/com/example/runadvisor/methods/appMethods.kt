@@ -43,13 +43,6 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 
-
-val ALL_PERMISSIONS_CHECKED = 2
-val PERMISSION_NOT_OK = 0
-val PERMISSION_OK = 1
-val DATA_PERMISSIONS_CODE = 98
-val LOCATION_PERMISSION_CODE = 99
-
 /*
 *   ##########################################################################
 *                            APP DIMENSIONS
@@ -234,6 +227,25 @@ fun Fragment.getRoundProgressbar(activity:Activity,viewGroup:ViewGroup):Progress
     )
 
     val rl = RelativeLayout(activity)
+
+    rl.gravity = Gravity.CENTER
+    rl.addView(progressBar)
+
+    viewGroup.addView(rl, params)
+    return progressBar
+}
+
+fun Activity.getRoundProgressbar(viewGroup:ViewGroup):ProgressBar{
+    val progressBar = ProgressBar(this,null,android.R.attr.progressBarStyleLarge)
+    progressBar.visibility = View.GONE
+    progressBar.isIndeterminate = true
+
+    val params = RelativeLayout.LayoutParams(
+        RelativeLayout.LayoutParams.MATCH_PARENT,
+        RelativeLayout.LayoutParams.MATCH_PARENT
+    )
+
+    val rl = RelativeLayout(this)
 
     rl.gravity = Gravity.CENTER
     rl.addView(progressBar)
@@ -573,6 +585,10 @@ fun Fragment.uncheckCheckBoxes(pos:Int,checkBoxes:ArrayList<CheckBox>){
         if(i!=pos){checkBoxes[i].isChecked = false}
         i++
     }
+}
+
+fun Fragment.checkCheckBox(pos:Int,checkBoxes:ArrayList<CheckBox>){
+    checkBoxes[pos].isChecked = true
 }
 
 /*

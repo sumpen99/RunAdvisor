@@ -28,10 +28,8 @@ class MapFragmentUpload:MapFragment() {
     private var gpsMenu: GpsMenuBar?=null
     private lateinit var askForGpsReset: MessageToUser
     private lateinit var mapBuildTrack: MapBuildTrack
-    private val URL_TIMER:Long = 1500
     private var lastUrlCall:Long = 0
     private var lastMenu:Int = -1
-    private val MIN_TRACK_LENGTH:Double = 1000.0
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -174,7 +172,7 @@ class MapFragmentUpload:MapFragment() {
             mapBuildTrack.addPolyLineToMap()
             mapBuildTrack.getBoundaryBox(geoPoints)
             printToTerminal(mapBuildTrack.bbox.toString())
-            zoomToArea(mapBuildTrack.bbox,1.0)
+            zoomToArea(mapBuildTrack.bbox)
             //mapBuildTrack.invalidate()
         }
         deActivateGps()

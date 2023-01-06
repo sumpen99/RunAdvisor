@@ -3,14 +3,12 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
-import androidx.fragment.app.Fragment
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.methods.locationPermissionIsProvided
-import com.example.runadvisor.widget.GpsMenuBar
 
 class MapFragmentViewAll:MapFragment() {
     private lateinit var mapShowTrack: MapShowTrack
@@ -76,7 +74,7 @@ class MapFragmentViewAll:MapFragment() {
         if(parentActivity.runItemsIsNotNull()){
             mapShowTrack.addOverviewMarkers(parentActivity.getRunItems())
             if(mapData.geoPoint == null){
-                zoomToArea(mapShowTrack.bbox,3.0)
+                zoomToArea(mapShowTrack.bbox)
             }
             else{
                 resetLastPosition()

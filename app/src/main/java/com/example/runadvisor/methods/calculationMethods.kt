@@ -1,8 +1,8 @@
 package com.example.runadvisor.methods
+import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import java.lang.Math.pow
 import kotlin.math.*
-
 
 fun toRadians(degress:Double):Double{
     return degress * (Math.PI / 180);
@@ -114,12 +114,52 @@ fun getGeoMiddle(p1:GeoPoint,p2:GeoPoint):GeoPoint{
     return GeoPoint(clat,clon)
 }
 
+fun getAreaGeoMiddle(bbox:BoundingBox):GeoPoint{
+    val ry1: Double = Math.log((Math.sin(toRadians(bbox.latSouth)) + 1) / Math.cos(toRadians(bbox.latSouth)))
+    val ry2: Double = Math.log(((Math.sin(toRadians(bbox.latNorth)) + 1) / Math.cos(toRadians(bbox.latNorth))))
 
-/*val MIN_LATITUDE = -90.0
-val MAX_LATITUDE = 90.0
-val MIN_LONGITUDE = -180.0
-val MAX_LONGITUDE = 180.0
-val DP_TILE_SIZE = 256.0
+    val ryc = (ry1 + ry2) / 2
+
+    val centerY: Double = toDegrees(Math.atan(Math.sinh(ryc)))
+
+    //val resolutionHorizontal: Double = (bbox.lonWest/bbox.lonEast) /  getScreenWidth()
+
+    //val vy0: Double = Math.log(Math.tan(Math.PI * (0.25 + centerY / 360)))
+    //val vy1: Double = Math.log(Math.tan(Math.PI * (0.25 + bbox.latNorth / 360)))
+    //val viewHeightHalf: Double = getScreenHeight() / 2.0
+    //val zoomFactorPowered = (viewHeightHalf / (40.7436654315252 * (vy1 - vy0)))
+    //val resolutionVertical = 360.0 / (zoomFactorPowered * DP_TILE_SIZE)
+
+    //val resolution: Double = (Math.max(resolutionHorizontal, resolutionVertical) * paddingFactor)
+    //val zoom: Double = Math.log(360 / (resolution * DP_TILE_SIZE))
+    //minPoint + (maxPoint - minPoint) / 2
+    //val lon: Double = (bbox.lonEast + ((bbox.lonWest-bbox.lonEast)/2))
+    val lon = getMiddlePoint(bbox.lonEast,bbox.lonWest)
+    val lat = centerY
+    return GeoPoint(lat,lon)
+}
+
+fun getAreaZoomLevel(bbox:BoundingBox):Double{
+    val latFraction = (latRad(bbox.latNorth) - latRad(bbox.latNorth)) / Math.PI
+    val lngDiff = bbox.lonEast - bbox.lonWest
+    val lngFraction = (if (lngDiff < 0) lngDiff + 360 else lngDiff) / 360
+    val latZoom = zoom(getScreenHeight().toDouble(), DP_TILE_SIZE, latFraction)
+    val lngZoom = zoom(getScreenWidth().toDouble(), DP_TILE_SIZE, lngFraction)
+    val zoom = Math.min(Math.min(latZoom, lngZoom), 20.0)
+    return zoom
+}
+
+private fun latRad(lat: Double): Double {
+    val sin = Math.sin(lat * Math.PI / 180)
+    val radX2 = Math.log((1 + sin) / (1 - sin)) / 2
+    return Math.max(Math.min(radX2, Math.PI), -Math.PI) / 2
+}
+
+private fun zoom(mapPx: Double, worldPx: Double, fraction: Double): Double {
+    return Math.log(mapPx / worldPx / fraction) / LN2
+}
+
+/*
 fun clamp(x:Double,minimum:Double,maximum:Double):Double{
     return Math.max(minimum,Math.min(x,maximum))
 }

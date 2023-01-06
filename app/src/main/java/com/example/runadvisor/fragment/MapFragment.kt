@@ -10,21 +10,15 @@ import android.view.View.VISIBLE
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.BuildConfig
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
-import com.example.runadvisor.background.LocationService
 import com.example.runadvisor.databinding.FragmentMapBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
 import com.example.runadvisor.widget.GpsBlinker
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
@@ -32,7 +26,6 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.BoundingBox
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
-import kotlin.concurrent.thread
 
 
 abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver, LocationListener, IFragment {
@@ -193,28 +186,8 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         zoomToPosition(location,getZoomBase())
     }
 
-    protected fun zoomToArea(bbox:BoundingBox,paddingFactor:Double=1.0){
-        val ry1: Double = Math.log((Math.sin(toRadians(bbox.latSouth)) + 1) / Math.cos(toRadians(bbox.latSouth)))
-        val ry2: Double = Math.log(((Math.sin(toRadians(bbox.latNorth)) + 1) / Math.cos(toRadians(bbox.latNorth))))
-
-        val ryc = (ry1 + ry2) / 2
-
-        val centerY: Double = toDegrees(Math.atan(Math.sinh(ryc)))
-
-        val resolutionHorizontal: Double = (bbox.lonWest/bbox.lonEast) / getScreenWidth()
-
-        val vy0: Double = Math.log(Math.tan(Math.PI * (0.25 + centerY / 360)))
-        val vy1: Double = Math.log(Math.tan(Math.PI * (0.25 + bbox.latNorth / 360)))
-        val viewHeightHalf: Double = getScreenHeight() / 2.0
-        val zoomFactorPowered = (viewHeightHalf / (40.7436654315252 * (vy1 - vy0)))
-        val resolutionVertical = 360.0 / (zoomFactorPowered * 256)
-
-        val resolution: Double = (Math.max(resolutionHorizontal, resolutionVertical) * paddingFactor)
-        val zoom: Double = Math.log(360 / (resolution * 256))
-        val lon: Double = (bbox.lonEast + ((bbox.lonWest-bbox.lonEast)/2))
-        val lat = centerY
-
-        zoomToPosition(GeoPoint(lat,lon),zoom)
+    protected fun zoomToArea(bbox:BoundingBox){
+        zoomToPosition(getAreaGeoMiddle(bbox),getAreaZoomLevel(bbox))
     }
 
     protected fun zoomToPosition(geoPoint:GeoPoint,zoom:Double){

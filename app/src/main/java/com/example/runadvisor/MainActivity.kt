@@ -3,17 +3,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.MotionEvent
+import android.view.View
+import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.activity.LoginActivity
 import com.example.runadvisor.adapter.CustomDownloadAdapter
 import com.example.runadvisor.adapter.CustomUserAdapter
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityMainBinding
 import com.example.runadvisor.enums.FragmentInstance
+import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
@@ -27,7 +32,11 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.osmdroid.util.GeoPoint
+import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView
@@ -37,18 +46,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var customUserAdapter: CustomUserAdapter
     private lateinit var userGeo:GeoPoint
     private lateinit var messageToUser: MessageToUser
+    private var progressBar: ProgressBar? = null
     private var fragmentTracker = FragmentTracker()
     private var _binding: ActivityMainBinding? = null
     private val binding get() = _binding!!
     private var sortOperation = SortOperation.SORT_RANGE
     private var PERMISSION_RESULT = 0
+    private var sortInProgress:Boolean = false
 
     private var publicObserver = Observer<List<RunItem>?>{ it->
         if(it!=null){
             var i = 0
             while(i<it.size){
-                //val trackGeo = getDoubleToGeoPoint(it[i].center!!)
-                //val userGeo = getUserLocation()
                 it[i].range = latLonToMeter(getDoubleToGeoPoint(it[i].center!!),userGeo).toInt()
                 i++
             }
@@ -106,6 +115,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun setUserAdapter(){
         customUserAdapter = CustomUserAdapter(this)
+    }
+
+    private fun addProgressBar(){
+        val layout = findViewById<ConstraintLayout>(R.id.mainLayout)
+        progressBar = getRoundProgressbar(layout)
     }
 
     private fun setOnBackNavigation(){
@@ -168,9 +182,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun setSearchAxis(op:SortOperation){
+        if(sortOperation==SortOperation.SORT_RANGE){setUserGeoLocation()}
         sortOperation = op
-        customPublicAdapter.sortRunItems()
     }
+
+    fun isSortInProgress():Boolean{
+        return sortInProgress
+    }
+
+    fun isAdapterOccupied():Boolean{
+        return customPublicAdapter.isOccupied()
+    }
+
+    fun sortPublicData(){
+        lifecycleScope.launch{
+            setProgressbar(true)
+            sortInProgress = true
+            withContext(Dispatchers.IO) {
+                thread {
+                    Thread.sleep(5000)
+                }.join()
+            }
+            customPublicAdapter.sortRunItems()
+            sortInProgress = false
+            setProgressbar(false)
+        }
+    }
+
+
 
     /*
     *   ##########################################################################
@@ -181,6 +220,13 @@ class MainActivity : AppCompatActivity() {
     fun showUserMessage(msg:String){
         messageToUser.setMessage(msg)
         messageToUser.showMessage()
+    }
+
+    private fun setProgressbar(show:Boolean){
+        if(show){progressBar!!.visibility = View.VISIBLE
+        }
+        else{progressBar!!.visibility = View.GONE
+        }
     }
 
     /*
@@ -199,7 +245,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int,permissions: Array<out String>,grantResults: IntArray){
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        var i = 0
         when(requestCode) {
             LOCATION_PERMISSION_CODE -> {
                 /*if(grantResults.isNotEmpty()){
@@ -232,6 +277,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun onAllPermissionCheck(){
         if(PERMISSION_RESULT == ALL_PERMISSIONS_CHECKED ){
+            addProgressBar()
             setUpNavMenu()
             setInfoToUser()
             setOnBackNavigation()
@@ -368,7 +414,10 @@ class MainActivity : AppCompatActivity() {
 
     /*
     *   ##########################################################################
-    *                DISPATCH FUNCTION NEEDED FOR MAPFRAGMENT (MAPVIEW)
+    *                DISPATCH FUNCTION USED FOR ONE THING ONLY
+    *                I COULDN'T FIND A WAY TO MAKE A MAPMARKER BLINK BY USING
+    *                THE INBUILT FUNCTION BY OSM. SO I ADDED MY OWN MARKER
+    *                AND THIS FUNCTION HELPS MOVING IT CORRECTLY ON PAN/ZOOM
     *   ##########################################################################
     * */
 
@@ -376,26 +425,24 @@ class MainActivity : AppCompatActivity() {
         super.dispatchTouchEvent(event)
         if(dispatchIsNeeded(event)){
             when(event.actionMasked) {
-                MotionEvent.ACTION_DOWN -> {
-                    //printToTerminal("ACTION_DOWN")
-                }
                 MotionEvent.ACTION_MOVE -> {
                     (fragmentTracker.root as IFragment).callbackDispatchTouchEvent(null)
-                    //printToTerminal("ACTION_MOVE")
-                    //(fragmentTracker.root as IFragment).callbackDispatchTouchEvent(null)
+                }
+                /*MotionEvent.ACTION_DOWN -> {
+                    printToTerminal("ACTION_DOWN")
                 }
                 MotionEvent.ACTION_UP -> {
-                    //printToTerminal("ACTION_UP")
+                    printToTerminal("ACTION_UP")
                 }
                 MotionEvent.ACTION_POINTER_DOWN -> {
-                    //printToTerminal("ACTION_POINTER_DOWN")
+                    printToTerminal("ACTION_POINTER_DOWN")
                 }
                 MotionEvent.ACTION_POINTER_UP -> {
-                    //printToTerminal("ACTION_POINTER_UP")
+                    printToTerminal("ACTION_POINTER_UP")
                 }
                 MotionEvent.ACTION_CANCEL -> {
-                    //printToTerminal("cancel")
-                }
+                    printToTerminal("cancel")
+                }*/
 
             }
         }
@@ -411,17 +458,16 @@ class MainActivity : AppCompatActivity() {
         navigateOnResume()
     }
 
-    override fun onPause() {
+    /*override fun onPause() {
         super.onPause()
     }
 
     override fun onStop() {
-        printToTerminal("on stop main")
         super.onStop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-    }
+    }*/
 
 }

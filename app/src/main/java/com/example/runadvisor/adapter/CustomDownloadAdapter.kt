@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.search.insertBetweenClosest
 import com.example.runadvisor.search.searchForRunItems
@@ -21,6 +20,7 @@ import org.osmdroid.util.GeoPoint
 
 class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Adapter<CustomDownloadAdapter.ViewHolder>() {
     val serverData = ArrayList<RunItem>()
+    var occupied:Boolean = false
 
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -28,6 +28,14 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
             .inflate(R.layout.download_track_card, parent, false)
 
         return ViewHolder(view)
+    }
+
+    fun isOccupied():Boolean{
+        return occupied
+    }
+
+    fun setIsOccupied(value:Boolean){
+        occupied = value
     }
 
     fun sortRunItems(){
@@ -38,21 +46,26 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
     }
 
     fun addRunItems(runItems:List<RunItem>){
+        setIsOccupied(true)
         if(itemCount==0){
             qSortRunItems(runItems,0,runItems.size-1,activity.getSearchAxis())
             serverData.addAll(runItems)
         }
         else{insertBetweenClosest(serverData,runItems,activity.getSearchAxis())}
         notifyDataSetChanged()
+        setIsOccupied(false)
     }
 
     private fun removeCard(pos:Int){
+        setIsOccupied(true)
         if(pos>=itemCount || pos < 0){return}
         serverData.removeAt(pos)
         notifyItemRemoved(pos)
+        setIsOccupied(false)
     }
 
     fun removeRunItem(runItem:RunItem){
+        setIsOccupied(true)
         val axis = activity.getSearchAxis()
         val searchInfo = SearchInfo()
         searchForRunItems(serverData,runItem.compare(axis),axis,searchInfo)
@@ -68,6 +81,7 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
             }
             if(foundIndex!=-1){removeCard(foundIndex)}
         }
+        setIsOccupied(false)
     }
 
     @SuppressLint("SetTextI18n")

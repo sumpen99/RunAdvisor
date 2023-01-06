@@ -1,10 +1,8 @@
 package com.example.runadvisor.map
 import android.content.Context
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.overlay.OverlayClickableMarker
 import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.struct.RunItem
-import org.osmdroid.util.BoundingBox
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay
 

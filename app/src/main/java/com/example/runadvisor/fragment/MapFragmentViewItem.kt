@@ -13,7 +13,6 @@ class MapFragmentViewItem:MapFragment() {
         setViewHolderPos()
         removePopUpButton()
         drawTrackOnMap()
-        // show box with info
     }
 
 

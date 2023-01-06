@@ -5,7 +5,6 @@ import androidx.appcompat.content.res.AppCompatResources
 import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.methods.getDoubleToGeoPoint
 import com.example.runadvisor.methods.getDoubleToGeoPoints
-import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.struct.RunItem
 import org.osmdroid.api.IMapView
 import org.osmdroid.views.overlay.ItemizedIconOverlay

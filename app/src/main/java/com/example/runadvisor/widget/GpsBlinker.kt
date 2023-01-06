@@ -23,7 +23,6 @@ class GpsBlinker(context:Context,
     private var storePoints:Boolean = false
     private val offsetY:Int = convertDpToPixel(25)
     private val offsetX:Int = convertDpToPixel(25)
-    private val MAX_STORAGE_LENGTH:Double = 42000.0
 
     init{
         inflate(context, R.layout.gps_blinker,this)

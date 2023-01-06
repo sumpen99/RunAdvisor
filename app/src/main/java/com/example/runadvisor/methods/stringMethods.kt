@@ -22,26 +22,6 @@ fun Double.inKilometers():String{
 
 fun Double.format(digits: Int) = "%.${digits}f".format(this)
 
-fun getImagePath():String{
-    return "images/"
-}
-
-fun getUserCollection():String{
-    return "Users"
-}
-
-fun getItemCollection():String{
-    return "RunItems"
-}
-
-fun getUserRunItemsCollection():String{
-    return "UserRunItems"
-}
-
-fun getPublicRunItemsCollection():String{
-    return "PublicRunItems"
-}
-
 fun getCurrentDate():String{
     val myDate = Date()
     val dateFormat = SimpleDateFormat("yyyy-MM-dd",Locale.getDefault())

@@ -29,8 +29,6 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private var userView: View? = null
     private var _binding: FragmentUserBinding? = null
     private val binding get() = _binding!!
-    private val GALLERY_REQUEST_CODE = 102
-    private val PICK_IMAGE = 1
     private var fileUri: Uri? = null
     private var filePath:String? = null
     private var userNameTag:String = ""
@@ -96,7 +94,6 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
         val userPicBtn = binding.userImageView
         val userSignOutBtn = binding.userSignOutBtn
         val userNameTextView = binding.userNameTextView
-        //userNameTestView.hideKeyboard()
         userSignOutBtn.setOnClickListener{messageToUser.showMessage()}
         userPicBtn.setCallback(null,::setProfilePicture)
         requireView().setOnTouchListener { v, event ->
