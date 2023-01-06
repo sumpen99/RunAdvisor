@@ -31,11 +31,9 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageReference
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.osmdroid.util.GeoPoint
-import kotlin.concurrent.thread
+
 
 class MainActivity : AppCompatActivity() {
     private lateinit var bottomNavMenu: BottomNavigationView

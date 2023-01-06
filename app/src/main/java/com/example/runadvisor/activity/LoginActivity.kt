@@ -1,4 +1,5 @@
 package com.example.runadvisor.activity
+
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
@@ -11,12 +12,18 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import com.example.runadvisor.MainActivity
 import com.example.runadvisor.R
+import com.example.runadvisor.methods.authErrors
 import com.example.runadvisor.methods.hideKeyboard
 import com.example.runadvisor.methods.moveToActivity
 import com.example.runadvisor.methods.showMessage
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthException
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthUserCollisionException
+import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var auth:FirebaseAuth
@@ -66,7 +73,11 @@ class LoginActivity : AppCompatActivity() {
         auth.signInWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener(this) { task ->
                 if(task.isSuccessful){moveToActivity(Intent(this, MainActivity::class.java))}
-                else{showMessage("Authentication failed ${task.exception}",Toast.LENGTH_SHORT)}
+                else{
+                    val errorCode = (task.exception as FirebaseAuthException).errorCode
+                    val errorMessage = authErrors[errorCode] ?: R.string.error_login_default_error
+                    showMessage(getString(errorMessage),Toast.LENGTH_SHORT)
+                }
             }
     }
 
@@ -75,7 +86,11 @@ class LoginActivity : AppCompatActivity() {
         auth.createUserWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener { task ->
                 if(task.isSuccessful){moveToActivity(Intent(this,MainActivity::class.java))}
-                else{showMessage("${task.exception}",Toast.LENGTH_SHORT)}
+                else{
+                    val errorCode = (task.exception as FirebaseAuthException).errorCode
+                    val errorMessage = authErrors[errorCode] ?: R.string.error_login_default_error
+                    showMessage(getString(errorMessage),Toast.LENGTH_SHORT)
+                }
             }
     }
 
