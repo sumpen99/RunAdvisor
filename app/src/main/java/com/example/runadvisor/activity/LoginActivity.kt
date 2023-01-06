@@ -1,5 +1,4 @@
 package com.example.runadvisor.activity
-
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
@@ -16,21 +15,15 @@ import com.example.runadvisor.methods.authErrors
 import com.example.runadvisor.methods.hideKeyboard
 import com.example.runadvisor.methods.moveToActivity
 import com.example.runadvisor.methods.showMessage
-import com.google.firebase.auth.FirebaseAuth
+import com.google.android.gms.tasks.Task
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.FirebaseAuthException
-import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
-import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
-
 class LoginActivity : AppCompatActivity() {
-    private lateinit var auth:FirebaseAuth
     private lateinit var emailField:EditText
     private lateinit var passwordField:EditText
-    private lateinit var logInBtn:Button
-    private lateinit var signUpBtn:Button
     private lateinit var onBackPressedCallback:OnBackPressedCallback
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +42,10 @@ class LoginActivity : AppCompatActivity() {
 
     @SuppressLint("ClickableViewAccessibility")
     private fun setEventListener(view:View){
-        auth = Firebase.auth
-        auth.signOut()
         emailField = findViewById(R.id.userEmail)
         passwordField = findViewById(R.id.userPassword)
-        logInBtn = findViewById(R.id.logInBtn)
-        signUpBtn = findViewById(R.id.signUpBtn)
+        val logInBtn:Button = findViewById(R.id.logInBtn)
+        val signUpBtn:Button = findViewById(R.id.signUpBtn)
 
         logInBtn.setOnClickListener{logIn()}
         signUpBtn.setOnClickListener{signUp()}
@@ -70,31 +61,37 @@ class LoginActivity : AppCompatActivity() {
 
     private fun logIn(){
         if( illegalUserInput()){return}
-        auth.signInWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
+        Firebase.auth.signInWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener(this) { task ->
-                if(task.isSuccessful){moveToActivity(Intent(this, MainActivity::class.java))}
-                else{
-                    val errorCode = (task.exception as FirebaseAuthException).errorCode
-                    val errorMessage = authErrors[errorCode] ?: R.string.error_login_default_error
-                    showMessage(getString(errorMessage),Toast.LENGTH_SHORT)
-                }
+                if(task.isSuccessful){enterMain()}
+                else{showUserException(task)}
             }
     }
 
     private fun signUp() {
         if( illegalUserInput()){return}
-        auth.createUserWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
+        Firebase.auth.createUserWithEmailAndPassword(emailField.text.toString(),passwordField.text.toString())
             .addOnCompleteListener { task ->
-                if(task.isSuccessful){moveToActivity(Intent(this,MainActivity::class.java))}
-                else{
-                    val errorCode = (task.exception as FirebaseAuthException).errorCode
-                    val errorMessage = authErrors[errorCode] ?: R.string.error_login_default_error
-                    showMessage(getString(errorMessage),Toast.LENGTH_SHORT)
-                }
+                if(task.isSuccessful){enterMain()}
+                else{showUserException(task)}
             }
     }
 
     private fun illegalUserInput():Boolean{
         return (emailField.text.toString().isEmpty() || passwordField.text.toString().isEmpty())
+    }
+
+    private fun showUserException(task: Task<AuthResult>){
+        val errorMessage = try{
+            val errorCode = (task.exception as FirebaseAuthException).errorCode
+            authErrors[errorCode] ?: R.string.error_login_default_error
+        } catch(err:Exception){
+            R.string.error_login_default_error
+        }
+        showMessage(getString(errorMessage),Toast.LENGTH_SHORT)
+    }
+
+    private fun enterMain(){
+        moveToActivity(Intent(this,MainActivity::class.java))
     }
 }
