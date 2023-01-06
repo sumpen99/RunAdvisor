@@ -58,7 +58,7 @@ class FirestoreViewModel:ViewModel() {
     fun getPublicRunItems(callbackRemove:(args:RunItem)->Unit): LiveData<List<RunItem>?> {
         firebaseRepository.getSavedPublicRunItems().addSnapshotListener EventListener@{ value, e ->
             if (e != null) {
-                printToTerminal("Listen failed ${e.message.toString()}")
+                //printToTerminal("Listen failed ${e.message.toString()}")
                 savedRunItems.value = null
                 return@EventListener
             }
@@ -78,7 +78,7 @@ class FirestoreViewModel:ViewModel() {
     fun getUserRunItems(): LiveData<List<UserItem>?> {
         firebaseRepository.getSavedUserRunItems().addSnapshotListener EventListener@{ value, e ->
             if(e != null) {
-                printToTerminal("Listen failed ${e.message.toString()}")
+                //printToTerminal("Listen failed ${e.message.toString()}")
                 savedRunItems.value = null
                 return@EventListener
             }

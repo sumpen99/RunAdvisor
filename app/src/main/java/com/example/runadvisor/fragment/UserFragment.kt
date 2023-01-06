@@ -1,14 +1,14 @@
 package com.example.runadvisor.fragment
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -20,17 +20,15 @@ import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.MessageToUser
 
-
 class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private lateinit var activityContext: Context
     private lateinit var parentActivity: MainActivity
     private lateinit var recyclerView: RecyclerView
     private lateinit var messageToUser: MessageToUser
+    private lateinit var selectImageFromGallery:ActivityResultLauncher<String>
     private var userView: View? = null
     private var _binding: FragmentUserBinding? = null
     private val binding get() = _binding!!
-    private var fileUri: Uri? = null
-    private var filePath:String? = null
     private var userNameTag:String = ""
     private var userIconTag:String = ""
 
@@ -47,6 +45,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
         setUserTag()
         loadImageFromPhone()
         loadUserName()
+        bindToActivityCallback()
         return userView!!
     }
 
@@ -74,6 +73,15 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     private fun setUserTag(){
         userNameTag = parentActivity.getUserNameTag()
         userIconTag = parentActivity.getUserIconTag()
+    }
+
+    private fun bindToActivityCallback(){
+        selectImageFromGallery = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            if(uri!=null){
+                parentActivity.loadUserIconFromPhone(uri.toString(),binding.userImageView)
+                parentActivity.writeToSharedPreference(userIconTag,uri.toString())
+            }
+        }
     }
 
     private fun setRecyclerView(){
@@ -110,7 +118,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     }
 
     private fun setProfilePicture(parameters:Any?){
-        selectImageFromGallery(PICK_IMAGE)
+        selectImageFromGallery.launch(SELECT_IMAGE_PATH)
     }
 
     private fun setUserName(){
@@ -135,7 +143,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
         }
     }
 
-    @Deprecated("Deprecated in Java")
+    /*@Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PICK_IMAGE
@@ -148,7 +156,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
             parentActivity.loadUserIconFromPhone(fileUri.toString(),binding.userImageView)
             parentActivity.writeToSharedPreference(userIconTag,fileUri.toString())
         }
-    }
+    }*/
 
     /*
     *   ##########################################################################

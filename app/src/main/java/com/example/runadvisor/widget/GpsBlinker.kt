@@ -42,9 +42,13 @@ class GpsBlinker(context:Context,
         geoPoints.clear()
     }
 
+    fun refreshMeasuredLength(){
+        callbackUpdateLength(measuredLength.inKilometers())
+    }
+
     fun resetAndClear(){
         clearCollectedPoints()
-        callbackUpdateLength(measuredLength.inKilometers())
+        refreshMeasuredLength()
         storePoints = false
     }
 

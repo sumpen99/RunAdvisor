@@ -30,3 +30,5 @@ const val IMAGE_PATH = "images/"
 const val USER_COLLECTION = "Users"
 const val ITEM_COLLECTION = "RunItems"
 
+const val SELECT_IMAGE_PATH = "image/*"
+

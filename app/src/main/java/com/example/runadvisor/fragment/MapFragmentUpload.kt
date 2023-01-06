@@ -8,7 +8,6 @@ import androidx.lifecycle.lifecycleScope
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.ServerResult
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapBuildTrack
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.*
@@ -105,7 +104,6 @@ class MapFragmentUpload:MapFragment() {
 
     private fun addGpsMenu(){
         if(locationPermissionIsProvided()){
-            startGps(null)
             gpsMenu = GpsMenuBar(parentActivity,null)
             binding.bottomMenuLayout.addView(gpsMenu)
             gpsMenu!!.setEventListener(
@@ -113,6 +111,7 @@ class MapFragmentUpload:MapFragment() {
                 ::stopGps,
                 ::saveGpsTrack,
                 ::clearGpsTrack)
+            startGps(null)
         }
         else{
             parentActivity.showUserMessage("GpsPermission Is Not Granted")
@@ -159,8 +158,9 @@ class MapFragmentUpload:MapFragment() {
     }
 
     private fun startGps(parameter:Any?){
-        if(gpsBlinkerIsActive()){clearGpsTrack(null)}
+        clearGpsTrack(null)
         setGpsToStorePoints(::updateGpsTrackLength)
+        refreshGpsBlinkerMeasureLength()
         activateGps()
     }
 
@@ -171,9 +171,7 @@ class MapFragmentUpload:MapFragment() {
             mapBuildTrack.buildPolyline(geoPoints)
             mapBuildTrack.addPolyLineToMap()
             mapBuildTrack.getBoundaryBox(geoPoints)
-            printToTerminal(mapBuildTrack.bbox.toString())
             zoomToArea(mapBuildTrack.bbox)
-            //mapBuildTrack.invalidate()
         }
         deActivateGps()
     }
@@ -349,7 +347,6 @@ class MapFragmentUpload:MapFragment() {
 
     override fun onDestroyView() {
         storeSavedTracks()
-        printToTerminal("destroy upload map")
         super.onDestroyView()
     }
 }

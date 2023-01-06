@@ -141,6 +141,10 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         gpsBlinker.resetAndClear()
     }
 
+    protected  fun refreshGpsBlinkerMeasureLength(){
+        gpsBlinker.refreshMeasuredLength()
+    }
+
     protected fun gpsBlinkerIsActive():Boolean{
         return gpsBlinker.isActive()
     }
@@ -151,7 +155,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
 
     protected fun setGpsToStorePoints(callbackUpdateTrackLength:(args:String)->Unit){
         gpsBlinker.shouldStorePoints(true)
-        gpsBlinker.clearCollectedPoints()
         gpsBlinker.setCallbackUpdateLength(callbackUpdateTrackLength)
     }
 

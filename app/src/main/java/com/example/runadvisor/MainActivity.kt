@@ -18,7 +18,6 @@ import com.example.runadvisor.adapter.CustomUserAdapter
 import com.example.runadvisor.database.FirestoreViewModel
 import com.example.runadvisor.databinding.ActivityMainBinding
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.enums.ServerResult
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
 import com.example.runadvisor.io.printToTerminal
@@ -92,15 +91,6 @@ class MainActivity : AppCompatActivity() {
             setContentView(R.layout.activity_main)
             setDataBinding()
             verifyPermissions()
-            //setUserGeoLocation()
-            //setViewModel()
-            //setUpNavMenu()
-            //setOnBackNavigation()
-            //setEventListener()
-            //setPublicAdapter()
-            //setUserAdapter()
-            //setObservable()
-
         }
     }
 
@@ -198,11 +188,11 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch{
             setProgressbar(true)
             sortInProgress = true
-            withContext(Dispatchers.IO) {
+            /*withContext(Dispatchers.IO) {
                 thread {
                     Thread.sleep(5000)
                 }.join()
-            }
+            }*/
             customPublicAdapter.sortRunItems()
             sortInProgress = false
             setProgressbar(false)

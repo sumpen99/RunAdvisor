@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.PopupMenu
 import com.example.runadvisor.R
 import com.example.runadvisor.enums.FragmentInstance
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.map.MapShowTrack
 import com.example.runadvisor.marker.MarkerClickable
 import com.example.runadvisor.methods.locationPermissionIsProvided
@@ -53,7 +52,7 @@ class MapFragmentViewAll:MapFragment() {
             popUpMenu.setOnMenuItemClickListener{it: MenuItem ->
                 when(it.itemId){
                     R.id.popupGps-> moveToGpsPosition()
-                    R.id.popupSearch-> printToTerminal("popupSearch")
+                    R.id.popupSearch->parentActivity.showUserMessage("To Be Implemented!")
                 }
                 true
             }

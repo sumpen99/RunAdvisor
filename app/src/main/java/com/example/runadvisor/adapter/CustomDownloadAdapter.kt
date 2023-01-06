@@ -34,7 +34,7 @@ class CustomDownloadAdapter(private val activity: MainActivity):RecyclerView.Ada
         return occupied
     }
 
-    fun setIsOccupied(value:Boolean){
+    private fun setIsOccupied(value:Boolean){
         occupied = value
     }
 
