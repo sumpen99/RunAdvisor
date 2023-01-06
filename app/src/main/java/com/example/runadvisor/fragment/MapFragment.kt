@@ -238,12 +238,6 @@ abstract class MapFragment : Fragment(R.layout.fragment_map), MapEventsReceiver,
         super.onPause()
         mapView.onPause()
         setMapData()
-        //deActivateGps()
-    }
-
-    override fun onStop() {
-        super.onStop()
-
     }
 
     override fun onDestroyView() {

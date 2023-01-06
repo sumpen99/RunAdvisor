@@ -566,6 +566,7 @@ fun Activity.moveToActivity(intent:Intent){
 }
 
 fun Fragment.signOutUser(){
+
     val intent = Intent(requireContext(),LoginActivity::class.java)
     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
     requireActivity().moveToActivity(intent)

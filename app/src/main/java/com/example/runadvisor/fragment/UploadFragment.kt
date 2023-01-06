@@ -202,14 +202,6 @@ class UploadFragment:Fragment(R.layout.fragment_upload),IFragment {
     *
     * */
 
-    override fun onResume() {
-        super.onResume()
-        //loadData()
-    }
-
-    override fun onPause() {
-        super.onPause()
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()

@@ -45,13 +45,13 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
         setUserTag()
         loadImageFromPhone()
         loadUserName()
-        bindToActivityCallback()
         return userView!!
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setEventListener(view)
+        bindToActivityCallback()
     }
 
     override fun needDispatch():Boolean{return false}
@@ -113,6 +113,7 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     }
 
     private fun signOut(parameters:Any?){
+        parentActivity.signUserOut()
         parentActivity.cancelObservable()
         signOutUser()
     }
@@ -165,18 +166,9 @@ class UserFragment:Fragment(R.layout.fragment_user), IFragment {
     *
     * */
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     override fun onPause() {
         super.onPause()
         setUserName()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        //_binding = null
     }
 
 }

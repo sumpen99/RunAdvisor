@@ -88,10 +88,7 @@ class MapFragmentViewAll:MapFragment() {
     *
     * */
 
-    /*override fun onResume() {
-        super.onResume()
-        //loadRunItems()
-    }*/
+
 
     override fun onDestroyView() {
         super.onDestroyView()

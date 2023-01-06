@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.runadvisor.enums.ServerResult
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.struct.RunItem
 import com.example.runadvisor.struct.ServerDetails
 import com.example.runadvisor.struct.UserItem
@@ -58,7 +57,6 @@ class FirestoreViewModel:ViewModel() {
     fun getPublicRunItems(callbackRemove:(args:RunItem)->Unit): LiveData<List<RunItem>?> {
         firebaseRepository.getSavedPublicRunItems().addSnapshotListener EventListener@{ value, e ->
             if (e != null) {
-                //printToTerminal("Listen failed ${e.message.toString()}")
                 savedRunItems.value = null
                 return@EventListener
             }
@@ -97,19 +95,19 @@ class FirestoreViewModel:ViewModel() {
 
     fun deletePublicRunItem(docId:String){
         firebaseRepository.deletePublicRunItem(docId).addOnFailureListener {
-            printToTerminal("Failed to delete PublicRunItem")
+            //printToTerminal("Failed to delete PublicRunItem")
         }
     }
 
     fun deleteUserRunItem(docId:String){
         firebaseRepository.deleteUserRunItem(docId).addOnFailureListener {
-            printToTerminal("Failed to delete UserRunItem")
+            //printToTerminal("Failed to delete UserRunItem")
         }
     }
 
     fun deleteImage(downloadUrl:String){
         firebaseRepository.deleteImage(downloadUrl).addOnFailureListener {
-            printToTerminal("Failed to delete Image")
+            //printToTerminal("Failed to delete Image")
         }
     }
 

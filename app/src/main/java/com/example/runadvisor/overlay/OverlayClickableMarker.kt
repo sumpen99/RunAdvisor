@@ -46,18 +46,5 @@ class OverlayClickableMarker(private val activityContext: Context,
         return markers.size
     }
 
-    /*override fun onTouchEvent(event: MotionEvent, mapView: MapView?): Boolean {
-        when(event.actionMasked) {
-            MotionEvent.ACTION_DOWN -> {}
-            MotionEvent.ACTION_MOVE -> {}
-            MotionEvent.ACTION_UP -> {}
-            MotionEvent.ACTION_CANCEL -> {}
-            /*
-            MotionEvent.ACTION_POINTER_DOWN -> {}
-            MotionEvent.ACTION_POINTER_UP -> {}
-            MotionEvent.ACTION_CANCEL -> {}
-            */
-        }
-        return super.onTouchEvent(event, mapView)
-    }*/
+
 }

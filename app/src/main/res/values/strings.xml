@@ -3,7 +3,6 @@
     <string name="menu">Menu</string>
     <string name="user_icon">UserIcon</string>
     <string name="user_name">UserName</string>
-    <string name="error_exception_thrown">An </string>
     <string name="error_login_default_error">We encountered an unexpected error, please try again.</string>
     <string name="error_login_custom_token">The custom token format is incorrect. Please check the documentation.</string>
     <string name="error_login_custom_token_mismatch">The custom token corresponds to a different audience.</string>

@@ -20,7 +20,6 @@ import com.example.runadvisor.databinding.ActivityMainBinding
 import com.example.runadvisor.enums.FragmentInstance
 import com.example.runadvisor.enums.SortOperation
 import com.example.runadvisor.interfaces.IFragment
-import com.example.runadvisor.io.printToTerminal
 import com.example.runadvisor.methods.*
 import com.example.runadvisor.struct.FragmentTracker
 import com.example.runadvisor.struct.MessageToUser
@@ -125,6 +124,10 @@ class MainActivity : AppCompatActivity() {
         return Firebase.auth.currentUser!=null
     }
 
+    fun signUserOut(){
+        Firebase.auth.signOut()
+    }
+
     private fun setEventListener(){
         bottomNavMenu.setOnItemSelectedListener {it: MenuItem ->
             when(it.itemId){
@@ -186,11 +189,6 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch{
             setProgressbar(true)
             sortInProgress = true
-            /*withContext(Dispatchers.IO) {
-                thread {
-                    Thread.sleep(5000)
-                }.join()
-            }*/
             customPublicAdapter.sortRunItems()
             sortInProgress = false
             setProgressbar(false)
@@ -337,11 +335,6 @@ class MainActivity : AppCompatActivity() {
     *   ##########################################################################
     * */
 
-    private fun checkObservers(){
-        printToTerminal(firestoreViewModel.getUserRunItems().hasObservers().toString())
-        printToTerminal(firestoreViewModel.getPublicRunItems(::removePublicRunItemFromAdapter).hasObservers().toString())
-    }
-
     private fun setObservablePublicData(){
         firestoreViewModel.getPublicRunItems(::removePublicRunItemFromAdapter).observe(this,publicObserver)
     }
@@ -404,7 +397,7 @@ class MainActivity : AppCompatActivity() {
     *   ##########################################################################
     *                DISPATCH FUNCTION USED FOR ONE THING ONLY
     *                I COULDN'T FIND A WAY TO MAKE A MAPMARKER BLINK BY USING
-    *                THE INBUILT FUNCTION BY OSM. SO I ADDED MY OWN MARKER
+    *                ItemizedIconOverlay. SO I ADDED MY OWN MARKER
     *                AND THIS FUNCTION HELPS MOVING IT CORRECTLY ON PAN/ZOOM
     *   ##########################################################################
     * */
@@ -445,17 +438,5 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         navigateOnResume()
     }
-
-    /*override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }*/
 
 }
